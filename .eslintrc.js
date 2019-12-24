@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/interface-name-prefix': 0,
+    '@typescript-eslint/no-explicit-any': 0,
     'prefer-const': 0
   }
 };

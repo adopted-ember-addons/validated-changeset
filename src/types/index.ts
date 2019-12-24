@@ -80,21 +80,21 @@ export interface ChangesetDef {
   getDeep: any;
   setDeep: any;
   safeGet: (obj: any, key: string) => any;
-  prepare(preparedChangedFn: PrepareChangesFn): ChangesetDef;
-  execute: () => ChangesetDef;
+  prepare(preparedChangedFn: PrepareChangesFn): this;
+  execute: () => this;
   save: (options: object) => Promise<ChangesetDef | any>;
-  merge: (changeset: ChangesetDef) => ChangesetDef;
-  rollback: () => ChangesetDef;
-  rollbackInvalid: (key: string | void) => ChangesetDef;
-  rollbackProperty: (key: string) => ChangesetDef;
+  merge: (changeset: this) => this;
+  rollback: () => this;
+  rollbackInvalid: (key: string | void) => this;
+  rollbackProperty: (key: string) => this;
   validate: (
     key: string
   ) => Promise<null> | Promise<any | IErr<any>> | Promise<Array<any | IErr<any>>>;
   addError: <T>(key: string, error: IErr<T> | ValidationErr) => IErr<T> | ValidationErr;
   pushErrors: (key: string, newErrors: string[]) => IErr<any>;
   snapshot: () => Snapshot;
-  restore: (obj: Snapshot) => ChangesetDef;
-  cast: (allowed: Array<string>) => ChangesetDef;
+  restore: (obj: Snapshot) => this;
+  cast: (allowed: Array<string>) => this;
   isValidating: (key: string | void) => boolean;
   _validate: (
     key: string,

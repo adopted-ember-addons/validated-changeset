@@ -256,7 +256,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method prepare
    */
-  prepare(prepareChangesFn: PrepareChangesFn): IChangeset {
+  prepare(prepareChangesFn: PrepareChangesFn): this {
     let changes: { [s: string]: any } = this['_bareChanges'];
     let preparedChanges = prepareChangesFn(changes);
 
@@ -281,7 +281,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method execute
    */
-  execute(): IChangeset {
+  execute(): this {
     if (this.isValid && this.isDirty) {
       let content: Content = this[CONTENT];
       let changes: Changes = this[CHANGES];
@@ -341,7 +341,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method merge
    */
-  merge(changeset: IChangeset): IChangeset {
+  merge(changeset: this): this {
     let content: Content = this[CONTENT];
     assert('Cannot merge with a non-changeset', isChangeset(changeset));
     assert('Cannot merge with a changeset of different content', changeset[CONTENT] === content);
@@ -355,13 +355,14 @@ export class BufferedChangeset implements IChangeset {
     let e1: Errors<any> = this[ERRORS];
     let e2: Errors<any> = changeset[ERRORS];
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     let newChangeset: any = new ValidatedChangeset(content, this[VALIDATOR]); // ChangesetDef
     let newErrors: Errors<any> = objectWithout(keys(c2), e1);
     let newChanges: Changes = objectWithout(keys(e2), c1);
     let mergedErrors: Errors<any> = mergeNested(newErrors, e2);
     let mergedChanges: Changes = mergeNested(newChanges, c2);
 
-    newChangeset[ERRORS]  = mergedErrors;
+    newChangeset[ERRORS] = mergedErrors;
     newChangeset[CHANGES] = mergedChanges;
     newChangeset._notifyVirtualProperties();
     return newChangeset;
@@ -373,7 +374,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method rollback
    */
-  rollback(): IChangeset {
+  rollback(): this {
     // Get keys before reset.
     let keys = this._rollbackKeys();
 
@@ -395,7 +396,7 @@ export class BufferedChangeset implements IChangeset {
    * @param {String} key optional key to rollback invalid values
    * @return {Changeset}
    */
-  rollbackInvalid(key: string | void): IChangeset {
+  rollbackInvalid(key: string | void): this {
     let errorKeys = keys(this[ERRORS]);
 
     if (key) {
@@ -410,9 +411,9 @@ export class BufferedChangeset implements IChangeset {
       this[ERRORS] = {};
 
       // if on CHANGES hash, rollback those as well
-      errorKeys.forEach((errKey) => {
+      errorKeys.forEach(errKey => {
         this[CHANGES] = this._deleteKey(CHANGES, errKey) as Changes;
-      })
+      });
     }
 
     return this;
@@ -427,7 +428,7 @@ export class BufferedChangeset implements IChangeset {
    * @param {String} key key to delete off of changes and errors
    * @return {Changeset}
    */
-  rollbackProperty(key: string): IChangeset {
+  rollbackProperty(key: string): this {
     // @tracked
     this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
     // @tracked
@@ -451,7 +452,8 @@ export class BufferedChangeset implements IChangeset {
       return Promise.resolve(null);
     }
 
-    validationKeys = validationKeys.length > 0 ? validationKeys : keys(this.validationMap as object);
+    validationKeys =
+      validationKeys.length > 0 ? validationKeys : keys(this.validationMap as object);
 
     let maybePromise = validationKeys.map(key => {
       return this._validateKey(key as string, this._valueFor(key as string));
@@ -470,7 +472,8 @@ export class BufferedChangeset implements IChangeset {
     // Construct new `Err` instance.
     let newError;
 
-    const isIErr = <T>(error: unknown): error is IErr<T> => isObject(error) && !Array.isArray(error);
+    const isIErr = <T>(error: unknown): error is IErr<T> =>
+      isObject(error) && !Array.isArray(error);
     if (isIErr(error)) {
       assert('Error must have value.', error.hasOwnProperty('value'));
       assert('Error must have validation.', error.hasOwnProperty('validation'));
@@ -495,7 +498,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method pushErrors
    */
-  pushErrors(key: keyof IChangeset, ...newErrors: string[] | ValidationErr[]) {
+  pushErrors(key: string, ...newErrors: string[] | ValidationErr[]): IErr<any> {
     let errors: Errors<any> = this[ERRORS];
     let existingError: IErr<any> | Err = this.getDeep(errors, key) || new Err(null, []);
     let validation: ValidationErr | ValidationErr[] = existingError.validation;
@@ -543,7 +546,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method restore
    */
-  restore({ changes, errors }: Snapshot): IChangeset {
+  restore({ changes, errors }: Snapshot): this {
     let newChanges: Changes = keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
       newObj[key] = new Change(changes[key]);
       return newObj;
@@ -571,7 +574,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method cast
    */
-  cast(allowed: string[] = []): IChangeset {
+  cast(allowed: string[] = []): this {
     let changes: Changes = this[CHANGES];
 
     if (Array.isArray(allowed) && allowed.length === 0) {
