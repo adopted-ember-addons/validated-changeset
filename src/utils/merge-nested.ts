@@ -13,11 +13,7 @@ export default function mergeNested<T>(
 ): { [key: string]: T } {
   let finalObj = {};
 
-  objects.forEach(obj =>
-    keys(obj).forEach(key =>
-      setDeep(finalObj, key, obj[key])
-    )
-  );
+  objects.forEach(obj => keys(obj).forEach(key => setDeep(finalObj, key, obj[key])));
 
   return finalObj;
 }

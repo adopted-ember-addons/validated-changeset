@@ -18,12 +18,25 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     }
 
     if (Array.isArray(validator)) {
-      return handleMultipleValidations(<ValidatorMapFunc[]>validator, { key, newValue, oldValue, changes, content });
+      return handleMultipleValidations(validator as ValidatorMapFunc[], {
+        key,
+        newValue,
+        oldValue,
+        changes,
+        content
+      });
     }
 
-    let validation: ValidationResult | Promise<ValidationResult> = (<ValidatorMapFunc>validator)(key, newValue, oldValue, changes, content);
+    let validation: ValidationResult | Promise<ValidationResult> = (validator as ValidatorMapFunc)(
+      key,
+      newValue,
+      oldValue,
+      changes,
+      content
+    );
 
-    return isPromise(validation) ? (<Promise<ValidationResult>>validation).then(wrapInArray) : [validation];
+    return isPromise(validation)
+      ? (validation as Promise<ValidationResult>).then(wrapInArray)
+      : [validation];
   };
 }
-

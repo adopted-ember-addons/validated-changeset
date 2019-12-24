@@ -1,34 +1,34 @@
 import Change from '../-private/change';
 
 interface Options {
-  safeGet: any
-  safeSet: any
+  safeGet: unknown;
+  safeSet: unknown;
 }
 
-function isMergeableObject(value: any): Boolean {
-  return isNonNullObject(value) && !isSpecial(value);
-}
-
-function isNonNullObject(value: any): Boolean {
+function isNonNullObject(value: any): boolean {
   return !!value && typeof value === 'object';
 }
 
-function isSpecial(value: any): Boolean {
+function isSpecial(value: any): boolean {
   let stringValue = Object.prototype.toString.call(value);
 
   return stringValue === '[object RegExp]' || stringValue === '[object Date]';
 }
 
+function isMergeableObject(value: any): boolean {
+  return isNonNullObject(value) && !isSpecial(value);
+}
+
 function getEnumerableOwnPropertySymbols(target: any): any {
   return Object.getOwnPropertySymbols
     ? Object.getOwnPropertySymbols(target).filter(symbol => {
-      return target.propertyIsEnumerable(symbol)
-    })
+        return target.propertyIsEnumerable(symbol);
+      })
     : [];
 }
 
 function getKeys(target: any) {
-  return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
+  return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target));
 }
 
 function propertyIsOnObject(object: any, property: any) {
@@ -40,10 +40,12 @@ function propertyIsOnObject(object: any, property: any) {
 }
 
 // Protects from prototype poisoning and unexpected merging up the prototype chain.
-function propertyIsUnsafe(target: any, key: string): Boolean {
-  return propertyIsOnObject(target, key) // Properties are safe to merge if they don't exist in the target yet,
-    && !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
-      && Object.propertyIsEnumerable.call(target, key)); // and also unsafe if they're nonenumerable.
+function propertyIsUnsafe(target: any, key: string): boolean {
+  return (
+    propertyIsOnObject(target, key) && // Properties are safe to merge if they don't exist in the target yet,
+    // unsafe if they exist up the prototype chain and also unsafe if they're nonenumerable.
+    !(Object.hasOwnProperty.call(target, key) && Object.propertyIsEnumerable.call(target, key))
+  );
 }
 
 /**
@@ -52,7 +54,12 @@ function propertyIsUnsafe(target: any, key: string): Boolean {
  *
  * @method buildPathToValue
  */
-function buildPathToValue(source: any, options: Options, kv: Record<string, any>, possibleKeys: string[]): Record<string, any> {
+function buildPathToValue(
+  source: any,
+  options: Options,
+  kv: Record<string, any>,
+  possibleKeys: string[]
+): Record<string, any> {
   Object.keys(source).forEach((key: string): void => {
     let possible = source[key];
     if (possible && possible.hasOwnProperty('value')) {
@@ -97,15 +104,16 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
 
     // else safe key on object
     if (propertyIsOnObject(target, key) && isMergeableObject(source[key]) && !source[key].hasOwnProperty('value')) {
+      /* eslint-disable @typescript-eslint/no-use-before-define */
       target[key] = mergeDeep(options.safeGet(target, key), options.safeGet(source, key), options);
     } else {
       let next = source[key];
       if (next && next instanceof Change) {
-        return target[key] = next.value;
+        return (target[key] = next.value);
       }
 
       // if just some normal leaf value, then set
-      return target[key] = next;
+      return (target[key] = next);
     }
   });
 
@@ -121,8 +129,16 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
  *
  * @method mergeDeep
  */
-export default function mergeDeep(target: any, source: any, options: Options = { safeGet: undefined, safeSet: undefined }): object | [any] {
-  options.safeGet = options.safeGet || function (obj: any, key: string): any { return obj[key] };
+export default function mergeDeep(
+  target: any,
+  source: any,
+  options: Options = { safeGet: undefined, safeSet: undefined }
+): object | [any] {
+  options.safeGet =
+    options.safeGet ||
+    function(obj: any, key: string): any {
+      return obj[key];
+    };
   options.safeSet = options.safeSet;
   let sourceIsArray = Array.isArray(source);
   let targetIsArray = Array.isArray(target);

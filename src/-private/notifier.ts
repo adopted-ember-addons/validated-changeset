@@ -1,6 +1,6 @@
 // this statefull class holds and notifies
 
-export default class Notifier<T extends any[]>{
+export default class Notifier<T extends any[]> {
   listeners: ((...args: T) => void)[]
 
   constructor() {

@@ -7,16 +7,17 @@ import { ValidatorMapFunc, ValidationResult } from '../types';
  *
  * @private
  * @param  {Array} validations
- * @return {Promise<Boolean|Any>}
+ * @return {Promise<boolean|Any>}
  */
-async function handleValidationsAsync(validations: Array<ValidationResult | Promise<ValidationResult>>): Promise<any> {
+async function handleValidationsAsync(
+  validations: Array<ValidationResult | Promise<ValidationResult>>
+): Promise<any> {
   try {
     const result = await Promise.all(validations);
 
     const maybeFailed = result.filter(val => typeof val !== 'boolean' && val);
     return maybeFailed.length === 0 || maybeFailed;
-
-  } catch(e) {
+  } catch (e) {
     return e;
   }
 }
@@ -27,9 +28,9 @@ async function handleValidationsAsync(validations: Array<ValidationResult | Prom
  *
  * @private
  * @param  {Array} validations
- * @return {Boolean|Any}
+ * @return {boolean|Any}
  */
-function handleValidationsSync(validations: Array<ValidationResult>): Boolean | any {
+function handleValidationsSync(validations: Array<ValidationResult>): boolean | any {
   const maybeFailed = validations.filter(val => typeof val !== 'boolean' && val);
   return maybeFailed.length === 0 || maybeFailed;
 }
@@ -44,12 +45,12 @@ function handleValidationsSync(validations: Array<ValidationResult>): Boolean | 
  * @param  {Any} options.oldValue
  * @param  {Object} options.changes
  * @param  {Object} options.content
- * @return {Promise|Boolean|Any}
+ * @return {Promise|boolean|Any}
  */
 export default function handleMultipleValidations(
   validators: ValidatorMapFunc[],
   { key, newValue, oldValue, changes, content }: { [s: string]: any }
-): Boolean | any {
+): boolean | any {
   let validations: Array<ValidationResult | Promise<ValidationResult>> = Array.from(
     validators.map((validator: ValidatorMapFunc): ValidationResult | Promise<ValidationResult> =>
       validator(key, newValue, oldValue, changes, content)

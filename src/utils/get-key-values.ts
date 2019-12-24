@@ -6,8 +6,11 @@ import isObject from './is-object';
  * @method getKeyValues
  * @return {Array} [{ 'person.name': value }]
  */
-export function getKeyValues<T extends Record<string, any>>(obj: T, keysUpToValue: string[] = []): object[] {
-  let map = [];
+export function getKeyValues<T extends Record<string, any>>(
+  obj: T,
+  keysUpToValue: string[] = []
+): object[] {
+  const map = [];
 
   for (let key in obj) {
     keysUpToValue.push(key);

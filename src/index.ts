@@ -49,7 +49,7 @@ const DEBUG = process.env.NODE_ENV === 'development';
 
 function assert(msg: string, property: unknown): void {
   if (DEBUG) {
-    if(property) {
+    if (property) {
       console.warn(msg);
     }
   }
@@ -78,7 +78,7 @@ export class BufferedChangeset implements IChangeset {
    * to typecheck the value that is set on the proxy. However, no
    * getters/setters/methods can be added to the class. This is the tradeoff
    * we make for this particular design pattern (class based BufferedProxy).
-  */
+   */
   [key: string]: unknown;
   [CONTENT]: object;
   [CHANGES]: Changes;
@@ -104,7 +104,7 @@ export class BufferedChangeset implements IChangeset {
   trigger(eventName: string, ...args: any[]): void {
     const notifier = notifierForEvent(this, eventName);
     if (notifier) {
-      notifier.trigger.apply(notifier, args);
+      notifier.trigger(...args);
     }
   }
 
@@ -210,10 +210,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method setUnknownProperty
    */
-  setUnknownProperty<T> (
-    key: string,
-    value: T
-  ): void {
+  setUnknownProperty<T>(key: string, value: T): void {
     let config: Config = this[OPTIONS];
     let skipValidate: boolean | undefined = config['skipValidate'];
 
@@ -259,19 +256,20 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method prepare
    */
-  prepare(
-    prepareChangesFn: PrepareChangesFn
-  ): IChangeset {
+  prepare(prepareChangesFn: PrepareChangesFn): IChangeset {
     let changes: { [s: string]: any } = this['_bareChanges'];
     let preparedChanges = prepareChangesFn(changes);
 
     assert('Callback to `changeset.prepare` must return an object', isObject(preparedChanges));
 
     let newObj: Changes = {};
-    let newChanges: Changes = keys(preparedChanges).reduce((newObj: Changes, key: keyof Changes) => {
-      newObj[key] = new Change(preparedChanges[key]);
-      return newObj;
-    }, newObj);
+    let newChanges: Changes = keys(preparedChanges).reduce(
+      (newObj: Changes, key: keyof Changes) => {
+        newObj[key] = new Change(preparedChanges[key]);
+        return newObj;
+      },
+      newObj
+    );
 
     // @tracked
     this[CHANGES] = newChanges;
@@ -301,9 +299,7 @@ export class BufferedChangeset implements IChangeset {
    * @method save
    * @param {Object} options optional object to pass to content save method
    */
-  async save(
-    options: object
-  ): Promise<IChangeset | any> {
+  async save(options: object): Promise<IChangeset | any> {
     let content: Content = this[CONTENT];
     let savePromise: any | Promise<BufferedChangeset | any> = Promise.resolve(this);
     this.execute();
@@ -345,9 +341,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method merge
    */
-  merge(
-    changeset: IChangeset
-  ): IChangeset {
+  merge(changeset: IChangeset): IChangeset {
     let content: Content = this[CONTENT];
     assert('Cannot merge with a non-changeset', isChangeset(changeset));
     assert('Cannot merge with a changeset of different content', changeset[CONTENT] === content);
@@ -460,8 +454,8 @@ export class BufferedChangeset implements IChangeset {
 
     validationKeys = validationKeys.length > 0 ? validationKeys : keys(this.validationMap as object);
 
-    let maybePromise = validationKeys.map((key) => {
-      return this._validateKey(<string>key, this._valueFor(<string>key))
+    let maybePromise = validationKeys.map(key => {
+      return this._validateKey(key as string, this._valueFor(key as string));
     });
 
     return Promise.all(maybePromise);
@@ -484,7 +478,7 @@ export class BufferedChangeset implements IChangeset {
       newError = new Err(error.value, error.validation);
     } else {
       let value = this[key];
-      newError = new Err(value, (<ValidationErr>error));
+      newError = new Err(value, error as ValidationErr);
     }
 
     // Add `key` to errors map.
@@ -502,10 +496,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method pushErrors
    */
-  pushErrors(
-    key: keyof IChangeset,
-    ...newErrors: string[] | ValidationErr[]
-  ) {
+  pushErrors(key: keyof IChangeset, ...newErrors: string[] | ValidationErr[]) {
     let errors: Errors<any> = this[ERRORS];
     let existingError: IErr<any> | Err = this.getDeep(errors, key) || new Err(null, []);
     let validation: ValidationErr | ValidationErr[] = existingError.validation;
@@ -519,7 +510,7 @@ export class BufferedChangeset implements IChangeset {
     validation = [...v, ...newErrors];
     let newError = new Err(value, validation);
     // @tracked
-    this[ERRORS] = this.setDeep(errors, (<string>key), newError);
+    this[ERRORS] = this.setDeep(errors, key as string, newError);
 
     return { value, validation };
   }
@@ -540,10 +531,10 @@ export class BufferedChangeset implements IChangeset {
       }, {}),
 
       errors: keys(errors).reduce((newObj: Errors<any>, key: keyof Errors<any>) => {
-        let e = errors[key]
+        let e = errors[key];
         newObj[key] = { value: e.value, validation: e.validation };
         return newObj;
-      }, {}),
+      }, {})
     };
   }
 
@@ -617,14 +608,17 @@ export class BufferedChangeset implements IChangeset {
    * @method _validateKey
    * @private
    */
-  _validateKey<T> (
+  _validateKey<T>(
     key: string,
     value: T
   ): Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
     let content: Content = this[CONTENT];
     let oldValue: any = this.safeGet(content, key);
-    let validation: ValidationResult | Promise<ValidationResult> =
-      this._validate(key, value, oldValue);
+    let validation: ValidationResult | Promise<ValidationResult> = this._validate(
+      key,
+      value,
+      oldValue
+    );
 
     this.trigger(BEFORE_VALIDATION_EVENT, key);
 
@@ -632,15 +626,17 @@ export class BufferedChangeset implements IChangeset {
     if (isPromise(validation)) {
       this._setIsValidating(key, true);
 
-      return (<Promise<ValidationResult>>validation).then((resolvedValidation: ValidationResult) => {
-        this._setIsValidating(key, false);
-        this.trigger(AFTER_VALIDATION_EVENT, key);
+      return (validation as Promise<ValidationResult>).then(
+        (resolvedValidation: ValidationResult) => {
+          this._setIsValidating(key, false);
+          this.trigger(AFTER_VALIDATION_EVENT, key);
 
-        return this._handleValidation(resolvedValidation, { key, value });
-      });
+          return this._handleValidation(resolvedValidation, { key, value });
+        }
+      );
     }
 
-    let result = this._handleValidation(<ValidationResult>validation, { key, value });
+    let result = this._handleValidation(validation as ValidationResult, { key, value });
 
     this.trigger(AFTER_VALIDATION_EVENT, key);
 
@@ -653,15 +649,13 @@ export class BufferedChangeset implements IChangeset {
    * @method _handleValidation
    * @private
    */
-  _handleValidation<T> (
+  _handleValidation<T>(
     validation: ValidationResult,
     { key, value }: NewProperty<T>
   ): T | IErr<T> | ValidationErr {
-
-    let isValid: boolean = validation === true
-      || Array.isArray(validation)
-      && validation.length === 1
-      && validation[0] === true;
+    const isValid: boolean =
+      validation === true ||
+      (Array.isArray(validation) && validation.length === 1 && validation[0] === true);
 
     // Happy path: remove `key` from error map.
     // @tracked
@@ -695,7 +689,7 @@ export class BufferedChangeset implements IChangeset {
         newValue,
         oldValue,
         changes: this.change,
-        content,
+        content
       });
 
       return typeof isValid === 'boolean' || Boolean(isValid) ? isValid : true;
@@ -727,10 +721,7 @@ export class BufferedChangeset implements IChangeset {
    * Increment or decrement the number of running validations for a
    * given key.
    */
-  _setIsValidating(
-    key: string,
-    value: boolean
-  ): void {
+  _setIsValidating(key: string, value: boolean): void {
     let running: RunningValidations = this[RUNNING_VALIDATIONS];
     let count: number = running[key] || 0;
 
@@ -739,15 +730,13 @@ export class BufferedChangeset implements IChangeset {
       return;
     }
 
-    this.setDeep(running, key, value ? count+1 : count-1);
+    this.setDeep(running, key, value ? count + 1 : count - 1);
   }
 
   /**
    * Value for change/error/content or the original value.
    */
-  _valueFor(
-    key: string
-  ): any {
+  _valueFor(key: string): any {
     let changes: Changes = this[CHANGES];
     let errors: Errors<any> = this[ERRORS];
     let content: Content = this[CONTENT];
@@ -790,11 +779,9 @@ export class BufferedChangeset implements IChangeset {
    * @param {Array} keys
    * @return {Void}
    */
-  _notifyVirtualProperties(
-    keys?: string[]
-  ): string[] | undefined {
+  _notifyVirtualProperties(keys?: string[]): string[] | undefined {
     if (!keys) {
-      keys = this._rollbackKeys()
+      keys = this._rollbackKeys();
     }
 
     return keys;
@@ -812,10 +799,7 @@ export class BufferedChangeset implements IChangeset {
   /**
    * Deletes a key off an object and notifies observers.
    */
-  _deleteKey(
-    objName: string,
-    key = ''
-  ): InternalMap {
+  _deleteKey(objName: string, key = ''): InternalMap {
     let obj = this[objName] as InternalMap;
     let keys = key.split('.');
 
@@ -829,7 +813,7 @@ export class BufferedChangeset implements IChangeset {
 
       // find leaf and delete from map
       while (isObject(currentNode) && currentKey) {
-        let curr: { [key: string]: unknown } = currentNode
+        let curr: { [key: string]: unknown } = currentNode;
         if (curr.value || curr.validation) {
           delete previousNode[currentKey];
         }
@@ -890,7 +874,7 @@ export class BufferedChangeset implements IChangeset {
     return result;
   }
 
-  set<T> (
+  set<T>(
     key: string,
     value: T
   ): void | Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
@@ -911,7 +895,7 @@ export function changeset(
   validateFn: ValidatorAction = defaultValidatorFn,
   validationMap: ValidatorMap = {},
   options: Config = {}
-): IChangeset {
+): BufferedChangeset {
   return new BufferedChangeset(obj, validateFn, validationMap, options);
 }
 
@@ -931,16 +915,15 @@ export default class ValidatedChangeset {
     const c: IChangeset = changeset(obj, validateFn, validationMap, options);
 
     return new Proxy(c, {
-      get(targetBuffer, key/*, receiver*/) {
+      get(targetBuffer, key /*, receiver*/) {
         const res = targetBuffer.get(key.toString());
         return res;
       },
 
-      set(targetBuffer, key, value/*, receiver*/) {
+      set(targetBuffer, key, value /*, receiver*/) {
         targetBuffer.set(key.toString(), value);
         return true;
       }
     });
   }
 }
-

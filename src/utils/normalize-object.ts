@@ -20,9 +20,9 @@ import isObject from './is-object';
  * @method normalizeObject
  * @param target
  */
-export default function normalizeObject<T extends { [key: string]: any}>(target: T): T {
+export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
   if ('value' in target) {
-    return target.value
+    return target.value;
   }
 
   let obj = { ...target };
