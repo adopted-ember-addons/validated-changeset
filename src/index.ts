@@ -375,15 +375,14 @@ export class BufferedChangeset implements IChangeset {
    */
   rollback(): IChangeset {
     // Get keys before reset.
-    let c: BufferedChangeset = this;
-    let keys = c._rollbackKeys();
+    let keys = this._rollbackKeys();
 
     // Reset.
     this[CHANGES] = {};
     this[ERRORS] = {};
-    c._notifyVirtualProperties(keys)
+    this._notifyVirtualProperties(keys);
 
-    c.trigger(AFTER_ROLLBACK_EVENT);
+    this.trigger(AFTER_ROLLBACK_EVENT);
     return this;
   }
 
@@ -702,9 +701,7 @@ export class BufferedChangeset implements IChangeset {
    * Sets property or error on the changeset.
    * Returns value or error
    */
-  _setProperty<T> (
-    { key, value, oldValue }: NewProperty<T>
-  ): void {
+  _setProperty<T>({ key, value, oldValue }: NewProperty<T>): void {
     let changes: Changes = this[CHANGES];
 
     // Happy path: update change map.
@@ -912,7 +909,7 @@ export default class ValidatedChangeset {
     validationMap: ValidatorMap = {},
     options: Config = {}
   ) {
-    const c: IChangeset = changeset(obj, validateFn, validationMap, options);
+    const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
 
     return new Proxy(c, {
       get(targetBuffer, key /*, receiver*/) {
