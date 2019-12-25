@@ -457,9 +457,7 @@ export class BufferedChangeset implements IChangeset {
    *
    * @method validate
    */
-  validate(
-    ...validationKeys: string[]
-  ): Promise<null> | Promise<any | IErr<any>> | Promise<Array<any | IErr<any>>> {
+  validate(...validationKeys: string[]): Promise<any> {
     if (keys(this.validationMap as object).length === 0) {
       return Promise.resolve(null);
     }
