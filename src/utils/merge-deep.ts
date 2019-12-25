@@ -1,8 +1,8 @@
 import Change from '../-private/change';
 
 interface Options {
-  safeGet: unknown;
-  safeSet: unknown;
+  safeGet: any;
+  safeSet: any;
 }
 
 function isNonNullObject(value: any): boolean {
@@ -103,7 +103,11 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
     }
 
     // else safe key on object
-    if (propertyIsOnObject(target, key) && isMergeableObject(source[key]) && !source[key].hasOwnProperty('value')) {
+    if (
+      propertyIsOnObject(target, key) &&
+      isMergeableObject(source[key]) &&
+      !source[key].hasOwnProperty('value')
+    ) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
       target[key] = mergeDeep(options.safeGet(target, key), options.safeGet(source, key), options);
     } else {
@@ -136,7 +140,7 @@ export default function mergeDeep(
 ): object | [any] {
   options.safeGet =
     options.safeGet ||
-    function(obj: any, key: string): any {
+    function(obj: Record<string, any>, key: string): Record<string, any> {
       return obj[key];
     };
   options.safeSet = options.safeSet;

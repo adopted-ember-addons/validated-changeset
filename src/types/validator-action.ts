@@ -16,4 +16,4 @@ export type ValidatorMapFunc = {
     | Promise<ValidationResult>;
 };
 
-export type ValidatorMap = { [s: string]: ValidatorMapFunc | ValidatorMapFunc[] | unknown };
+export type ValidatorMap = { [s: string]: ValidatorMapFunc | ValidatorMapFunc[] | any };

@@ -5,10 +5,7 @@ export default {
   input: 'src/index.ts',
   output: {
     dir: 'output',
-    format: 'cjs',
+    format: 'cjs'
   },
-  plugins: [
-    typescript(),
-    sourceMaps()
-  ],
+  plugins: [typescript(), sourceMaps()]
 };
