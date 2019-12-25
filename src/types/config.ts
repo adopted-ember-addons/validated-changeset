@@ -1,3 +1,3 @@
 export type Config = {
-  skipValidate?: boolean
+  skipValidate?: boolean;
 };

@@ -188,18 +188,30 @@ export class BufferedChangeset implements IChangeset {
   }
 
   /**
-   * @property isValud
+   * @property isValid
    * @type {Array}
    */
   get isValid() {
     return getKeyValues(this[ERRORS]).length === 0;
   }
+  /**
+   * @property isPristine
+   * @type {Boolean}
+   */
   get isPristine() {
     return Object.keys(this[CHANGES]).length === 0;
   }
+  /**
+   * @property isInvalid
+   * @type {Boolean}
+   */
   get isInvalid() {
     return !this.isValid;
   }
+  /**
+   * @property isDirty
+   * @type {Boolean}
+   */
   get isDirty() {
     return !this.isPristine;
   }
@@ -299,7 +311,7 @@ export class BufferedChangeset implements IChangeset {
    * @method save
    * @param {Object} options optional object to pass to content save method
    */
-  async save(options: object): Promise<IChangeset | any> {
+  async save(options?: object): Promise<IChangeset | any> {
     let content: Content = this[CONTENT];
     let savePromise: any | Promise<BufferedChangeset | any> = Promise.resolve(this);
     this.execute();
@@ -899,6 +911,8 @@ export function changeset(
   return new BufferedChangeset(obj, validateFn, validationMap, options);
 }
 
+type T20 = InstanceType<typeof BufferedChangeset>;
+
 export default class ValidatedChangeset {
   /**
    * Changeset factory
@@ -924,6 +938,27 @@ export default class ValidatedChangeset {
         targetBuffer.set(key.toString(), value);
         return true;
       }
-    });
+    }) as T20;
   }
+}
+
+export function ChangesetFactory(
+  obj: object,
+  validateFn: ValidatorAction = defaultValidatorFn,
+  validationMap: ValidatorMap = {},
+  options: Config = {}
+): BufferedChangeset {
+  const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
+
+  return new Proxy(c, {
+    get(targetBuffer, key /*, receiver*/) {
+      const res = targetBuffer.get(key.toString());
+      return res;
+    },
+
+    set(targetBuffer, key, value /*, receiver*/) {
+      targetBuffer.set(key.toString(), value);
+      return true;
+    }
+  });
 }
