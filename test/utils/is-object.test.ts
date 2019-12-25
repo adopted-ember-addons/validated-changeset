@@ -1,30 +1,28 @@
-import isObject from 'validated-changeset/utils/is-object';
+import isObject from '../../src/utils/is-object';
 
 describe('Unit | Utility | is object', function() {
   const testData = [
     {
       label: 'POJOs',
       value: { foo: 'bar' },
-      expected: true,
+      expected: true
     },
     {
       label: 'EmberObjects',
       value: Object.create({ foo: 'bar' }),
-      expected: true,
+      expected: true
     },
     {
       label: 'ObjectProxies',
-      value: new Proxy({
-        content: Object.create({ foo: 'bar' }),
-      }),
-      expected: true,
-    },
+      value: new Proxy({ content: Object.create({ foo: 'bar' }) }, {}),
+      expected: true
+    }
   ];
 
   testData.forEach(({ label, value, expected }) => {
-    it(`it works with ${label}`, async function(assert) {
+    it(`it works with ${label}`, () => {
       const result = isObject(value);
-      assert.equal(result, expected, `should be ${expected}`);
+      expect(result).toEqual(expected);
     });
   });
 });

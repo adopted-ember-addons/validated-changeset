@@ -1,46 +1,46 @@
-import isPromise from 'validated-changeset/utils/is-promise';
+import isPromise from '../../src/utils/is-promise';
 
 describe('Unit | Utility | is promise', function() {
   const testData = [
     {
       value: Promise.resolve('foo'),
-      expected: true,
+      expected: true
     },
     {
       value: new Promise(resolve => resolve('blah')),
-      expected: true,
+      expected: true
     },
     {
       value: { then() {}, catch() {}, finally() {} },
-      expected: true,
+      expected: true
     },
     {
       value: { then() {} },
-      expected: false,
+      expected: false
     },
     {
       value: 'blah',
-      expected: false,
+      expected: false
     },
     {
       value: 42,
-      expected: false,
+      expected: false
     },
     {
       value: ['meow'],
-      expected: false,
+      expected: false
     },
     {
       value: null,
-      expected: false,
-    },
+      expected: false
+    }
   ];
 
   testData.forEach(({ value, expected }) => {
-    it('it checks if an object is an instance of an RSVP.Promise', async function(assert) {
+    it('it checks if an object is an instance of an RSVP.Promise', () => {
       const result = isPromise(value);
 
-      assert.equal(result, expected, `should be ${expected}`);
+      expect(result).toEqual(expected);
     });
   });
 });

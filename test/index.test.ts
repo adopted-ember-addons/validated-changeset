@@ -1,5 +1,6 @@
-import Changeset, { ChangesetFactory } from '../src';
+import { ChangesetFactory } from '../src';
 import get from '../src/utils/get-deep';
+import set from '../src/utils/set-deep';
 
 let dummyModel: any;
 const exampleArray = [];
@@ -11,7 +12,10 @@ const dummyValidations = {
     return value || ['foo', 'bar'];
   },
   passwordConfirmation(newValue, _oldValue, { password: changedPassword }, { password }) {
-    return (!!newValue && (changedPassword === newValue || password === newValue)) || "password doesn't match";
+    return (
+      (!!newValue && (changedPassword === newValue || password === newValue)) ||
+      "password doesn't match"
+    );
   },
   async(value) {
     return Promise.resolve(value);
@@ -23,9 +27,9 @@ const dummyValidations = {
     usa: {
       ny(value) {
         return !!value || 'must be present';
-      },
-    },
-  },
+      }
+    }
+  }
 };
 
 function dummyValidator({ key, newValue, oldValue, changes, content }) {
@@ -112,7 +116,7 @@ describe('Unit | Utility | changeset', () => {
   it('#change works with arrays', () => {
     const dummyChangeset = ChangesetFactory(dummyModel);
     const newArray = [...exampleArray, 'new'];
-    const expectedResult = { exampleArray: newArray }
+    const expectedResult = { exampleArray: newArray };
     dummyChangeset.set('exampleArray', newArray);
 
     expect(dummyChangeset.change).toEqual(expectedResult);
@@ -130,18 +134,18 @@ describe('Unit | Utility | changeset', () => {
    * #data
    */
 
-  it("data reads the changeset CONTENT", () => {
+  it('data reads the changeset CONTENT', () => {
     const dummyChangeset = ChangesetFactory(dummyModel);
 
     expect(dummyChangeset.data).toEqual(dummyModel);
   });
 
-  it("data is readonly", () => {
+  it('data is readonly', () => {
     const dummyChangeset = ChangesetFactory(dummyModel);
 
-    expect(
-      dummyChangeset.data = { foo: 'bar' }
-    ).toThrow("Cannot set read-only property 'data' on object: changeset:[object Object]");
+    expect(set(dummyChangeset, 'data', { foo: 'bar' })).toThrow(
+      "Cannot set read-only property 'data' on object: changeset:[object Object]"
+    );
   });
 
   /**
@@ -255,7 +259,7 @@ describe('Unit | Utility | changeset', () => {
 
   it('nested objects will return correct values', () => {
     dummyModel['org'] = {
-      asia: { sg: '_initial' },  // for the sake of disambiguating nulls
+      asia: { sg: '_initial' }, // for the sake of disambiguating nulls
       usa: {
         ca: null,
         ny: null,
@@ -273,25 +277,25 @@ describe('Unit | Utility | changeset', () => {
     expect.assertions(7);
     dummyModel['name'] = 'Bob';
     dummyModel['contact'] = {
-      emails: [ 'bob@email.com', 'the_bob@email.com' ]
-    }
+      emails: ['bob@email.com', 'the_bob@email.com']
+    };
 
-    expect(dummyModel.get('contact.emails')).toEqual([ 'bob@email.com', 'the_bob@email.com' ]);
+    expect(dummyModel.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
     const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     expect(dummyChangeset.get('name')).toBe('Bob');
-    expect(dummyChangeset.get('contact.emails')).toEqual([ 'bob@email.com', 'the_bob@email.com' ]);
+    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
 
-    dummyChangeset.set('contact.emails', [ 'fred@email.com', 'the_fred@email.com' ]);
+    dummyChangeset.set('contact.emails', ['fred@email.com', 'the_fred@email.com']);
 
-    expect(dummyChangeset.get('contact.emails')).toEqual([ 'fred@email.com', 'the_fred@email.com' ]);
+    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
 
     dummyChangeset.rollback();
-    expect(dummyChangeset.get('contact.emails')).toEqual([ 'bob@email.com', 'the_bob@email.com' ]);
-    dummyChangeset.set('contact.emails', [ 'fred@email.com', 'the_fred@email.com' ]);
-    expect(dummyChangeset.get('contact.emails')).toEqual([ 'fred@email.com', 'the_fred@email.com' ]);
+    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+    dummyChangeset.set('contact.emails', ['fred@email.com', 'the_fred@email.com']);
+    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
 
     dummyChangeset.execute();
-    expect(dummyModel.contact.emails).toEqual([ 'fred@email.com', 'the_fred@email.com' ]);
+    expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
   });
 
   it('#getted Object proxies to underlying method', () => {
@@ -306,7 +310,7 @@ describe('Unit | Utility | changeset', () => {
       }
     }
 
-    const model: any = {
+    const model: Record<string, any> = {
       foo: {
         bar: {
           dog: new Dog('shiba inu, wow')
@@ -323,7 +327,7 @@ describe('Unit | Utility | changeset', () => {
 
     {
       const c = ChangesetFactory(model);
-      const actual = c.foo.bar.dog;
+      const actual = get(c, 'foo.bar.dog');
       const expectedResult = get(model, 'foo.bar.dog');
       expect(actual).toEqual(expectedResult);
     }
@@ -358,7 +362,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset['name'] = 'foo';
 
     expect(dummyModel.name).toBeUndefined();
-    expect(dummyChangeset.get('name').toBe('foo');
+    expect(dummyChangeset.get('name')).toBe('foo');
 
     const changes = dummyChangeset.changes;
     expect(changes).toEqual(expectedChanges);
@@ -372,7 +376,9 @@ describe('Unit | Utility | changeset', () => {
   it('#set Ember.set doesnt work for nested', () => {
     dummyModel['name'] = {};
     const dummyChangeset = ChangesetFactory(dummyModel);
-    dummyChangeset['name']['short'] = 'foo';
+    dummyChangeset['name'] = {
+      short: 'foo'
+    };
 
     expect(dummyChangeset.get('name.short')).toBe('foo');
     expect(dummyModel.name.short).toEqual('foo');
@@ -388,7 +394,7 @@ describe('Unit | Utility | changeset', () => {
   it('#set adds a change if the key is an object', () => {
     dummyModel['org'] = {
       usa: {
-        ny: 'ny',
+        ny: 'ny'
       }
     };
 
@@ -407,12 +413,12 @@ describe('Unit | Utility | changeset', () => {
   it('#set use native setters with nested doesnt work', () => {
     dummyModel['org'] = {
       usa: {
-        ny: 'ny',
+        ny: 'ny'
       }
     };
 
     const c = ChangesetFactory(dummyModel);
-    c.org.usa.ny = 'foo';
+    set(c, 'org.usa.ny', 'foo');
 
     expect(dummyModel.org.usa.ny).toBe('foo');
     expect(c.get('org.usa.ny')).toBe('foo');
@@ -522,7 +528,10 @@ describe('Unit | Utility | changeset', () => {
     const isValid = dummyChangeset.isValid;
     const isInvalid = dummyChangeset.isInvalid;
 
-    const expectedChanges = [{ "key": "name", "value": "a" }, { "key": "password", "value": false }];
+    const expectedChanges = [
+      { key: 'name', value: 'a' },
+      { key: 'password', value: false }
+    ];
     expect(changes).toEqual(expectedChanges);
     expect(errors).toEqual(expectedErrors);
     expect(isValid).toBeFalsy();
@@ -532,7 +541,9 @@ describe('Unit | Utility | changeset', () => {
   it('#set adds the change without validation if `skipValidate` option is set', () => {
     const expectedChanges = [{ key: 'password', value: false }];
 
-    const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, null, {skipValidate: true});
+    const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, null, {
+      skipValidate: true
+    });
     dummyChangeset.set('password', false);
     const changes = dummyChangeset.changes;
 
@@ -543,30 +554,18 @@ describe('Unit | Utility | changeset', () => {
     dummyModel['org'] = {
       usa: {
         ny: 'ny',
-        ca: 'ca',
-      },
+        ca: 'ca'
+      }
     };
 
     const c = ChangesetFactory(dummyModel);
     c.set('org.usa.ny', 'foo');
     c.set('org.usa.ca', 'bar');
-    c.set('org', 'no usa for you')
+    c.set('org', 'no usa for you');
 
     const actual = c.changes;
     const expectedResult = [{ key: 'org', value: 'no usa for you' }];
     expect(actual).toEqual(expectedResult);
-  });
-
-  it('it works with setProperties', () => {
-    const dummyChangeset = ChangesetFactory(dummyModel);
-    const expectedResult = [
-      { key: 'firstName', value: 'foo' },
-      { key: 'lastName', value: 'bar' }
-    ];
-    dummyChangeset.firstName = 'foo';
-    dummyChangeset.lastName = 'bar';
-
-    expect(dummyChangeset.changes).toEqual(expectedResult);
   });
 
   it('it accepts async validations', async () => {
@@ -582,7 +581,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('it clears errors when setting to original value', () => {
-    dummyModel['name'] = 'Jim Bob');
+    dummyModel['name'] = 'Jim Bob';
     const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     dummyChangeset.set('name', '');
 
@@ -595,7 +594,7 @@ describe('Unit | Utility | changeset', () => {
   it('#set should delete nested changes when equal', () => {
     dummyModel['org'] = {
       usa: { ny: 'i need a vacation' }
-    }
+    };
 
     const c = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
     c.set('org.usa.br', 'whoop');
@@ -647,9 +646,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('first_name', 'foo');
 
     expect(
-      dummyChangeset.prepare(
-        ({}) => { return { foo: 'foo' }; }
-      )).toThrow('Assertion Failed: Callback to `changeset.prepare` must return an object');
+      dummyChangeset.prepare(({}) => {
+        return { foo: 'foo' };
+      })
+    ).toThrow('Assertion Failed: Callback to `changeset.prepare` must return an object');
   });
 
   /**
@@ -680,7 +680,7 @@ describe('Unit | Utility | changeset', () => {
     class DogTag {}
 
     const dog: any = {};
-    dog.info = new DogTag;
+    dog.info = new DogTag();
     dog.info.name = 'mishka';
     dog.info.breed = 'husky';
 
@@ -698,30 +698,30 @@ describe('Unit | Utility | changeset', () => {
       setCalls: [
         ['org.usa.ny', 'foo'],
         ['org.usa.ca', 'bar'],
-        ['org', 'no usa for you'],
+        ['org', 'no usa for you']
       ],
-      result: () => ({ org: 'no usa for you' }),
+      result: () => ({ org: 'no usa for you' })
     },
     {
       model: () => ({ org: { usa: { ny: '', ca: '' } } }),
       setCalls: [
         ['org.usa.ny', 'foo'],
         ['org', 'no usa for you'],
-        ['org.usa.ca', 'bar'],
+        ['org.usa.ca', 'bar']
       ],
-      result: () => ({ org: { usa: { ca: 'bar', ny: '' } } }),
+      result: () => ({ org: { usa: { ca: 'bar', ny: '' } } })
     },
     {
       model: () => ({ org: { usa: { ny: '', ca: '' } } }),
       setCalls: [
         ['org', 'no usa for you'],
         ['org.usa.ny', 'foo'],
-        ['org.usa.ca', 'bar'],
+        ['org.usa.ca', 'bar']
       ],
-      result: () => ({ org: { usa: { ny: 'foo', ca: 'bar' } } }),
-    },
+      result: () => ({ org: { usa: { ny: 'foo', ca: 'bar' } } })
+    }
   ].forEach(({ model, setCalls, result }, i) => {
-    it(`#execute - table-driven test ${i+1}`, () => {
+    it(`#execute - table-driven test ${i + 1}`, () => {
       const m = model();
       const c = ChangesetFactory(m);
 
@@ -761,7 +761,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('org.usa.ma', { name: 'Massachusetts' });
     dummyChangeset.execute();
     expect(dummyChangeset.change).toEqual(expectedResult);
-    expect(dummyChangeset._content.org).toEqual(expectedResult.org);
+    expect(get(dummyChangeset, '_content.org')).toEqual(expectedResult.org);
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
 
@@ -769,10 +769,10 @@ describe('Unit | Utility | changeset', () => {
    * #save
    */
 
-  it('#save proxies to content', (done) => {
+  it('#save proxies to content', done => {
     let result;
     let options;
-    dummyModel['save'] = (dummyOptions) => {
+    dummyModel['save'] = dummyOptions => {
       result = 'ok';
       options = dummyOptions;
       return Promise.resolve('saveResult');
@@ -784,17 +784,19 @@ describe('Unit | Utility | changeset', () => {
     const promise = dummyChangeset.save({ foo: 'test options' });
     expect(result).toEqual('ok');
     expect(dummyChangeset.change).toEqual({ name: 'foo' });
-    expect(options).toEqual({foo: 'test options' });
+    expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise.then((saveResult) => {
-      expect(saveResult).toEqual('saveResult');
-    }).finally(() => done());
+    promise
+      .then(saveResult => {
+        expect(saveResult).toEqual('saveResult');
+      })
+      .finally(() => done());
   });
 
-  it('#save handles non-promise proxy content', (done) => {
+  it('#save handles non-promise proxy content', done => {
     let result;
     let options;
-    dummyModel['save'] = (dummyOptions) => {
+    dummyModel['save'] = dummyOptions => {
       result = 'ok';
       options = dummyOptions;
       return Promise.resolve('saveResult');
@@ -807,12 +809,14 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBe('ok');
     expect(options).toBe({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise.then((saveResult) => {
-      expect(saveResult).toBe('saveResult');
-    }).finally(() => done());
+    promise
+      .then(saveResult => {
+        expect(saveResult).toBe('saveResult');
+      })
+      .finally(() => done());
   });
 
-  it('#save handles rejected proxy content', (done) => {
+  it('#save handles rejected proxy content', done => {
     expect.assertions(1);
 
     const dummyChangeset = ChangesetFactory(dummyModel);
@@ -823,17 +827,18 @@ describe('Unit | Utility | changeset', () => {
       });
     };
 
-    dummyChangeset.save()
+    dummyChangeset
+      .save()
       .then(() => {
         expect(false).toBeTruthy();
       })
-      .catch((error) => {
+      .catch(error => {
         expect(error.message).toEqual('some ember data error');
       })
       .finally(() => done());
   });
 
-  it('#save proxies to content even if it does not implement #save', (done) => {
+  it('#save proxies to content even if it does not implement #save', done => {
     const person = { name: 'Jim' };
     const dummyChangeset = ChangesetFactory(person);
     dummyChangeset.set('name', 'foo');
@@ -854,7 +859,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangesetA.set('firstName', 'Jim');
     dummyChangesetB.set('lastName', 'Bob');
     const dummyChangesetC = dummyChangesetA.merge(dummyChangesetB);
-    const expectedChanges = [{ key: 'firstName', value: 'Jim' }, { key: 'lastName', value: 'Bob' }];
+    const expectedChanges = [
+      { key: 'firstName', value: 'Jim' },
+      { key: 'lastName', value: 'Bob' }
+    ];
 
     expect(dummyChangesetC.changes).toEqual(expectedChanges);
     expect(dummyChangesetA.changes).toEqual([{ key: 'firstName', value: 'Jim' }]);
@@ -875,7 +883,7 @@ describe('Unit | Utility | changeset', () => {
 
     const expectedChanges = [
       { key: 'age', value: 21 },
-      { key: 'name', value: 'b' },
+      { key: 'name', value: 'b' }
     ];
     const expectedErrors = [{ key: 'name', validation: 'too short', value: 'b' }];
 
@@ -889,17 +897,21 @@ describe('Unit | Utility | changeset', () => {
 
   it('#merge does not merge a changeset with a non-changeset', () => {
     const dummyChangesetA = ChangesetFactory(dummyModel, dummyValidator);
-    const dummyChangesetB = { _changes: { name: 'b' } };
+    const dummyChangesetB = ChangesetFactory({ _changes: { name: 'b' } });
     dummyChangesetA.set('name', 'a');
 
-    expect(dummyChangesetA.merge(dummyChangesetB)).toThrow('Assertion Failed: Cannot merge with a non-changeset');
+    expect(dummyChangesetA.merge(dummyChangesetB)).toThrow(
+      'Assertion Failed: Cannot merge with a non-changeset'
+    );
   });
 
   it('#merge does not merge a changeset with different content', () => {
     let dummyChangesetA = ChangesetFactory(dummyModel, dummyValidator);
     let dummyChangesetB = ChangesetFactory({}, dummyValidator);
 
-  expect(dummyChangesetA.merge(dummyChangesetB)).toThrow('Assertion Failed: Cannot merge with a changeset of different content');
+    expect(dummyChangesetA.merge(dummyChangesetB)).toThrow(
+      'Assertion Failed: Cannot merge with a changeset of different content'
+    );
   });
 
   it('#merge preserves content and validator of origin changeset', async () => {
@@ -953,17 +965,13 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.set('name', 'abcde');
 
-    let expectedChanges = [
-      { key: 'name', value: 'abcde' }
-    ];
+    let expectedChanges = [{ key: 'name', value: 'abcde' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
 
     dummyChangeset.set('name', 'mnop');
-    expectedChanges = [
-      { key: 'name', value: 'mnop' }
-    ];
+    expectedChanges = [{ key: 'name', value: 'mnop' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
@@ -972,21 +980,17 @@ describe('Unit | Utility | changeset', () => {
   it('#rollback twice with nested keys works', () => {
     dummyModel['org'] = {
       asia: { sg: null }
-    }
+    };
     let dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.set('org.asia.sg', 'sg');
 
-    let expectedChanges = [
-      { key: 'org.asia.sg', value: 'sg' }
-    ];
+    let expectedChanges = [{ key: 'org.asia.sg', value: 'sg' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
 
     dummyChangeset.set('org.asia.sg', 'Singapore');
-    expectedChanges = [
-      { key: 'org.asia.sg', value: 'Singapore' }
-    ];
+    expectedChanges = [{ key: 'org.asia.sg', value: 'Singapore' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
@@ -1041,9 +1045,7 @@ describe('Unit | Utility | changeset', () => {
       { key: 'password', value: false }
     ];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
-    expectedErrors = [
-      { key: 'password', validation: ['foo', 'bar'], value: false }
-    ];
+    expectedErrors = [{ key: 'password', validation: ['foo', 'bar'], value: false }];
     expect(dummyChangeset.errors).toEqual(expectedErrors);
   });
 
@@ -1060,16 +1062,13 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     dummyChangeset.set('name', 'abcd');
 
-    let expectedChanges = [
-      { key: 'name', value: 'abcd' },
-    ];
+    let expectedChanges = [{ key: 'name', value: 'abcd' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     expect(dummyChangeset.isValid).toBeTruthy();
     dummyChangeset.rollbackInvalid('name');
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     expect(dummyChangeset.isValid).toBeTruthy();
   });
-
 
   it('#rollbackInvalid works for keys not on changeset', () => {
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
@@ -1094,9 +1093,7 @@ describe('Unit | Utility | changeset', () => {
     dummyModel.firstName = 'Jim';
     dummyModel.lastName = 'Bob';
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
-    let expectedChanges = [
-      { key: 'lastName', value: 'bar' }
-    ];
+    let expectedChanges = [{ key: 'lastName', value: 'bar' }];
     dummyChangeset.set('firstName', 'foo');
     dummyChangeset.set('lastName', 'bar');
 
@@ -1152,7 +1149,7 @@ describe('Unit | Utility | changeset', () => {
         ny: null,
         ma: { name: null }
       }
-    }
+    };
 
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     dummyChangeset.set('org.asia.sg', 'sg');
@@ -1172,18 +1169,24 @@ describe('Unit | Utility | changeset', () => {
    * #validate
    */
 
-  it('#validate/0 validates all fields immediately', () => {
-    dummyModel.setProperties({ name: 'J', password: false, options: null });
+  it('#validate/0 validates all fields immediately', async () => {
+    dummyModel.name = 'J';
+    dummyModel.password = false;
+    dummyModel.options = null;
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     await dummyChangeset.validate();
-    expect(get(dummyChangeset, 'error.password')).toEqual({ validation: ['foo', 'bar'], value: false });
+    expect(get(dummyChangeset, 'error.password')).toEqual({
+      validation: ['foo', 'bar'],
+      value: false
+    });
     expect(dummyChangeset.changes).toEqual([]);
     expect(get(dummyChangeset, 'errors.length')).toBe(5);
   });
 
-  it('#validate/1 validates a single field immediately', () => {
-    dummyModel.setProperties({ name: 'J', password: '123' });
+  it('#validate/1 validates a single field immediately', async () => {
+    dummyModel.name = 'J';
+    dummyModel.password = '123';
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     await dummyChangeset.validate('name');
@@ -1192,19 +1195,26 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyChangeset, 'errors.length')).toBe(1);
   });
 
-  it('#validate validates a multiple field immediately', () => {
-    dummyModel.setProperties({ name: 'J', password: false });
+  it('#validate validates a multiple field immediately', async () => {
+    dummyModel.name = 'J';
+    dummyModel.password = false;
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     await dummyChangeset.validate('name', 'password');
     expect(get(dummyChangeset, 'error.name')).toEqual({ validation: 'too short', value: 'J' });
-    expect(get(dummyChangeset, 'error.password')).toEqual({ validation: ['foo', 'bar'], value: false });
+    expect(get(dummyChangeset, 'error.password')).toEqual({
+      validation: ['foo', 'bar'],
+      value: false
+    });
     expect(dummyChangeset.changes).toEqual([]);
     expect(get(dummyChangeset, 'errors.length')).toBe(2);
   });
 
-  it('#validate works correctly with changeset values', () => {
-    dummyModel.setProperties({ name: undefined, password: false, async: true, passwordConfirmation: false, options: {}});
+  it('#validate works correctly with changeset values', async () => {
+    dummyModel = {
+      ...dummyModel,
+      ...{ name: undefined, password: false, async: true, passwordConfirmation: false, options: {} }
+    };
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     dummyChangeset.set('name', 'Jim Bob');
@@ -1228,26 +1238,32 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#validate works correctly with complex values', () => {
-    dummyModel.setProperties({});
+    dummyModel = {};
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     dummyChangeset.set('options', { persist: true });
     dummyChangeset.validate();
-    expect(dummyChangeset.changes[0]).toEqual({ key: 'options', value: { persist: true }});
+    expect(dummyChangeset.changes[0]).toEqual({ key: 'options', value: { persist: true } });
   });
 
-  it('#validate marks actual valid changes', () => {
-    dummyModel.setProperties({ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true });
+  it('#validate marks actual valid changes', async () => {
+    dummyModel = {
+      ...dummyModel,
+      ...{ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true }
+    };
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     dummyChangeset.set('name', 'foo bar');
     dummyChangeset.set('password', false);
 
     await dummyChangeset.validate();
-    expect(dummyChangeset.changes).toEqual([{ key: 'name', value: 'foo bar' }, { key: 'password', value: false }]);
+    expect(dummyChangeset.changes).toEqual([
+      { key: 'name', value: 'foo bar' },
+      { key: 'password', value: false }
+    ]);
   });
 
-  it('#validate does not mark changes when nothing has changed', () => {
+  it('#validate does not mark changes when nothing has changed', async () => {
     let options = {
       persist: true,
       // test isEqual to ensure we're using Ember.isEqual for comparison
@@ -1255,7 +1271,10 @@ describe('Unit | Utility | changeset', () => {
         return this.persist === other.persist;
       }
     };
-    dummyModel.setProperties({ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true, options});
+    dummyModel = {
+      ...dummyModel,
+      ...{ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true, options }
+    };
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     dummyChangeset.set('options', options);
@@ -1265,22 +1284,28 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes).toEqual([]);
   });
 
-  it('#validate/nested validates nested fields immediately', () => {
+  it('#validate/nested validates nested fields immediately', async () => {
     dummyModel['org'] = {
       usa: {
-        ny: null,
+        ny: null
       }
-    }
+    };
 
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
     await dummyChangeset.validate('org.usa.ny');
-    expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({ validation: 'must be present', value: null });
+    expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({
+      validation: 'must be present',
+      value: null
+    });
     expect(dummyChangeset.changes).toEqual([]);
     expect(dummyChangeset.errors.length).toBe(1);
   });
 
-  it('#validate marks actual valid changes', () => {
-    dummyModel.setProperties({ name: 'Jim Bob', password: true, passwordConfirmation: true });
+  it('#validate marks actual valid changes', async () => {
+    dummyModel = {
+      ...dummyModel,
+      ...{ name: 'Jim Bob', password: true, passwordConfirmation: true }
+    };
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
 
     dummyChangeset.set('name', 'foo bar');
@@ -1312,7 +1337,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isValid).toBeTruthy();
   });
 
-  it('#addError adds an error to the changeset using the shortcut', function () {
+  it('#addError adds an error to the changeset using the shortcut', function() {
     let dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
@@ -1320,7 +1345,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isInvalid).toBeTruthy();
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
     expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
-    expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com'}]);
+    expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
     dummyChangeset.set('email', 'unique@email.com');
     expect(dummyChangeset.isValid).toBeTruthy();
     expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
@@ -1330,7 +1355,6 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.addError('email.localPart', 'Cannot contain +');
 
-
     expect(dummyChangeset.isInvalid).toBeTruthy();
     expect(get(dummyChangeset, 'error.email.localPart.validation')).toBe('Cannot contain +');
     dummyChangeset.set('email.localPart', 'ok');
@@ -1339,10 +1363,13 @@ describe('Unit | Utility | changeset', () => {
 
   it('#addError adds an array of errors to the changeset', () => {
     let dummyChangeset = ChangesetFactory(dummyModel);
-    dummyChangeset.addError('email', ['jim@bob.com', 'Email already taken'])
+    dummyChangeset.addError('email', ['jim@bob.com', 'Email already taken']);
 
     expect(dummyChangeset.isInvalid).toBeTruthy();
-    expect(get(dummyChangeset, 'error.email.validation')).toEqual(['jim@bob.com', 'Email already taken']);
+    expect(get(dummyChangeset, 'error.email.validation')).toEqual([
+      'jim@bob.com',
+      'Email already taken'
+    ]);
     dummyChangeset.set('email', 'unique@email.com');
     expect(dummyChangeset.isValid).toBeTruthy();
   });
@@ -1351,14 +1378,17 @@ describe('Unit | Utility | changeset', () => {
    * #pushErrors
    */
 
-  it('#pushErrors pushes an error into an array of existing validations', function () {
+  it('#pushErrors pushes an error into an array of existing validations', function() {
     let dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
     dummyChangeset.pushErrors('email', 'Invalid email format');
 
     expect(dummyChangeset.isInvalid).toBeTruthy();
-    expect(get(dummyChangeset, 'error.email.validation')).toEqual(['Email already taken', 'Invalid email format']);
+    expect(get(dummyChangeset, 'error.email.validation')).toEqual([
+      'Email already taken',
+      'Invalid email format'
+    ]);
     expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
     expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
     dummyChangeset.set('email', 'unique@email.com');
@@ -1366,7 +1396,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
   });
 
-  it('#pushErrors pushes an error if no existing validations are present', function () {
+  it('#pushErrors pushes an error if no existing validations are present', function() {
     let dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     dummyChangeset.set('name', 'J');
     dummyChangeset.pushErrors('name', 'cannot be J');
@@ -1384,7 +1414,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.pushErrors('email.localPart', 'is too short');
 
     expect(dummyChangeset.isInvalid).toBeTruthy();
-    expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual(['Cannot contain +', 'is too short']);
+    expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual([
+      'Cannot contain +',
+      'is too short'
+    ]);
     dummyChangeset.set('email.localPart', 'ok');
     expect(dummyChangeset.isValid).toBeTruthy();
   });
@@ -1423,7 +1456,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangesetB.restore(snapshot);
     expect(dummyChangesetB.isInvalid).toBeTruthy();
     expect(get(dummyChangesetB, 'change.name')).toBe('Pokemon Go');
-    expect(get(dummyChangesetB, 'error.password')).toEqual({ validation: ['foo', 'bar'], value: false });
+    expect(get(dummyChangesetB, 'error.password')).toEqual({
+      validation: ['foo', 'bar'],
+      value: false
+    });
   });
 
   /**
@@ -1433,8 +1469,8 @@ describe('Unit | Utility | changeset', () => {
   it('#cast allows only specified keys to exist on the changeset', () => {
     const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     const expectedResult = [
-      { 'key': 'name', 'value': 'Pokemon Go' },
-      { 'key': 'password', 'value': true }
+      { key: 'name', value: 'Pokemon Go' },
+      { key: 'password', value: true }
     ];
     const allowed = ['name', 'password'];
     dummyChangeset.set('name', 'Pokemon Go');
@@ -1449,9 +1485,9 @@ describe('Unit | Utility | changeset', () => {
   it('#cast noops if no keys are passed', () => {
     const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     const expectedResult = [
-      { 'key': 'name', 'value': 'Pokemon Go', },
-      { 'key': 'password', 'value': true, },
-      { 'key': 'unwantedProp', 'value': 123, }
+      { key: 'name', value: 'Pokemon Go' },
+      { key: 'password', value: true },
+      { key: 'unwantedProp', value: 123 }
     ];
     dummyChangeset.set('name', 'Pokemon Go');
     dummyChangeset.set('password', true);
@@ -1467,7 +1503,7 @@ describe('Unit | Utility | changeset', () => {
 
   it('isValidating returns true when validations have not resolved', () => {
     let dummyChangeset;
-    const _validator = () => new Promise(() => {});
+    const _validator = () => Promise.resolve([]);
     const _validations = {
       reservations() {
         return _validator();
@@ -1508,7 +1544,7 @@ describe('Unit | Utility | changeset', () => {
 
   it('beforeValidation event is fired before validation', () => {
     let dummyChangeset;
-    const _validator = () => new Promise(() => {});
+    const _validator = () => Promise.resolve([]);
     const _validations = {
       reservations() {
         return _validator();
@@ -1518,7 +1554,9 @@ describe('Unit | Utility | changeset', () => {
 
     dummyModel['reservations'] = 'ABC12345';
     dummyChangeset = ChangesetFactory(dummyModel, _validator, _validations);
-    dummyChangeset.on('beforeValidation', () => { hasFired = true; });
+    dummyChangeset.on('beforeValidation', () => {
+      hasFired = true;
+    });
 
     dummyChangeset.validate();
     expect(hasFired).toBeTruthy();
@@ -1526,7 +1564,7 @@ describe('Unit | Utility | changeset', () => {
 
   it('beforeValidation event is triggered with the key', () => {
     let dummyChangeset;
-    const _validator = () => new Promise(() => {});
+    const _validator = () => Promise.resolve('');
     const _validations = {
       reservations() {
         return _validator();
@@ -1537,7 +1575,7 @@ describe('Unit | Utility | changeset', () => {
     dummyModel['reservations'] = 'ABC12345';
     dummyChangeset = ChangesetFactory(dummyModel, _validator, _validations);
     dummyChangeset.on('beforeValidation', key => {
-      if(key === 'reservations') {
+      if (key === 'reservations') {
         hasFired = true;
       }
     });
@@ -1550,7 +1588,7 @@ describe('Unit | Utility | changeset', () => {
    * afterValidation
    */
 
-  it('afterValidation event is fired after validation', () => {
+  it('afterValidation event is fired after validation', async () => {
     let dummyChangeset;
     const _validator = () => Promise.resolve(true);
     const _validations = {
@@ -1562,13 +1600,15 @@ describe('Unit | Utility | changeset', () => {
 
     dummyModel['reservations'] = 'ABC12345';
     dummyChangeset = ChangesetFactory(dummyModel, _validator, _validations);
-    dummyChangeset.on('afterValidation', () => { hasFired = true; });
+    dummyChangeset.on('afterValidation', () => {
+      hasFired = true;
+    });
 
     await dummyChangeset.validate();
     expect(hasFired).toBeTruthy();
   });
 
-  it('afterValidation event is triggered with the key', () => {
+  it('afterValidation event is triggered with the key', async () => {
     let dummyChangeset;
     const _validator = () => Promise.resolve(true);
     const _validations = {
@@ -1581,7 +1621,7 @@ describe('Unit | Utility | changeset', () => {
     dummyModel['reservations'] = 'ABC12345';
     dummyChangeset = ChangesetFactory(dummyModel, _validator, _validations);
     dummyChangeset.on('afterValidation', key => {
-      if(key === 'reservations') {
+      if (key === 'reservations') {
         hasFired = true;
       }
     });
@@ -1594,7 +1634,7 @@ describe('Unit | Utility | changeset', () => {
    * afterRollback
    */
 
-  it('afterRollback event is fired after rollback', () => {
+  it('afterRollback event is fired after rollback', async () => {
     let dummyChangeset;
     const _validator = () => Promise.resolve(true);
     const _validations = {
@@ -1606,7 +1646,9 @@ describe('Unit | Utility | changeset', () => {
 
     dummyModel['reservations'] = 'ABC12345';
     dummyChangeset = ChangesetFactory(dummyModel, _validator, _validations);
-    dummyChangeset.on('afterRollback', () => { hasFired = true; });
+    dummyChangeset.on('afterRollback', () => {
+      hasFired = true;
+    });
 
     await dummyChangeset.rollback();
     expect(hasFired).toBeTruthy();
@@ -1621,12 +1663,11 @@ describe('Unit | Utility | changeset', () => {
 
     dummyModel['org'] = {
       usa: { ny: null }
-    }
+    };
 
     const c = ChangesetFactory(dummyModel, dummyValidator, dummyValidations);
     c.validate('org.usa.ny')
       .then(() => c.set('org.usa.ny', 'should not fail'))
-      .finally(done())
+      .finally(done());
   });
 });
-
