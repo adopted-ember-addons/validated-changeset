@@ -285,11 +285,11 @@ describe('Unit | Utility | changeset', () => {
   it('nested objects can contain arrays', () => {
     expect.assertions(7);
     dummyModel.name = 'Bob';
-    dummyModel['contact'] = {
+    dummyModel.contact = {
       emails: ['bob@email.com', 'the_bob@email.com']
     };
 
-    expect(dummyModel.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+    expect(get(dummyModel, 'contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
     const dummyChangeset = ChangesetFactory(dummyModel, dummyValidator);
     expect(dummyChangeset.get('name')).toBe('Bob');
     expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
@@ -514,17 +514,6 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes).toEqual([]);
   });
 
-  it('#set removes a change if set back to original value when obj is ProxyObject', () => {
-    const model = new Proxy({ content: { name: 'foo' } }, {});
-    const dummyChangeset = ChangesetFactory(model);
-
-    dummyChangeset.set('name', 'bar');
-    expect(dummyChangeset.changes).toEqual([{ key: 'name', value: 'bar' }]);
-
-    dummyChangeset.set('name', 'foo');
-    expect(dummyChangeset.changes).toEqual([]);
-  });
-
   it('#set does add a change if invalid', () => {
     const expectedErrors = [
       { key: 'name', validation: 'too short', value: 'a' },
@@ -638,7 +627,7 @@ describe('Unit | Utility | changeset', () => {
       const modified: Record<string, any> = {};
 
       for (let key in changes) {
-        modified[(key as string).replace('_', '-')] = changes[key];
+        modified[(key as string).replace(/_/g, '-')] = changes[key];
       }
 
       return modified;
@@ -655,11 +644,7 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = ChangesetFactory(dummyModel);
     dummyChangeset.set('first_name', 'foo');
 
-    expect(
-      dummyChangeset.prepare(({}) => {
-        return { foo: 'foo' };
-      })
-    ).toThrowError('Assertion Failed: Callback to `changeset.prepare` must return an object');
+    expect(() => dummyChangeset.prepare(() => null)).toThrow();
   });
 
   /**
@@ -686,7 +671,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name).toBeUndefined();
   });
 
-  it('#execute does not remove original nested objects', function(a) {
+  it('#execute does not remove original nested objects', function() {
     class DogTag {}
 
     const dog: any = {};

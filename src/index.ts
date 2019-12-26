@@ -269,7 +269,7 @@ export class BufferedChangeset implements IChangeset {
    * @method prepare
    */
   prepare(prepareChangesFn: PrepareChangesFn): this {
-    let changes: { [s: string]: any } = this['_bareChanges'];
+    let changes: { [s: string]: any } = this._bareChanges;
     let preparedChanges = prepareChangesFn(changes);
 
     assert('Callback to `changeset.prepare` must return an object', isObject(preparedChanges));
