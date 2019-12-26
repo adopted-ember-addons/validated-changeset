@@ -275,16 +275,19 @@ export class BufferedChangeset implements IChangeset {
     assert('Callback to `changeset.prepare` must return an object', isObject(preparedChanges));
 
     let newObj: Changes = {};
-    let newChanges: Changes = keys(preparedChanges).reduce(
-      (newObj: Changes, key: keyof Changes) => {
-        newObj[key] = new Change(preparedChanges[key]);
-        return newObj;
-      },
-      newObj
-    );
+    if (isObject(preparedChanges)) {
+      let newChanges: Changes = keys(preparedChanges).reduce(
+        (newObj: Changes, key: keyof Changes) => {
+          newObj[key] = new Change((preparedChanges as Record<string, any>)[key]);
+          return newObj;
+        },
+        newObj
+      );
 
-    // @tracked
-    this[CHANGES] = newChanges;
+      // @tracked
+      this[CHANGES] = newChanges;
+    }
+
     return this;
   }
 

@@ -48,9 +48,7 @@ export type Snapshot = {
   errors: { [s: string]: IErr<any> };
 };
 
-export type PrepareChangesFn = (obj: {
-  [s: string]: any;
-}) => { [s: string]: any } | null | undefined;
+export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any } | Function;
 
 export interface ChangesetDef {
   __changeset__: string;
