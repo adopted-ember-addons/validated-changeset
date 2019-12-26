@@ -9,7 +9,7 @@
     "test": "jest",
     "lint": "eslint .",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "prepublishOnly": "npm run test && npm run lint",
     "preversion": "npm run lint",
     "start": "tsc -w & rollup -c rollup.config.ts -w",
     "stats": "node scripts/size-calc",
