@@ -2,6 +2,7 @@
   "name": "validated-changeset",
   "version": "0.0.2",
   "description": "Changesets for your local state",
+  "types": "dist/types/index.d.ts",
   "main": "dist/validated-changeset.umd.js",
   "module": "dist/validated-changeset.es5.js",
   "scripts": {
