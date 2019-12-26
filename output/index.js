@@ -1092,7 +1092,7 @@ class BufferedChangeset {
 /**
  * Creates new changesets.
  */
-function changeset(obj, validateFn = defaultValidatorFn, validationMap = {}, options = {}) {
+function changeset(obj, validateFn, validationMap, options) {
     return new BufferedChangeset(obj, validateFn, validationMap, options);
 }
 class ValidatedChangeset {
@@ -1102,7 +1102,7 @@ class ValidatedChangeset {
      * @class ValidatedChangeset
      * @constructor
      */
-    constructor(obj, validateFn = defaultValidatorFn, validationMap = {}, options = {}) {
+    constructor(obj, validateFn, validationMap, options) {
         const c = changeset(obj, validateFn, validationMap, options);
         return new Proxy(c, {
             get(targetBuffer, key /*, receiver*/) {
@@ -1116,7 +1116,7 @@ class ValidatedChangeset {
         });
     }
 }
-function ChangesetFactory(obj, validateFn = defaultValidatorFn, validationMap = {}, options = {}) {
+function ChangesetFactory(obj, validateFn, validationMap, options) {
     const c = changeset(obj, validateFn, validationMap, options);
     return new Proxy(c, {
         get(targetBuffer, key /*, receiver*/) {

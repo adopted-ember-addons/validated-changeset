@@ -11,7 +11,8 @@ import { ValidatorAction, ValidatorMapFunc, ValidationResult, ValidatorMap } fro
  */
 export default function lookupValidator(validationMap: ValidatorMap): ValidatorAction {
   return ({ key, newValue, oldValue, changes, content }) => {
-    let validator: ValidatorMapFunc | ValidatorMapFunc[] = validationMap[key];
+    const validations = validationMap || {};
+    let validator: ValidatorMapFunc | ValidatorMapFunc[] = validations[key];
 
     if (!validator || validator === {}) {
       return true;

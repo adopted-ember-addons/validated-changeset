@@ -5,7 +5,7 @@
  * @param  {...object} sources
  * @return {object}
  */
-export default function objectWithout<T>(excludedKeys: string[], ...sources: T[]): any {
+export default function objectWithout(excludedKeys: string[], ...sources: any[]): any {
   return sources.reduce((acc: Record<string, any>, source: any): object => {
     Object.keys(source)
       .filter(key => excludedKeys.indexOf(key) === -1 || !source.hasOwnProperty(key))

@@ -45,12 +45,12 @@ const AFTER_ROLLBACK_EVENT = 'afterRollback';
 const defaultValidatorFn = () => true;
 const defaultOptions = { skipValidate: false };
 
-const DEBUG = process.env.NODE_ENV === 'development';
+const DEBUG = process.env.NODE_ENV !== 'production';
 
 function assert(msg: string, property: unknown): void {
   if (DEBUG) {
-    if (property) {
-      console.warn(msg);
+    if (!property) {
+      throw new Error(msg);
     }
   }
 }
@@ -466,7 +466,8 @@ export class BufferedChangeset implements IChangeset {
       validationKeys.length > 0 ? validationKeys : keys(this.validationMap as object);
 
     let maybePromise = validationKeys.map(key => {
-      return this._validateKey(key as string, this._valueFor(key as string));
+      const x = this._validateKey(key as string, this._valueFor(key as string));
+      return x;
     });
 
     return Promise.all(maybePromise);
@@ -485,7 +486,7 @@ export class BufferedChangeset implements IChangeset {
     const isIErr = <T>(error: unknown): error is IErr<T> =>
       isObject(error) && !Array.isArray(error);
     if (isIErr(error)) {
-      assert('Error must have value.', error.hasOwnProperty('value'));
+      assert('Error must have value.', error.hasOwnProperty('value') || error.value !== undefined);
       assert('Error must have validation.', error.hasOwnProperty('validation'));
       newError = new Err(error.value, error.validation);
     } else {
@@ -902,9 +903,9 @@ export class BufferedChangeset implements IChangeset {
  */
 export function changeset(
   obj: object,
-  validateFn: ValidatorAction = defaultValidatorFn,
-  validationMap: ValidatorMap = {},
-  options: Config = {}
+  validateFn?: ValidatorAction,
+  validationMap?: ValidatorMap | null | undefined,
+  options?: Config
 ): BufferedChangeset {
   return new BufferedChangeset(obj, validateFn, validationMap, options);
 }
@@ -920,9 +921,9 @@ export default class ValidatedChangeset {
    */
   constructor(
     obj: object,
-    validateFn: ValidatorAction = defaultValidatorFn,
-    validationMap: ValidatorMap = {},
-    options: Config = {}
+    validateFn?: ValidatorAction,
+    validationMap?: ValidatorMap | null | undefined,
+    options?: Config
   ) {
     const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
 
@@ -942,9 +943,9 @@ export default class ValidatedChangeset {
 
 export function ChangesetFactory(
   obj: object,
-  validateFn: ValidatorAction = defaultValidatorFn,
-  validationMap: ValidatorMap = {},
-  options: Config = {}
+  validateFn?: ValidatorAction,
+  validationMap?: ValidatorMap | null | undefined,
+  options?: Config
 ): BufferedChangeset {
   const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
 

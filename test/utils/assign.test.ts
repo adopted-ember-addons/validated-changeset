@@ -14,7 +14,11 @@ describe('Unit | Utility | assign', function() {
   it('it keeps setter', () => {
     class Foo {
       name = 'foo';
-      _nick: string;
+      _nick: string | undefined | null;
+
+      constructor() {
+        this._nick;
+      }
 
       get nick() {
         return this._nick;
