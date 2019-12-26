@@ -1,3 +1,4 @@
+dist
 tsconfig.json
 rollup.config.js
 scripts/size-calc.js
