@@ -1,0 +1,8 @@
+{
+  "name": "@validated-changeset/utils",
+  "main": "index.ts",
+  "version": "0.0.0",
+  "dependencies": {
+    "@validated-changeset/-private": "file:../-private"
+  }
+}

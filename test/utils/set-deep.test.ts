@@ -1,4 +1,4 @@
-import setDeep from '../../src/utils/set-deep';
+import setDeep from '@validated-changeset/utils/set-deep';
 
 describe('Unit | Utility | set deep', () => {
   it('it sets value', () => {

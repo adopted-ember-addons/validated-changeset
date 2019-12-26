@@ -1,4 +1,4 @@
-import isPromise from '../../src/utils/is-promise';
+import isPromise from '@validated-changeset/utils/is-promise';
 
 describe('Unit | Utility | is promise', function() {
   const testData = [
