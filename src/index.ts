@@ -276,7 +276,7 @@ export class BufferedChangeset implements IChangeset {
 
     let newObj: Changes = {};
     if (isObject(preparedChanges)) {
-      let newChanges: Changes = keys(preparedChanges).reduce(
+      let newChanges: Changes = keys(preparedChanges as Record<string, any>).reduce(
         (newObj: Changes, key: keyof Changes) => {
           newObj[key] = new Change((preparedChanges as Record<string, any>)[key]);
           return newObj;
@@ -915,9 +915,9 @@ export function changeset(
 
 type T20 = InstanceType<typeof BufferedChangeset>;
 
-export default class ValidatedChangeset {
+export class ValidatedChangeset {
   /**
-   * Changeset factory
+   * Changeset factory class if you need to extend
    *
    * @class ValidatedChangeset
    * @constructor
@@ -944,7 +944,7 @@ export default class ValidatedChangeset {
   }
 }
 
-export function ChangesetFactory(
+export function Changeset(
   obj: object,
   validateFn?: ValidatorAction,
   validationMap?: ValidatorMap | null | undefined,

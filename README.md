@@ -1,19 +1,21 @@
-<h1 align="center"><br><br><a href="https://github.com/elixir-lang/ecto"><img alt="validated-changeset" src="assets/title.svg" width="350px"></a><br><br><br></h1>
-
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="Download count all time" src="https://img.shields.io/npm/dt/validated-changeset.svg"></a>
-<a href="https://travis-ci.org/poteto/validated-changeset"><img alt="TravisCI Build Status" src="https://img.shields.io/travis/poteto/validated-changeset/master.svg"></a>
+<a href="https://travis-ci.org/poteto/validated-changeset"><img alt="TravisCI Build Status" src="https://img.shields.io/travis/snewcomer/validated-changeset/master.svg"></a>
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="npm version" src="https://badge.fury.io/js/validated-changeset.svg"></a>
 
 ```
-npm install validated-changeset
+npm install validated-changeset --save
 ```
 
 #### tl;dr
 
+This library is the base class for functionality in [ember-changeset](https://github.com/poteto/ember-changeset) but could be used with any front end framework. Example uses in template assume handlebars.
+
 ```js
-let changeset = new Changeset(user, validatorFn);
-user.get('firstName'); // "Michael"
-user.get('lastName'); // "Bolton"
+import { Changeset } from 'validated-changeset';
+
+let changeset = Changeset(user, validatorFn);
+user.firstName; // "Michael"
+user.lastName; // "Bolton"
 
 changeset.set('firstName', 'Jim');
 changeset.set('lastName', 'B');
@@ -22,72 +24,30 @@ changeset.get('errors'); // [{ key: 'lastName', validation: 'too short', value: 
 changeset.set('lastName', 'Bob');
 changeset.get('isValid'); // true
 
-user.get('firstName'); // "Michael"
-user.get('lastName'); // "Bolton"
+user.firstName; // "Michael"
+user.lastName; // "Bolton"
 
 changeset.save(); // sets and saves valid changes on the user
-user.get('firstName'); // "Jim"
-user.get('lastName'); // "Bob"
+user.firstName; // "Jim"
+user.lastName; // "Bob"
 ```
 
 ## Usage
 
-First, create a new `Changeset` using the `changeset` helper or through JavaScript:
-
-```hbs
-{{! application/template.hbs}}
-{{#with (changeset model (action "validate")) as |changesetObj|}}
-  <DummyForm
-      @changeset={{changesetObj}}
-      @submit={{this.submit}}
-      @rollback={{this.rollback}} />
-{{/with}}
-```
+First, create a new `Changeset` through JavaScript:
 
 ```js
-import Changeset from 'validated-changeset';
+import { Changeset } from 'validated-changeset';
 
 export default FormComponent {
   constructor(...args) {
     let validator = this.validate;
-    this.changeset = new Changeset(this.model, validator);
+    this.changeset = Changeset(this.model, validator);
   }
 }
 ```
 
 The helper receives any Object and an optional `validator` action. If a `validator` is passed into the helper, the changeset will attempt to call that function when a value changes.
-
-```js
-// application/controller.js
-export default class FormController {
-  @action
-  submit(changeset) {
-    return changeset.save();
-  }
-
-  rollback(changeset) {
-    return changeset.rollback();
-  }
-
-  validate({ key, newValue, oldValue, changes, content }) {
-    // lookup a validator function on your favorite validation library
-    // should return a Boolean
-  }
-}
-```
-
-Then, with your favorite library (Ember.js example below), simply pass in the `changeset`.
-
-```hbs
-{{! dummy-form/template.hbs}}
-<form>
-  <Input @value={{changeset.firstName}} />
-  <Input @value={{changeset.lastName}} />
-
-  <button {{on "click" this.submit changeset}}>Submit</button>
-  <button {{on "click" this.rollback changeset}}>Cancel</button>
-</form>
-```
 
 In the above example, when the input changes, only the changeset's internal values are updated. When the submit button is clicked, the changes are only executed if *all changes* are valid.
 
@@ -265,7 +225,7 @@ Returns the Object that was wrapped in the changeset.
 
 ```js
 let user = { name: 'Bobby', age: 21, address: { zipCode: '10001' } };
-let changeset = new Changeset(user);
+let changeset = Changeset(user);
 
 changeset.get('data'); // user
 ```
@@ -453,11 +413,11 @@ The `save` method will also remove the internal list of changes if the `save` is
 
 #### `merge`
 
-Merges 2 changesets and returns a new changeset with the same underlying content and validator as the origin. Both changesets must point to the same underlying object. For example:
+Merges 2 changesets and returns a Changeset with the same underlying content and validator as the origin. Both changesets must point to the same underlying object. For example:
 
 ```js
-let changesetA = new Changeset(user, validatorFn);
-let changesetB = new Changeset(user, validatorFn);
+let changesetA = Changeset(user, validatorFn);
+let changesetB = Changeset(user, validatorFn);
 
 changesetA.set('firstName', 'Jim');
 changesetA.set('address.zipCode', '94016');
@@ -469,9 +429,9 @@ changesetB.set('address.zipCode', '10112');
 let changesetC = changesetA.merge(changesetB);
 changesetC.execute();
 
-user.get('firstName'); // "Jimmy"
-user.get('lastName'); // "Fallon"
-user.get('address.zipCode'); // "10112"
+user.firstName; // "Jimmy"
+user.lastName; // "Fallon"
+user.address.zipCode; // "10112"
 ```
 
 Note that both changesets `A` and `B` are not destroyed by the merge, so you might want to call `destroy()` on them to avoid memory leaks.
@@ -504,13 +464,13 @@ Rolls back unsaved changes for the specified property only. All other changes wi
 
 ```js
 // user = { firstName: "Jim", lastName: "Bob" };
-let changeset = new Changeset(user);
+let changeset = Changeset(user);
 changeset.set('firstName', 'Jimmy');
 changeset.set('lastName', 'Fallon');
 changeset.rollbackProperty('lastName'); // returns changeset
 changeset.execute();
-user.get('firstName'); // "Jimmy"
-user.get('lastName'); // "Bob"
+user.firstName; // "Jimmy"
+user.lastName; // "Bob"
 ```
 
 **[⬆️ back to top](#api)**
@@ -522,8 +482,10 @@ Validates all, single or multiple fields on the changeset. This will also valida
 **Note:** This method requires a validation map to be passed in when the changeset is first instantiated.
 
 ```js
-user.set('lastName', 'B');
-user.set('address.zipCode', '123');
+user.lastName = 'B';
+user.address = {
+  zipCode: '123'
+};
 
 let validationMap = {
   lastName: validateLength({ min: 8 }),
@@ -532,7 +494,7 @@ let validationMap = {
   'address.zipCode': validateLength({ is: 5 }),
 };
 
-let changeset = new Changeset(user, validatorFn, validationMap);
+let changeset = Changeset(user, validatorFn, validationMap);
 changeset.get('isValid'); // true
 
 // validate single field; returns Promise
@@ -608,7 +570,7 @@ Restores a snapshot of changes and errors to the changeset. This overrides exist
 
 ```js
 let user = { name: 'Adam', address: { country: 'United States' } };
-let changeset = new Changeset(user, validatorFn);
+let changeset = Changeset(user, validatorFn);
 
 changeset.set('name', 'Jim Bob');
 changeset.set('address.country', 'North Korea');
@@ -630,7 +592,7 @@ Unlike `Ecto.Changeset.cast`, `cast` will take an array of allowed keys and remo
 
 ```js
 let allowed = ['name', 'password', 'address.country'];
-let changeset = new Changeset(user, validatorFn);
+let changeset = Changeset(user, validatorFn);
 
 changeset.set('name', 'Jim Bob');
 changeset.set('address.country', 'United States');
@@ -661,7 +623,6 @@ export default Model.extend(schema);
 ```js
 // controllers/foo.js
 import { schema } from '../models/user';
-const { keys } = Object;
 
 export default Controller.extend({
   // ...
@@ -669,7 +630,7 @@ export default Controller.extend({
   actions: {
     save(changeset) {
       return changeset
-        .cast(keys(schema))
+        .cast(Object.keys(schema))
         .save();
     }
   }
