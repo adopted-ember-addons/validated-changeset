@@ -51,5 +51,8 @@
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@validated-changeset/-private": "file:src/-private",
+    "@validated-changeset/utils": "file:src/utils"
+  }
 }

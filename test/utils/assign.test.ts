@@ -1,4 +1,4 @@
-import pureAssign from '../../src/utils/assign';
+import pureAssign from '@validated-changeset/utils/assign';
 
 describe('Unit | Utility | assign', function() {
   it('it does not mutate destination or source objects', () => {
