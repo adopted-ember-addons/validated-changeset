@@ -1,6 +1,6 @@
 {
   "name": "validated-changeset",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Changesets for your local state",
   "types": "dist/index.d.ts",
   "main": "dist/validated-changeset.umd.js",
