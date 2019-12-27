@@ -1,4 +1,4 @@
-import isObject from '@validated-changeset/utils/is-object';
+import isObject from '../../src/utils/is-object';
 
 describe('Unit | Utility | is object', function() {
   const testData = [

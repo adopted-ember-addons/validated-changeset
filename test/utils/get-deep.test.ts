@@ -1,4 +1,4 @@
-import getDeep from '@validated-changeset/utils/get-deep';
+import getDeep from '../../src/utils/get-deep';
 
 describe('Unit | Utility | get deep', () => {
   it('it returns value', () => {

@@ -1,18 +1,19 @@
 import Change from './-private/change';
-import { getKeyValues } from '@validated-changeset/utils/get-key-values';
+import { getKeyValues } from './utils/get-key-values';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
-import normalizeObject from '@validated-changeset/utils/normalize-object';
-import pureAssign from '@validated-changeset/utils/assign';
-import isChangeset, { CHANGESET } from '@validated-changeset/utils/is-changeset';
-import isObject from '@validated-changeset/utils/is-object';
-import isPromise from '@validated-changeset/utils/is-promise';
-import mergeNested from '@validated-changeset/utils/merge-nested';
-import objectWithout from '@validated-changeset/utils/object-without';
-import take from '@validated-changeset/utils/take';
-import mergeDeep from '@validated-changeset/utils/merge-deep';
-import setDeep from '@validated-changeset/utils/set-deep';
-import getDeep from '@validated-changeset/utils/get-deep';
+import normalizeObject from './utils/normalize-object';
+import pureAssign from './utils/assign';
+import isChangeset, { CHANGESET } from './utils/is-changeset';
+import isObject from './utils/is-object';
+import isPromise from './utils/is-promise';
+import mergeNested from './utils/merge-nested';
+import objectWithout from './utils/object-without';
+import take from './utils/take';
+import mergeDeep from './utils/merge-deep';
+import setDeep from './utils/set-deep';
+import getDeep from './utils/get-deep';
+
 import {
   Changes,
   Config,

@@ -1,4 +1,4 @@
-import mergeDeep from '@validated-changeset/utils/merge-deep';
+import mergeDeep from '../../src/utils/merge-deep';
 import Change from '../../src/-private/change';
 
 describe('Unit | Utility | merge deep', () => {

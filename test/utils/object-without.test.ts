@@ -1,4 +1,4 @@
-import objectWithout from '@validated-changeset/utils/object-without';
+import objectWithout from '../../src/utils/object-without';
 
 describe('Unit | Utility | object without', () => {
   it('it excludes the given keys from all merged objects', () => {

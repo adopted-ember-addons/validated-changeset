@@ -1,4 +1,4 @@
-import normalizeObject from '@validated-changeset/utils/normalize-object';
+import normalizeObject from '../../src/utils/normalize-object';
 
 describe('Unit | Utility | normalize object', () => {
   it('it returns value', () => {
