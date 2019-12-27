@@ -34,9 +34,6 @@ import {
   ValidatorMap
 } from './types';
 
-import * as Types from './types';
-export { Types };
-
 export {
   CHANGESET,
   isChangeset,
