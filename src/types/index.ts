@@ -1,12 +1,48 @@
-import IEvented, { INotifier } from './evented';
-import { ValidationErr, ValidationResult } from './validation-result';
-import { ValidatorAction, ValidatorMapFunc, ValidatorMap } from './validator-action';
+export type Config = {
+  skipValidate?: boolean;
+};
 
-export { IEvented, INotifier };
-export { ValidatorAction, ValidatorMapFunc, ValidatorMap };
-export { ValidationErr, ValidationResult };
-import { Config } from './config';
-export { Config };
+export type ValidationOk = boolean | [boolean];
+export type ValidationErr = string | string[];
+export type ValidationResult = ValidationOk | ValidationErr;
+
+export interface INotifier {
+  listeners: Function[];
+  addListener(callback: Function): Function;
+  removeListener(callback: Function): void;
+  trigger(...args: any[]): void;
+}
+
+export interface IEvented {
+  on(eventName: string, callback: Function): INotifier;
+  off(eventName: string, callback: Function): INotifier;
+  trigger(eventName: string, ...args: any[]): void;
+  _eventedNotifiers: { [key: string]: any };
+}
+
+export type ValidatorAction =
+  | {
+      (params: {
+        key: string;
+        newValue: unknown;
+        oldValue: unknown;
+        changes: unknown;
+        content: object;
+      }): ValidationResult | Promise<ValidationResult>;
+    }
+  | null
+  | undefined;
+
+export type ValidatorMapFunc = {
+  (key: string, newValue: unknown, oldValue: unknown, changes: unknown, content: object):
+    | ValidationResult
+    | Promise<ValidationResult>;
+};
+
+export type ValidatorMap =
+  | { [s: string]: ValidatorMapFunc | ValidatorMapFunc[] | any }
+  | null
+  | undefined;
 
 export interface IChange {
   value: any;
