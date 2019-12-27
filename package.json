@@ -2,9 +2,9 @@
   "name": "validated-changeset",
   "version": "0.0.9",
   "description": "Changesets for your local state",
-  "types": "dist/index.d.ts",
   "main": "dist/validated-changeset.umd.js",
   "module": "dist/validated-changeset.es5.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && tsc --outDir dist/es && rollup -c rollup.config.ts",
     "test": "jest",
