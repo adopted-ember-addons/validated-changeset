@@ -2,7 +2,7 @@ import typescript from '@rollup/plugin-typescript';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 
 const pkg = require('./package.json');
-const libraryName = 'validated-changeset';
+const libraryName = 'validatedChangeset';
 
 export default {
   input: 'src/index.ts',
