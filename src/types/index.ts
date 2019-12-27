@@ -140,7 +140,7 @@ export interface ChangesetDef {
   _setProperty: <T>(obj: NewProperty<T>) => void;
   _setIsValidating: (key: string, value: boolean) => void;
   _valueFor: (s: string) => any;
-  _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
+  _notifyVirtualProperties: (keys?: string[]) => void;
   _rollbackKeys: () => Array<string>;
   _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
 }
