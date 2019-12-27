@@ -1,5 +1,6 @@
 import Change from './-private/change';
 import { getKeyValues } from './utils/get-key-values';
+import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
 import normalizeObject from './utils/normalize-object';
@@ -33,12 +34,16 @@ import {
   ValidatorMap
 } from './types';
 
+import * as Types from './types';
+export { Types };
+
 export {
   CHANGESET,
   isChangeset,
   isObject,
   isPromise,
   getKeyValues,
+  lookupValidator,
   mergeNested,
   normalizeObject,
   objectWithout,
