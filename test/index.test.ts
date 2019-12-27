@@ -1,6 +1,6 @@
 import { Changeset, ValidatedChangeset } from '../src';
-import get from '@validated-changeset/utils/get-deep';
-import set from '@validated-changeset/utils/set-deep';
+import get from '../src/utils/get-deep';
+import set from '../src/utils/set-deep';
 
 let dummyModel: any;
 const exampleArray: Array<any> = [];

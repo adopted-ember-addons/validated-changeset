@@ -2,7 +2,7 @@
   "name": "validated-changeset",
   "version": "0.0.4",
   "description": "Changesets for your local state",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/validated-changeset.umd.js",
   "module": "dist/validated-changeset.es5.js",
   "scripts": {
@@ -51,8 +51,5 @@
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
   },
-  "dependencies": {
-    "@validated-changeset/-private": "file:src/-private",
-    "@validated-changeset/utils": "file:src/utils"
-  }
+  "dependencies": {}
 }

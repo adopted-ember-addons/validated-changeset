@@ -1,4 +1,4 @@
-import mergeNested from '@validated-changeset/utils/merge-nested';
+import mergeNested from '../../src/utils/merge-nested';
 
 describe('Unit | Utility | merge nested', () => {
   // Replace this with your real tests.

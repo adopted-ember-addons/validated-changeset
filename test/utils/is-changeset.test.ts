@@ -1,5 +1,5 @@
 import { Changeset } from '../../src';
-import isChangeset from '@validated-changeset/utils/is-changeset';
+import isChangeset from '../../src/utils/is-changeset';
 
 describe('Unit | Utility | is changeset', function() {
   it('it correctly identifies changesets', () => {
