@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/snewcomer/validated-changeset.git"
+    "url": "git+https://github.com/validated-changeset/validated-changeset.git"
   },
   "keywords": [
     "changeset",
@@ -29,9 +29,9 @@
   "author": "Scott Newcomer",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/snewcomer/validated-changeset/issues"
+    "url": "https://github.com/validated-changeset/validated-changeset/issues"
   },
-  "homepage": "https://github.com/snewcomer/validated-changeset#readme",
+  "homepage": "https://github.com/validated-changeset/validated-changeset#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^2.0.1",
     "@types/jest": "^24.0.25",
