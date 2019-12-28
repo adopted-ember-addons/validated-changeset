@@ -772,6 +772,12 @@ if (isChangeset(model)) {
   placeholder={{placeholder}}>
 ```
 
+## Contributors
+
+See all the wonderful [contributors](https://github.com/poteto/ember-changeset#contributors) who have made this library possible.
+
+[//]: contributor-faces
+
 ## Installation
 
 * `git clone` this repository
