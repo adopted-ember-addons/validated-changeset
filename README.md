@@ -658,7 +658,7 @@ changeset.validate().then(() => {
 });
 ```
 
-**[⬆️ back to top](#api)**
+**[back to top](#api)**
 
 #### `beforeValidation`
 
@@ -754,66 +754,12 @@ changeset.save()
 If you're uncertain whether or not you're dealing with a `Changeset`, you can use the `isChangeset` util.
 
 ```js
-import isChangeset from 'validated-changeset/utils/is-changeset';
+import { isChangeset } from 'validated-changeset';
 
 if (isChangeset(model)) {
   model.execute();
   // other changeset-specific code...
 }
-```
-
-## Tips and Tricks
-
-- General Input Helper with ember-concurrency
-
-```js
-export default Component.extend({
-  classNameBindings: ['hasError:validated-input--error'],
-
-  _checkValidity: task(function* (changeset, valuePath, value) {
-    yield timeout(150);
-
-    let snapshot = changeset.snapshot();
-
-    // valuePath is the property on the changeset, e.g. firstName
-    changeset.set(valuePath, value);
-
-    if (!changeset.get(`error.${valuePath}`)) {
-      set(this, 'hasError', false);
-    } else {
-      // if error, restore changeset so don't show error in template immediately'
-      // i.e. wait for onblur action to validate and show error in template
-      changeset.restore(snapshot);
-    }
-  }).restartable(),
-
-  actions: {
-      /**
-     * @method validateProperty
-     * @param {Object} changeset
-     * @param {String} valuePath
-     * @param {Object} e
-     */
-    validateProperty(changeset, valuePath, e) {
-      changeset.set(valuePath, e.target.value);
-
-      if (changeset.get(`error.${valuePath}`)) {
-        set(this, 'hasError', true);
-      } else {
-        set(this, 'hasError', false);
-      }
-    },
-
-    /**
-     * @method checkValidity
-     * @param {Object} changeset
-     * @param {String|Integer} value
-     */
-    checkValidity(changeset, value) {
-      get(this, '_checkValidity').perform(changeset, this.valuePath, value);
-    }
-  }
-});
 ```
 
 ```hbs
