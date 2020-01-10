@@ -50,7 +50,7 @@ export {
   getDeep
 };
 
-const { assign, keys } = Object;
+const { keys } = Object;
 const CONTENT = '_content';
 const CHANGES = '_changes';
 const ERRORS = '_errors';
@@ -180,13 +180,9 @@ export class BufferedChangeset implements IChangeset {
     }
 
     return keys(obj).map(key => {
-      let value = transform(obj[key]);
+      let { value, validation } = transform(obj[key]);
 
-      if (isObject(value)) {
-        return assign({ key }, value);
-      }
-
-      return { key, value };
+      return { key, value, validation };
     });
   }
 
