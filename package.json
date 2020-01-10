@@ -14,7 +14,8 @@
     "preversion": "npm run lint",
     "start": "tsc -w & rollup -c rollup.config.ts -w",
     "stats": "node scripts/size-calc",
-    "prebuild": "rimraf dist"
+    "prebuild": "rimraf dist",
+    "contributors": "npx contributor-faces -e \"(*-bot|*\\[bot\\]|*-tomster|homu|bors)\""
   },
   "repository": {
     "type": "git",
