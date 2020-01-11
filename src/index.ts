@@ -1,5 +1,5 @@
 import Change from './-private/change';
-import { getKeyValues } from './utils/get-key-values';
+import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
@@ -170,20 +170,15 @@ export class BufferedChangeset implements IChangeset {
     return getKeyValues(obj);
   }
 
-  // TODO: iterate and find all leaf errors
-  // can only provide leaf key
+  /**
+   * @property errors
+   * @type {Array}
+   */
   get errors() {
     let obj = this[ERRORS];
 
-    function transform(e: Err) {
-      return { value: e.value, validation: e.validation };
-    }
-
-    return keys(obj).map(key => {
-      let { value, validation } = transform(obj[key]);
-
-      return { key, value, validation };
-    });
+    // [{ key, validation, value }, ...]
+    return getKeyErrorValues(obj);
   }
 
   get change() {
