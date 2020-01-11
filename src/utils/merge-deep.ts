@@ -109,7 +109,11 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
       !source[key].hasOwnProperty('value')
     ) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
-      target[key] = mergeDeep(options.safeGet(target, key), options.safeGet(source, key), options);
+      options.safeSet(
+        target,
+        key,
+        mergeDeep(options.safeGet(target, key), options.safeGet(source, key), options)
+      );
     } else {
       let next = source[key];
       if (next && next instanceof Change) {
