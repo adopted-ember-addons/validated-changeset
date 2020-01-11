@@ -26,6 +26,7 @@ export function getKeyValues<T extends Record<string, any>>(obj: T): object[] {
     }
   }
 
+  keysUpToValue = [];
   return map;
 }
 
@@ -61,5 +62,6 @@ export function getKeyErrorValues<T extends Record<string, any>>(obj: T): object
     }
   }
 
+  errorKeysUpToValue = [];
   return map;
 }

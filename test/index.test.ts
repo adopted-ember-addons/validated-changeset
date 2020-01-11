@@ -162,6 +162,7 @@ describe('Unit | Utility | changeset', () => {
 
   test('can get nested values in the errors object', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
+    dummyChangeset.set('unknown', 'wat');
     dummyChangeset.set('org.usa.ny', '');
     dummyChangeset.set('name', '');
 
