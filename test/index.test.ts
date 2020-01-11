@@ -594,7 +594,7 @@ describe('Unit | Utility | changeset', () => {
     expect(actual).toEqual(expectedResult);
   });
 
-  it('#set works after execute', () => {
+  it('#set works after save', () => {
     dummyModel['org'] = {
       usa: {
         mn: 'mn',
@@ -611,7 +611,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org.usa.ny).toBe('ny');
     expect(dummyModel.org.usa.mn).toBe('mn');
 
-    c.execute();
+    c.save();
 
     expect(c.get('org.usa.ny')).toBe('NY');
     expect(c.get('org.usa.mn')).toBe('MN');
@@ -626,7 +626,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org.usa.ny).toBe('NY');
     expect(dummyModel.org.usa.mn).toBe('MN');
 
-    c.execute();
+    c.save();
 
     expect(c.get('org.usa.ny')).toBe('nil');
     expect(c.get('org.usa.mn')).toBe('undefined');
