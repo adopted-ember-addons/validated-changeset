@@ -619,18 +619,32 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org.usa.mn).toBe('MN');
 
     c.set('org.usa.ny', 'nil');
-    c.set('org.usa.mn', 'undefined');
 
     expect(c.get('org.usa.ny')).toBe('nil');
-    expect(c.get('org.usa.mn')).toBe('undefined');
+    expect(c.get('org.usa.mn')).toBe('MN');
     expect(dummyModel.org.usa.ny).toBe('NY');
     expect(dummyModel.org.usa.mn).toBe('MN');
 
     c.save();
 
     expect(c.get('org.usa.ny')).toBe('nil');
+    expect(c.get('org.usa.mn')).toBe('MN');
+    expect(dummyModel.org.usa.ny).toBe('nil');
+    expect(dummyModel.org.usa.mn).toBe('MN');
+
+    c.set('org.usa.ny', 'nil2');
+    c.set('org.usa.mn', 'undefined');
+
+    expect(c.get('org.usa.ny')).toBe('nil2');
     expect(c.get('org.usa.mn')).toBe('undefined');
     expect(dummyModel.org.usa.ny).toBe('nil');
+    expect(dummyModel.org.usa.mn).toBe('MN');
+
+    c.save();
+
+    expect(c.get('org.usa.ny')).toBe('nil2');
+    expect(c.get('org.usa.mn')).toBe('undefined');
+    expect(dummyModel.org.usa.ny).toBe('nil2');
     expect(dummyModel.org.usa.mn).toBe('undefined');
   });
 
