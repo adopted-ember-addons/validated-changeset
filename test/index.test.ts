@@ -163,8 +163,12 @@ describe('Unit | Utility | changeset', () => {
   test('can get nested values in the errors object', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.usa.ny', '');
+    dummyChangeset.set('name', '');
 
-    let expectedErrors = [{ key: 'org.usa.ny', validation: 'must be present', value: '' }];
+    let expectedErrors = [
+      { key: 'org.usa.ny', validation: 'must be present', value: '' },
+      { key: 'name', validation: 'too short', value: '' }
+    ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
   });
 
