@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc && tsc --outDir dist/es && rollup -c rollup.config.ts",
     "test": "jest",
+    "test.watch": "jest --watch",
     "lint": "eslint .",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run lint",

@@ -151,7 +151,7 @@ describe('Unit | Utility | changeset', () => {
   /**
    * #errors
    */
-  test('#errors returns the error object and keeps changes', () => {
+  it('#errors returns the error object and keeps changes', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     let expectedResult = [{ key: 'name', validation: 'too short', value: 'a' }];
     dummyChangeset.set('name', 'a');
@@ -160,7 +160,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('errors')).toEqual(expectedResult);
   });
 
-  test('can get nested values in the errors object', () => {
+  it('can get nested values in the errors object', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.usa.ny', '');
 
@@ -429,17 +429,19 @@ describe('Unit | Utility | changeset', () => {
   it('#set adds a change if the key is an object', () => {
     dummyModel['org'] = {
       usa: {
+        mn: 'mn',
         ny: 'ny'
       }
     };
 
     const c = Changeset(dummyModel);
-    c.set('org.usa.ny', 'foo');
+    c.set('org.usa.ny', 'NY');
 
     expect(dummyModel.org.usa.ny).toBe('ny');
-    expect(c.get('org.usa.ny')).toBe('foo');
+    expect(c.get('org.usa.ny')).toBe('NY');
+    expect(c.get('org.usa.mn')).toBe('mn');
 
-    const expectedChanges = [{ key: 'org.usa.ny', value: 'foo' }];
+    const expectedChanges = [{ key: 'org.usa.ny', value: 'NY' }];
     const changes = c.changes;
 
     expect(changes).toEqual(expectedChanges);
@@ -590,6 +592,30 @@ describe('Unit | Utility | changeset', () => {
     const actual = c.changes;
     const expectedResult = [{ key: 'org', value: 'no usa for you' }];
     expect(actual).toEqual(expectedResult);
+  });
+
+  it('#set works after execute', () => {
+    dummyModel['org'] = {
+      usa: {
+        mn: 'mn',
+        ny: 'ny'
+      }
+    };
+
+    const c = Changeset(dummyModel);
+    c.set('org.usa.ny', 'NY');
+
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(dummyModel.org.usa.mn).toBe('mn');
+
+    c.execute();
+
+    expect(dummyModel.org.usa.ny).toBe('NY');
+    expect(dummyModel.org.usa.mn).toBe('mn');
+
+    c.set('org.usa.ny', 'ny');
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(dummyModel.org.usa.mn).toBe('mn');
   });
 
   it('it accepts async validations', async () => {
