@@ -605,16 +605,30 @@ describe('Unit | Utility | changeset', () => {
     const c = Changeset(dummyModel);
     c.set('org.usa.ny', 'NY');
 
+    expect(c.get('org.usa.ny')).toBe('NY');
+    expect(c.get('org.usa.mn')).toBe('mn');
     expect(dummyModel.org.usa.ny).toBe('ny');
     expect(dummyModel.org.usa.mn).toBe('mn');
 
     c.execute();
 
+    expect(c.get('org.usa.ny')).toBe('NY');
+    expect(c.get('org.usa.mn')).toBe('mn');
     expect(dummyModel.org.usa.ny).toBe('NY');
     expect(dummyModel.org.usa.mn).toBe('mn');
 
-    c.set('org.usa.ny', 'ny');
-    expect(dummyModel.org.usa.ny).toBe('ny');
+    c.set('org.usa.ny', 'nil');
+
+    expect(c.get('org.usa.ny')).toBe('nil');
+    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(dummyModel.org.usa.ny).toBe('NY');
+    expect(dummyModel.org.usa.mn).toBe('mn');
+
+    c.execute();
+
+    expect(c.get('org.usa.ny')).toBe('nil');
+    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(dummyModel.org.usa.ny).toBe('nil');
     expect(dummyModel.org.usa.mn).toBe('mn');
   });
 
