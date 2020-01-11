@@ -604,32 +604,34 @@ describe('Unit | Utility | changeset', () => {
 
     const c = Changeset(dummyModel);
     c.set('org.usa.ny', 'NY');
+    c.set('org.usa.mn', 'MN');
 
     expect(c.get('org.usa.ny')).toBe('NY');
-    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.mn')).toBe('MN');
     expect(dummyModel.org.usa.ny).toBe('ny');
     expect(dummyModel.org.usa.mn).toBe('mn');
 
     c.execute();
 
     expect(c.get('org.usa.ny')).toBe('NY');
-    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.mn')).toBe('MN');
     expect(dummyModel.org.usa.ny).toBe('NY');
-    expect(dummyModel.org.usa.mn).toBe('mn');
+    expect(dummyModel.org.usa.mn).toBe('MN');
 
     c.set('org.usa.ny', 'nil');
+    c.set('org.usa.mn', 'undefined');
 
     expect(c.get('org.usa.ny')).toBe('nil');
-    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.mn')).toBe('undefined');
     expect(dummyModel.org.usa.ny).toBe('NY');
-    expect(dummyModel.org.usa.mn).toBe('mn');
+    expect(dummyModel.org.usa.mn).toBe('MN');
 
     c.execute();
 
     expect(c.get('org.usa.ny')).toBe('nil');
-    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.mn')).toBe('undefined');
     expect(dummyModel.org.usa.ny).toBe('nil');
-    expect(dummyModel.org.usa.mn).toBe('mn');
+    expect(dummyModel.org.usa.mn).toBe('undefined');
   });
 
   it('it accepts async validations', async () => {
