@@ -1,3 +1,3 @@
 export default function isObject<T>(val: T): boolean {
-  return typeof val === 'object';
+  return val !== null && typeof val === 'object';
 }

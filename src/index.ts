@@ -37,10 +37,13 @@ import {
 
 export {
   CHANGESET,
+  Change,
+  Err,
   isChangeset,
   isObject,
   isPromise,
   getKeyValues,
+  keyInObject,
   lookupValidator,
   mergeNested,
   normalizeObject,

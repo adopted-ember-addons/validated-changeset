@@ -4,6 +4,11 @@ describe('Unit | Utility | is object', function() {
   const testData = [
     {
       label: 'POJOs',
+      value: null,
+      expected: false
+    },
+    {
+      label: 'POJOs',
       value: { foo: 'bar' },
       expected: true
     },
