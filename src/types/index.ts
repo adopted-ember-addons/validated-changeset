@@ -65,6 +65,12 @@ export type Errors<T> = {
   [s: string]: IErr<T>;
 };
 
+export type PublicErrors = {
+  key: string;
+  value: any;
+  validation: ValidationErr | ValidationErr[];
+}[];
+
 export type RunningValidations = {
   [s: string]: number;
 };
@@ -97,8 +103,8 @@ export interface ChangesetDef {
   _runningValidations: RunningValidations;
   _bareChanges: { [s: string]: any };
 
-  changes: object[];
-  errors: object[];
+  changes: Record<string, any>[];
+  errors: PublicErrors;
   error: object;
   change: object;
   data: object;
