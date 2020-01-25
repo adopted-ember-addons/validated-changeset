@@ -48,6 +48,7 @@ export {
   mergeNested,
   normalizeObject,
   objectWithout,
+  pureAssign,
   take,
   mergeDeep,
   setDeep,
