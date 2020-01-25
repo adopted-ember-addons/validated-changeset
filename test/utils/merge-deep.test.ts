@@ -25,4 +25,32 @@ describe('Unit | Utility | merge deep', () => {
 
     expect(value).toEqual({ company: { employees: ['Jull', 'Olafur'] } });
   });
+
+  it('it works with unsafe properties', () => {
+    class A {
+      _boo = 'bo';
+
+      get boo() {
+        return this._boo;
+      }
+      set boo(value) {
+        this._boo = value;
+      }
+
+      foo = { baz: 'ba' };
+    }
+
+    class B extends A {
+      other = 'Ivan';
+    }
+
+    const objA = new B();
+    const objB = { boo: new Change('doo'), foo: { baz: new Change('bar') } };
+
+    const value: Record<string, any> = mergeDeep(objA, objB);
+
+    expect(value.boo).toBe('doo');
+    expect(value.other).toBe('Ivan');
+    expect(value.foo).toEqual({ baz: 'bar' });
+  });
 });

@@ -29,6 +29,9 @@ const dummyValidations: Record<string, any> = {
     return !!value;
   },
   org: {
+    isCompliant(value: unknown) {
+      return !!value;
+    },
     usa: {
       ny(value: unknown) {
         return !!value || 'must be present';
@@ -162,9 +165,14 @@ describe('Unit | Utility | changeset', () => {
 
   it('can get nested values in the errors object', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
+    dummyChangeset.set('unknown', 'wat');
     dummyChangeset.set('org.usa.ny', '');
+    dummyChangeset.set('name', '');
 
-    let expectedErrors = [{ key: 'org.usa.ny', validation: 'must be present', value: '' }];
+    let expectedErrors = [
+      { key: 'org.usa.ny', validation: 'must be present', value: '' },
+      { key: 'name', validation: 'too short', value: '' }
+    ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
   });
 
@@ -667,6 +675,32 @@ describe('Unit | Utility | changeset', () => {
 
     expect(dummyChangeset.isInvalid).toBeTruthy();
     dummyChangeset.set('name', 'Jim Bob');
+    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toBeFalsy();
+  });
+
+  it('it clears errors when setting to original value when nested', async () => {
+    set(dummyModel, 'org', {
+      usa: { ny: 'vaca' }
+    });
+    let dummyChangeset = Changeset(dummyModel, dummyValidator);
+    dummyChangeset.set('org.usa.ny', '');
+
+    expect(dummyChangeset.isInvalid).toBeTruthy();
+    dummyChangeset.set('org.usa.ny', 'vaca');
+    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toBeFalsy();
+  });
+
+  test('it clears errors when setting to original value when nested Booleans', async () => {
+    set(dummyModel, 'org', {
+      isCompliant: true
+    });
+    let dummyChangeset = Changeset(dummyModel, dummyValidator);
+    dummyChangeset.set('org.isCompliant', false);
+
+    expect(dummyChangeset.isInvalid).toBeTruthy();
+    dummyChangeset.set('org.isCompliant', true);
     expect(dummyChangeset.isValid).toBeTruthy();
     expect(dummyChangeset.isInvalid).toBeFalsy();
   });
