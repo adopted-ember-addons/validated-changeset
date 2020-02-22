@@ -53,6 +53,11 @@ In the above example, when the input changes, only the changeset's internal valu
 
 On rollback, all changes are dropped and the underlying Object is left untouched.
 
+## Examples
+
+- [`ember-changeset`](https://github.com/poteto/ember-changeset)
+- [`svelte example`](https://codesandbox.io/s/validated-svelte-xc5lp?fontsize=14&hidenavigation=1&theme=dark)
+
 ## API
 
 * Properties
@@ -395,6 +400,18 @@ changeset.execute(); // returns changeset
 ```
 
 Note that executing the changeset will not remove the internal list of changes - instead, you should do so explicitly with `rollback` or `save` if that is desired.
+
+Moreover, if you need to perform additional work on `changeset.execute`, you can register a callback with a key 'execute' and we will ensure it is carried out whenever `changeset.execute` is called.
+
+```js
+function callback() {
+  ...
+}
+changeset.on('execute', callback);
+
+
+changeset.execute();
+```
 
 **[⬆️ back to top](#api)**
 
