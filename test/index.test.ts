@@ -875,6 +875,22 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
 
+  it('#execute calls registered callbacked', function() {
+    expect.assertions(1);
+
+    const dog: any = {};
+
+    const c = Changeset(dog);
+    function callback() {
+      expect(true).toBeTruthy();
+    }
+
+    c.on('execute', callback);
+    c.on('execute-2', callback);
+
+    c.execute();
+  });
+
   /**
    * #save
    */
