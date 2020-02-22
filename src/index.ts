@@ -318,6 +318,9 @@ export class BufferedChangeset implements IChangeset {
       this[CONTENT] = mergeDeep(content, changes);
     }
 
+    // trigger any registered callbacks by same keyword as method name
+    this.trigger('execute');
+
     return this;
   }
 
