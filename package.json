@@ -4,7 +4,7 @@
   "description": "Changesets for your local state",
   "main": "dist/validated-changeset.umd.js",
   "module": "dist/validated-changeset.es5.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && tsc --outDir dist/es && rollup -c rollup.config.ts",
     "test": "jest",
