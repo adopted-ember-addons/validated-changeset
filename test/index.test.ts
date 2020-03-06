@@ -8,6 +8,20 @@ const dummyValidations: Record<string, any> = {
   name(value: any) {
     return (!!value && value.length > 3) || 'too short';
   },
+  email(value: any) {
+    const errors = [];
+    if (value && value.length < 5) {
+      errors.push('too short');
+    }
+    if (value && !value.includes('@')) {
+      errors.push('not an email');
+    }
+
+    if (errors.length < 1) {
+      return;
+    }
+    return errors.length > 1 ? errors : errors[0];
+  },
   password(value: unknown) {
     return value || ['foo', 'bar'];
   },
@@ -119,6 +133,14 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', 'a');
 
     expect(dummyChangeset.get('error.name')).toEqual(expectedResult);
+  });
+
+  it('can can work with an array of nested validations', function() {
+    const dummyChangeset = Changeset(dummyModel, dummyValidator);
+    const expectedResult = { validation: ['too short', 'not an email'], value: 'a' };
+    dummyChangeset.set('email', 'a');
+
+    expect(dummyChangeset.get('error.email')).toEqual(expectedResult);
   });
 
   /**
@@ -1333,7 +1355,14 @@ describe('Unit | Utility | changeset', () => {
   it('#validate works correctly with changeset values', async () => {
     dummyModel = {
       ...dummyModel,
-      ...{ name: undefined, password: false, async: true, passwordConfirmation: false, options: {} }
+      ...{
+        name: undefined,
+        email: undefined,
+        password: false,
+        async: true,
+        passwordConfirmation: false,
+        options: {}
+      }
     };
     let dummyChangeset = Changeset(dummyModel, dummyValidator, dummyValidations);
 
@@ -1352,7 +1381,10 @@ describe('Unit | Utility | changeset', () => {
 
     dummyChangeset.set('password', true);
     dummyChangeset.set('passwordConfirmation', true);
+    dummyChangeset.set('email', 'scott.mail@gmail.com');
+
     await dummyChangeset.validate();
+
     expect(get(dummyChangeset, 'errors.length')).toBe(0);
     expect(dummyChangeset.isValid).toBeTruthy();
   });
