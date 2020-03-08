@@ -524,7 +524,7 @@ export class BufferedChangeset implements IChangeset {
 
   /**
    * Manually push multiple errors to the changeset as an array.
-   * key maybe in form 'name.short' so need to get deep
+   * key maybe in form 'name.short' so need to go deep
    *
    * @method pushErrors
    */
@@ -888,9 +888,9 @@ export class BufferedChangeset implements IChangeset {
     }
 
     // return getters/setters/methods on BufferedProxy instance
-    if (this[key]) {
+    if (typeof this[key] !== 'undefined') {
       return this[key];
-    } else if (this[baseKey]) {
+    } else if (typeof this[baseKey] !== 'undefined') {
       const v: unknown = this[baseKey];
       if (isObject(v)) {
         const result = this.getDeep(v as Record<string, any>, remaining.join('.'));

@@ -18,7 +18,8 @@ import isObject from './is-object';
  * rather than mutating a property in something with reference
  *
  * @method normalizeObject
- * @param target
+ * @param {Object} target
+ * @return {Object}
  */
 export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
   if ('value' in target) {
