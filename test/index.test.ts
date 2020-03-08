@@ -590,7 +590,7 @@ describe('Unit | Utility | changeset', () => {
     ];
     expect(changes).toEqual(expectedChanges);
     expect(errors).toEqual(expectedErrors);
-    expect(isValid).toBeFalsy();
+    expect(isValid).toEqual(false);
     expect(isInvalid).toBeTruthy();
   });
 
