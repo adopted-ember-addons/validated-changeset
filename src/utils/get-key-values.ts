@@ -63,6 +63,8 @@ export function getKeyErrorValues<T extends Record<string, any>>(obj: T): Public
     }
   }
 
+  // reset
   errorKeysUpToValue = [];
+
   return map;
 }

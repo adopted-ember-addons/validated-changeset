@@ -118,6 +118,19 @@ Note that keys can be arbitrarily nested:
 }
 ```
 
+If you have multiple validations, `validation` will be an array:
+
+```js
+{
+  address: {
+    zipCode: {
+      value: '123',
+      validation: ['Zip code must have 5 digits', 'too short']
+    }
+  }
+}
+```
+
 You can use this property to locate a single error:
 
 ```hbs
