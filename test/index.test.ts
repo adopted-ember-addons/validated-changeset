@@ -433,6 +433,21 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
   });
 
+  it('#set adds a date if already set on model', () => {
+    const model = { dateOfBirth: new Date() };
+    const dummyChangeset = Changeset(model);
+    const d = new Date('March 25, 1990');
+    dummyChangeset.set('dateOfBirth', d);
+    const changes = dummyChangeset.changes;
+
+    expect(dummyModel.dateOfBirth).toBeUndefined();
+    expect(dummyChangeset.get('dateOfBirth')).toEqual(d);
+    expect(dummyChangeset.dateOfBirth).toEqual(d);
+
+    const expectedChanges = [{ key: 'dateOfBirth', value: d }];
+    expect(changes).toEqual(expectedChanges);
+  });
+
   it('#set Ember.set works', () => {
     const expectedChanges = [{ key: 'name', value: 'foo' }];
     const dummyChangeset = Changeset(dummyModel);
