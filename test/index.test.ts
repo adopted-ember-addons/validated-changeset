@@ -420,6 +420,19 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
   });
 
+  it('#set adds a date', () => {
+    const d = new Date();
+    const expectedChanges = [{ key: 'dateOfBirth', value: d }];
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('dateOfBirth', d);
+    const changes = dummyChangeset.changes;
+
+    expect(dummyModel.dateOfBirth).toBeUndefined();
+    expect(dummyChangeset.get('dateOfBirth')).toEqual(d);
+
+    expect(changes).toEqual(expectedChanges);
+  });
+
   it('#set Ember.set works', () => {
     const expectedChanges = [{ key: 'name', value: 'foo' }];
     const dummyChangeset = Changeset(dummyModel);
