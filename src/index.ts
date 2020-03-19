@@ -192,9 +192,7 @@ export class BufferedChangeset implements IChangeset {
   }
 
   get error() {
-    let obj: Errors<any> = this[ERRORS];
-    // TODO: whyy?
-    return JSON.parse(JSON.stringify(obj));
+    return this[ERRORS];
   }
 
   get data() {
