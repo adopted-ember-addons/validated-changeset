@@ -119,7 +119,7 @@ describe('Unit | Utility | changeset', () => {
     const expectedResult = { name: { validation: 'too short', value: 'a' } };
     dummyChangeset.set('name', 'a');
 
-    expect(dummyChangeset.error).toEqual(expectedResult);
+    expect(dummyChangeset.error).toBe(expectedResult);
     expect(dummyChangeset.error.name).toEqual(expectedResult.name);
     expect(dummyChangeset.get('error.name')).toEqual(expectedResult.name);
     expect(dummyChangeset.change).toEqual({ name: 'a' });
