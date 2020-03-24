@@ -656,14 +656,16 @@ export class BufferedChangeset implements IChangeset {
     if (isPromise(validation)) {
       this._setIsValidating(key, true);
 
-      return (validation as Promise<ValidationResult>).then(
-        (resolvedValidation: ValidationResult) => {
+      return (validation as Promise<ValidationResult>)
+        .then((resolvedValidation: ValidationResult) => {
           this._setIsValidating(key, false);
-          this.trigger(AFTER_VALIDATION_EVENT, key);
 
           return this._handleValidation(resolvedValidation, { key, value });
-        }
-      );
+        })
+        .then(result => {
+          this.trigger(AFTER_VALIDATION_EVENT, key);
+          return result;
+        });
     }
 
     let result = this._handleValidation(validation as ValidationResult, { key, value });
