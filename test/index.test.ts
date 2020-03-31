@@ -584,8 +584,12 @@ describe('Unit | Utility | changeset', () => {
     const model = { name: 'foo' };
     const dummyChangeset = Changeset(model, null, null, { skipValidate: true });
 
+    expect(dummyChangeset.isValid).toBeTruthy();
+
     dummyChangeset.set('name', 'foo');
+
     expect(dummyChangeset.changes).toEqual([]);
+    expect(dummyChangeset.isValid).toBeTruthy();
   });
 
   it('#set removes a change if set back to original value', () => {
@@ -628,10 +632,14 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator, null, {
       skipValidate: true
     });
+
+    expect(dummyChangeset.isValid).toBeTruthy();
+
     dummyChangeset.set('password', false);
     const changes = dummyChangeset.changes;
 
     expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isValid).toBeTruthy();
   });
 
   it('#set should remove nested changes when setting roots', () => {
