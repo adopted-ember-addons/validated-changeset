@@ -584,8 +584,12 @@ describe('Unit | Utility | changeset', () => {
     const model = { name: 'foo' };
     const dummyChangeset = Changeset(model, null, null, { skipValidate: true });
 
+    expect(dummyChangeset.isValid).toEqual(true);
+
     dummyChangeset.set('name', 'foo');
+
     expect(dummyChangeset.changes).toEqual([]);
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('#set removes a change if set back to original value', () => {
@@ -628,10 +632,14 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator, null, {
       skipValidate: true
     });
+
+    expect(dummyChangeset.isValid).toEqual(true);
+
     dummyChangeset.set('password', false);
     const changes = dummyChangeset.changes;
 
     expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('#set should remove nested changes when setting roots', () => {
@@ -723,10 +731,11 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('name', '');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(dummyChangeset.isValid).toEqual(false);
     dummyChangeset.set('name', 'Jim Bob');
-    expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   it('it clears errors when setting to original value when nested', async () => {
@@ -736,10 +745,10 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.usa.ny', '');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     dummyChangeset.set('org.usa.ny', 'vaca');
     expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   test('it clears errors when setting to original value when nested Booleans', async () => {
@@ -749,10 +758,10 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.isCompliant', false);
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     dummyChangeset.set('org.isCompliant', true);
-    expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   it('#set should delete nested changes when equal', () => {
@@ -1296,11 +1305,17 @@ describe('Unit | Utility | changeset', () => {
 
   it('#rollbackProperty resets valid state', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator);
+
+    expect(dummyChangeset.isInvalid).toEqual(false);
+    expect(dummyChangeset.isValid).toEqual(true);
+
     dummyChangeset.set('name', 'a');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+
     dummyChangeset.rollbackProperty('name');
-    expect(dummyChangeset.isValid).toBeTruthy();
+
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('can update nested keys after rollback changes.', () => {
@@ -1398,14 +1413,14 @@ describe('Unit | Utility | changeset', () => {
     await dummyChangeset.validate();
     // expect(get(dummyChangeset, 'errors.length')).toBe(1);
     expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('passwordConfirmation', true);
     await dummyChangeset.validate();
     expect(get(dummyChangeset, 'errors.length')).toBe(2);
     expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
     expect(get(dummyChangeset, 'errors.1.key')).toBe('passwordConfirmation');
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('password', true);
     dummyChangeset.set('passwordConfirmation', true);
@@ -1414,7 +1429,7 @@ describe('Unit | Utility | changeset', () => {
     await dummyChangeset.validate();
 
     expect(get(dummyChangeset, 'errors.length')).toBe(0);
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('#validate works correctly with complex values', () => {
@@ -1500,6 +1515,32 @@ describe('Unit | Utility | changeset', () => {
     ]);
   });
 
+  it('#isInvalid does not trigger validations without validate keys', async () => {
+    const model = { name: 'o' };
+    const dummyChangeset = Changeset(model, dummyValidator);
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+
+    await dummyChangeset.validate();
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+  });
+
+  it('#isInvalid does not trigger on init of changeset', async () => {
+    const model = { name: 'o' };
+    const dummyChangeset = Changeset(model, dummyValidator);
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+
+    await dummyChangeset.validate('name');
+
+    expect(dummyChangeset.isValid).toEqual(false);
+    expect(dummyChangeset.isInvalid).toEqual(true);
+  });
+
   /**
    * #addError
    */
@@ -1511,10 +1552,10 @@ describe('Unit | Utility | changeset', () => {
       validation: 'Email already taken'
     });
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
     dummyChangeset.set('email', 'unique@email.com');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('#addError adds an error to the changeset using the shortcut', function() {
@@ -1522,12 +1563,12 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
     expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
     expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
     dummyChangeset.set('email', 'unique@email.com');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
     expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
   });
 
@@ -1535,23 +1576,23 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.addError('email.localPart', 'Cannot contain +');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.localPart.validation')).toBe('Cannot contain +');
     dummyChangeset.set('email.localPart', 'ok');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('#addError adds an array of errors to the changeset', () => {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.addError('email', ['jim@bob.com', 'Email already taken']);
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toEqual([
       'jim@bob.com',
       'Email already taken'
     ]);
     dummyChangeset.set('email', 'unique@email.com');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   /**
@@ -1564,7 +1605,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.addError('email', 'Email already taken');
     dummyChangeset.pushErrors('email', 'Invalid email format');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toEqual([
       'Email already taken',
       'Invalid email format'
@@ -1572,7 +1613,7 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
     expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
     dummyChangeset.set('email', 'unique@email.com');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
     expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
   });
 
@@ -1581,11 +1622,13 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', 'J');
     dummyChangeset.pushErrors('name', 'cannot be J');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(dummyChangeset.isValid).toEqual(false);
     expect(get(dummyChangeset, 'error.name.validation')).toEqual(['too short', 'cannot be J']);
     expect(get(dummyChangeset, 'error.name.value')).toBe('J');
     dummyChangeset.set('name', 'Good name');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   it('#pushErrors adds an error to the changeset on a nested property', () => {
@@ -1593,13 +1636,13 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.pushErrors('email.localPart', 'Cannot contain +');
     dummyChangeset.pushErrors('email.localPart', 'is too short');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual([
       'Cannot contain +',
       'is too short'
     ]);
     dummyChangeset.set('email.localPart', 'ok');
-    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   /**
@@ -1632,9 +1675,9 @@ describe('Unit | Utility | changeset', () => {
     dummyChangesetA.set('password', false);
     let snapshot = dummyChangesetA.snapshot();
 
-    expect(dummyChangesetB.isValid).toBeTruthy();
+    expect(dummyChangesetB.isValid).toEqual(true);
     dummyChangesetB.restore(snapshot);
-    expect(dummyChangesetB.isInvalid).toBeTruthy();
+    expect(dummyChangesetB.isInvalid).toEqual(true);
     expect(get(dummyChangesetB, 'change.name')).toBe('Pokemon Go');
     expect(get(dummyChangesetB, 'error.password')).toEqual({
       validation: ['foo', 'bar'],

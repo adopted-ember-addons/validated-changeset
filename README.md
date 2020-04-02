@@ -41,8 +41,8 @@ import { Changeset } from 'validated-changeset';
 
 export default FormComponent {
   constructor(...args) {
-    let validator = this.validate;
-    this.changeset = Changeset(this.model, validator);
+    let validatorFn = this.validate;
+    this.changeset = Changeset(this.model, validatorFn);
   }
 }
 ```
