@@ -220,14 +220,27 @@ describe('Unit | Utility | changeset', () => {
    * #isInvalid
    */
 
-  it('#isInvalid does not trigger on init of changeset', async () => {
+  it('#isInvalid does not trigger validations without validate keys', async () => {
     const model = { name: 'o' };
-    const dummyChangeset = Changeset(model, dummyValidator, dummyValidations);
+    const dummyChangeset = Changeset(model, dummyValidator);
 
     expect(dummyChangeset.isValid).toEqual(true);
     expect(dummyChangeset.isInvalid).toEqual(false);
 
     await dummyChangeset.validate();
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+  });
+
+  it('#isInvalid does not trigger on init of changeset', async () => {
+    const model = { name: 'o' };
+    const dummyChangeset = Changeset(model, dummyValidator);
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+
+    await dummyChangeset.validate('name');
 
     expect(dummyChangeset.isValid).toEqual(false);
     expect(dummyChangeset.isInvalid).toEqual(true);
