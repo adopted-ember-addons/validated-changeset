@@ -220,6 +220,19 @@ describe('Unit | Utility | changeset', () => {
    * #isInvalid
    */
 
+  it('#isInvalid does not trigger on init of changeset', async () => {
+    const model = { name: 'o' };
+    const dummyChangeset = Changeset(model, dummyValidator, dummyValidations);
+
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+
+    await dummyChangeset.validate();
+
+    expect(dummyChangeset.isValid).toEqual(false);
+    expect(dummyChangeset.isInvalid).toEqual(true);
+  });
+
   /**
    * #isPristine
    */
@@ -731,10 +744,11 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('name', '');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(dummyChangeset.isValid).toEqual(false);
     dummyChangeset.set('name', 'Jim Bob');
-    expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   it('it clears errors when setting to original value when nested', async () => {
@@ -744,10 +758,10 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.usa.ny', '');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     dummyChangeset.set('org.usa.ny', 'vaca');
     expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   test('it clears errors when setting to original value when nested Booleans', async () => {
@@ -757,10 +771,10 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel, dummyValidator);
     dummyChangeset.set('org.isCompliant', false);
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
     dummyChangeset.set('org.isCompliant', true);
-    expect(dummyChangeset.isValid).toBeTruthy();
-    expect(dummyChangeset.isInvalid).toBeFalsy();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
   });
 
   it('#set should delete nested changes when equal', () => {
@@ -1304,11 +1318,17 @@ describe('Unit | Utility | changeset', () => {
 
   it('#rollbackProperty resets valid state', () => {
     const dummyChangeset = Changeset(dummyModel, dummyValidator);
+
+    expect(dummyChangeset.isInvalid).toEqual(false);
+    expect(dummyChangeset.isValid).toEqual(true);
+
     dummyChangeset.set('name', 'a');
 
-    expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+
     dummyChangeset.rollbackProperty('name');
-    expect(dummyChangeset.isValid).toBeTruthy();
+
+    expect(dummyChangeset.isValid).toEqual(true);
   });
 
   it('can update nested keys after rollback changes.', () => {
