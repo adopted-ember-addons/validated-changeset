@@ -42,4 +42,11 @@ describe('Unit | Utility | set deep', () => {
 
     expect(value).toEqual({ foo: { other: 'bar' }, name: 'zoo' });
   });
+
+  it('it works with nested multiple values', () => {
+    const objA = { top: { name: { other: 'Ivan' }, foo: { other: 'bar' } } };
+    const value = setDeep(objA, 'top.name', 'zoo');
+
+    expect(value).toEqual({ top: { foo: { other: 'bar' }, name: 'zoo' } });
+  });
 });
