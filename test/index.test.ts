@@ -1,4 +1,5 @@
 import { Changeset, ValidatedChangeset } from '../src';
+import Change from '../src/-private/change';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 
@@ -678,7 +679,7 @@ describe('Unit | Utility | changeset', () => {
     });
 
     let actual = c.changes;
-    const expectedResult = [
+    let expectedResult = [
       {
         key: 'org',
         value: {
@@ -696,6 +697,19 @@ describe('Unit | Utility | changeset', () => {
     c.set('org.isCompliant', false);
 
     actual = c.changes;
+    expectedResult = [
+      {
+        key: 'org',
+        value: {
+          isCompliant: false,
+          usa: {
+            ca: 'il',
+            ny: 'wi'
+          }
+        }
+      }
+    ];
+
     expect(actual).toEqual(expectedResult);
   });
 
