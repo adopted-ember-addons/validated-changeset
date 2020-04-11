@@ -6,8 +6,7 @@ function split(path: string): string[] {
   return keys;
 }
 
-function findSiblings(target: any, key: string) {
-  const keys = split(key);
+function findSiblings(target: any, keys: string[]) {
   const [leafKey] = keys.slice(-1);
   const remaining = Object.keys(target)
     .filter(k => k !== leafKey)
@@ -59,7 +58,7 @@ export default function setDeep(target: any, path: string, value: unknown): any 
     } else if (obj && target[prop] instanceof Change) {
       if (typeof target[prop].value === 'object') {
         // if an object, we don't want to lose sibling keys
-        const siblings = findSiblings(target[prop].value, path);
+        const siblings = findSiblings(target[prop].value, keys);
         const resolvedValue = value instanceof Change ? value.value : value;
         target[prop] = new Change(
           setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue)
