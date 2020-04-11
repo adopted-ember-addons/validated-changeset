@@ -660,6 +660,37 @@ describe('Unit | Utility | changeset', () => {
     expect(actual).toEqual(expectedResult);
   });
 
+  it('#set should handle bulk replace', () => {
+    dummyModel['org'] = {
+      usa: {
+        ny: 'ny',
+        ca: 'ca'
+      }
+    };
+
+    const c = Changeset(dummyModel);
+    c.set('org', {
+      usa: {
+        ca: 'il',
+        ny: 'wi'
+      }
+    });
+
+    const actual = c.changes;
+    const expectedResult = [
+      {
+        key: 'org',
+        value: {
+          usa: {
+            ca: 'il',
+            ny: 'wi'
+          }
+        }
+      }
+    ];
+    expect(actual).toEqual(expectedResult);
+  });
+
   it('#set works after save', () => {
     dummyModel['org'] = {
       usa: {
