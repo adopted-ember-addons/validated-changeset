@@ -670,17 +670,19 @@ describe('Unit | Utility | changeset', () => {
 
     const c = Changeset(dummyModel);
     c.set('org', {
+      isCompliant: true,
       usa: {
         ca: 'il',
         ny: 'wi'
       }
     });
 
-    const actual = c.changes;
+    let actual = c.changes;
     const expectedResult = [
       {
         key: 'org',
         value: {
+          isCompliant: true,
           usa: {
             ca: 'il',
             ny: 'wi'
@@ -688,6 +690,12 @@ describe('Unit | Utility | changeset', () => {
         }
       }
     ];
+
+    expect(actual).toEqual(expectedResult);
+
+    c.set('org.isCompliant', false);
+
+    actual = c.changes;
     expect(actual).toEqual(expectedResult);
   });
 
