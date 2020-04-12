@@ -115,4 +115,33 @@ describe('Unit | Utility | set deep', () => {
       })
     });
   });
+
+  it('set with class instances', () => {
+    class Person {
+      name = 'baz';
+    }
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
+    };
+    let value = setDeep(objA, 'top.name', new Change(new Person()));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: new Person()
+      })
+    });
+
+    class Foo {
+      other = 'baz';
+    }
+    value = setDeep(value, 'top.foo', new Change(new Foo()));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: new Foo(),
+        name: new Person()
+      })
+    });
+  });
 });
