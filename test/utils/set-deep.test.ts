@@ -78,4 +78,18 @@ describe('Unit | Utility | set deep', () => {
       })
     });
   });
+
+  it('it works with nested Changes with different order', () => {
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
+    };
+    const value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo' // value is not a Change instance
+      })
+    });
+  });
 });
