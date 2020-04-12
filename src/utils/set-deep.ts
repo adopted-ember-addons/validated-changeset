@@ -1,14 +1,26 @@
 import Change from '../-private/change';
 
-// to avoid overwriting child keys of leaf node
-function result(target: any, path: string, value: unknown) {
-  target[path] = value;
-}
-
 function split(path: string): string[] {
   const keys = path.split('.');
 
   return keys;
+}
+
+function findSiblings(target: any, keys: string[]) {
+  const [leafKey] = keys.slice(-1);
+  const remaining = Object.keys(target)
+    .filter(k => k !== leafKey)
+    .reduce((acc, key) => {
+      acc[key] = target[key];
+      return acc;
+    }, Object.create(null));
+
+  return { ...remaining };
+}
+
+// to avoid overwriting child keys of leaf node
+function result(target: any, path: string, value: unknown) {
+  target[path] = value;
 }
 
 function isValidKey(key: unknown) {
@@ -44,13 +56,27 @@ export default function setDeep(target: any, path: string, value: unknown): any 
     if (!obj) {
       target[prop] = {};
     } else if (obj && target[prop] instanceof Change) {
-      // we don't want to merge new changes with a Change instance higher up in the obj tree
-      target[prop] = {};
+      if (typeof target[prop].value === 'object') {
+        // if an object, we don't want to lose sibling keys
+        const siblings = findSiblings(target[prop].value, keys);
+        const resolvedValue = value instanceof Change ? value.value : value;
+        target[prop] = new Change(
+          setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue)
+        );
+
+        // since we are done with the `path`, we can terminate the for loop and return control
+        break;
+      } else {
+        // we don't want to merge new changes with a Change instance higher up in the obj tree
+        // thus we nullify the current Change instance to
+        target[prop] = {};
+      }
     }
 
-    // last iteration
+    // last iteration, set and return control
     if (i === keys.length - 1) {
       result(target, prop, value);
+
       break;
     }
 

@@ -1,4 +1,5 @@
 import setDeep from '../../src/utils/set-deep';
+import Change from '../../src/-private/change';
 
 describe('Unit | Utility | set deep', () => {
   it('it sets value', () => {
@@ -41,5 +42,106 @@ describe('Unit | Utility | set deep', () => {
     const value = setDeep(objA, 'name', 'zoo');
 
     expect(value).toEqual({ foo: { other: 'bar' }, name: 'zoo' });
+  });
+
+  it('it works with nested multiple values', () => {
+    const objA = { top: { name: 'jimmy', foo: { other: 'bar' } } };
+    const value = setDeep(objA, 'top.name', 'zoo');
+
+    expect(value).toEqual({ top: { foo: { other: 'bar' }, name: 'zoo' } });
+  });
+
+  it('it works with nested multiple values with Changes', () => {
+    const objA = {
+      top: new Change({ name: 'jimmy', foo: { other: 'bar' } })
+    };
+    const value = setDeep(objA, 'top.name', 'zoo');
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo'
+      })
+    });
+  });
+
+  it('it works with nested Changes', () => {
+    const objA = {
+      top: new Change({ name: 'jimmy', foo: { other: 'bar' } })
+    };
+    const value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo' // value is not a Change instance
+      })
+    });
+  });
+
+  it('it works with nested Changes with different order', () => {
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
+    };
+    const value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo' // value is not a Change instance
+      })
+    });
+  });
+
+  it('set on nested Changes', () => {
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
+    };
+    let value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo' // value is not a Change instance
+      })
+    });
+
+    value = setDeep(value, 'top.foo.other', new Change('baz'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'baz' },
+        name: 'zoo'
+      })
+    });
+  });
+
+  it('set with class instances', () => {
+    class Person {
+      name = 'baz';
+    }
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
+    };
+    let value = setDeep(objA, 'top.name', new Change(new Person()));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: new Person()
+      })
+    });
+
+    class Foo {
+      other = 'baz';
+    }
+    value = setDeep(value, 'top.foo', new Change(new Foo()));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: new Foo(),
+        name: new Person()
+      })
+    });
   });
 });

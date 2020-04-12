@@ -1,4 +1,5 @@
 import { Changeset, ValidatedChangeset } from '../src';
+import Change from '../src/-private/change';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 
@@ -657,6 +658,58 @@ describe('Unit | Utility | changeset', () => {
 
     const actual = c.changes;
     const expectedResult = [{ key: 'org', value: 'no usa for you' }];
+    expect(actual).toEqual(expectedResult);
+  });
+
+  it('#set should handle bulk replace', () => {
+    dummyModel['org'] = {
+      usa: {
+        ny: 'ny',
+        ca: 'ca'
+      }
+    };
+
+    const c = Changeset(dummyModel);
+    c.set('org', {
+      isCompliant: true,
+      usa: {
+        ca: 'il',
+        ny: 'wi'
+      }
+    });
+
+    let actual = c.changes;
+    let expectedResult = [
+      {
+        key: 'org',
+        value: {
+          isCompliant: true,
+          usa: {
+            ca: 'il',
+            ny: 'wi'
+          }
+        }
+      }
+    ];
+
+    expect(actual).toEqual(expectedResult);
+
+    c.set('org.isCompliant', false);
+
+    actual = c.changes;
+    expectedResult = [
+      {
+        key: 'org',
+        value: {
+          isCompliant: false,
+          usa: {
+            ca: 'il',
+            ny: 'wi'
+          }
+        }
+      }
+    ];
+
     expect(actual).toEqual(expectedResult);
   });
 

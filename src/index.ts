@@ -740,7 +740,8 @@ export class BufferedChangeset implements IChangeset {
     // Happy path: update change map.
     if (oldValue !== value) {
       // @tracked
-      this[CHANGES] = this.setDeep(changes, key, new Change(value));
+      const result = this.setDeep(changes, key, new Change(value));
+      this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
