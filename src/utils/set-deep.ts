@@ -63,17 +63,20 @@ export default function setDeep(target: any, path: string, value: unknown): any 
         target[prop] = new Change(
           setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue)
         );
+
+        // since we are done with the `path`, we can terminate the for loop and return control
         break;
       } else {
         // we don't want to merge new changes with a Change instance higher up in the obj tree
-        // thus we nullify the current Change instance
+        // thus we nullify the current Change instance to
         target[prop] = {};
       }
     }
 
-    // last iteration
+    // last iteration, set and return control
     if (i === keys.length - 1) {
       result(target, prop, value);
+
       break;
     }
 
