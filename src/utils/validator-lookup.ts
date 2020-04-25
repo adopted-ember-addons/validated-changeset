@@ -1,5 +1,6 @@
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
+import isObject from './is-object';
 import { ValidatorAction, ValidatorMapFunc, ValidationResult, ValidatorMap } from '../types';
 import get from './get-deep';
 
@@ -14,7 +15,11 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     const validations = validationMap || {};
     let validator: ValidatorMapFunc | ValidatorMapFunc[] = get(validations, key);
 
-    if (!validator || typeof validator !== 'function') {
+    if (!validator || isObject(validator)) {
+      return true;
+    }
+
+    if (Array.isArray(validator) && validator.some(v => typeof v !== 'function')) {
       return true;
     }
 
