@@ -1,7 +1,8 @@
-import wrapInArray from './wrap';
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
+import isObject from './is-object';
 import { ValidatorAction, ValidatorMapFunc, ValidationResult, ValidatorMap } from '../types';
+import get from './get-deep';
 
 /**
  * returns a closure to lookup and validate k/v pairs set on a changeset
@@ -12,9 +13,13 @@ import { ValidatorAction, ValidatorMapFunc, ValidationResult, ValidatorMap } fro
 export default function lookupValidator(validationMap: ValidatorMap): ValidatorAction {
   return ({ key, newValue, oldValue, changes, content }) => {
     const validations = validationMap || {};
-    let validator: ValidatorMapFunc | ValidatorMapFunc[] = validations[key];
+    let validator: ValidatorMapFunc | ValidatorMapFunc[] = get(validations, key);
 
-    if (!validator || validator === {}) {
+    if (!validator || isObject(validator)) {
+      return true;
+    }
+
+    if (Array.isArray(validator) && validator.some(v => typeof v !== 'function')) {
       return true;
     }
 
@@ -37,7 +42,12 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     );
 
     return isPromise(validation)
-      ? (validation as Promise<ValidationResult>).then(wrapInArray)
-      : [validation];
+      ? (validation as Promise<ValidationResult>).then(result => {
+          if (Array.isArray(result) && result.length > 0) {
+            return result[0];
+          }
+          return result;
+        })
+      : validation;
   };
 }
