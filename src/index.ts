@@ -335,11 +335,11 @@ export class BufferedChangeset implements IChangeset {
 
     if (typeof content.save === 'function') {
       savePromise = content.save(options);
-    } else if (typeof content.save === 'function') {
+    } else if (typeof this.safeGet(content, 'save') === 'function') {
       // we might be getting this off a proxy object.  For example, when a
       // belongsTo relationship (a proxy on the parent model)
       // another way would be content(belongsTo).content.save
-      let saveFunc: Function = content.save;
+      let saveFunc: Function = this.safeGet(content, 'save');
       if (saveFunc) {
         savePromise = saveFunc(options);
       }
