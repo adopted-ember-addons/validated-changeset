@@ -131,6 +131,19 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('change.name')).toEqual('a');
   });
 
+  it('#error can use custom validator', () => {
+    const dummyChangeset = Changeset(dummyModel, dummyValidator);
+    const expectedResult = { name: { validation: 'too short', value: 'a' } };
+    dummyChangeset.set('name', 'a');
+
+    expect(dummyChangeset.error).toEqual(expectedResult);
+    expect(dummyChangeset.error.name).toEqual(expectedResult.name);
+    expect(dummyChangeset.get('error.name')).toEqual(expectedResult.name);
+    expect(dummyChangeset.change).toEqual({ name: 'a' });
+    expect(dummyChangeset.change.name).toEqual('a');
+    expect(dummyChangeset.get('change.name')).toEqual('a');
+  });
+
   it('can get nested values in the error object', function() {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedResult = { validation: 'too short', value: 'a' };
