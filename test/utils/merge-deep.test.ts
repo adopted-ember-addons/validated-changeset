@@ -26,6 +26,17 @@ describe('Unit | Utility | merge deep', () => {
     expect(value).toEqual({ company: { employees: ['Jull', 'Olafur'] } });
   });
 
+  it('it works with classes', () => {
+    class Employee {
+      names = [];
+    }
+    const objA = { company: { employees: ['Ivan', 'Jan'] } };
+    const objB = { company: { employees: new Change(new Employee()) } };
+    const value: Record<string, any> = mergeDeep(objA, objB);
+
+    expect(value.company.employees instanceof Employee).toEqual(true);
+  });
+
   it('it works with unsafe properties', () => {
     class A {
       _boo = 'bo';
@@ -49,6 +60,7 @@ describe('Unit | Utility | merge deep', () => {
 
     const value: Record<string, any> = mergeDeep(objA, objB);
 
+    expect(value instanceof B).toBe(true);
     expect(value.boo).toBe('doo');
     expect(value.other).toBe('Ivan');
     expect(value.foo).toEqual({ baz: 'bar' });

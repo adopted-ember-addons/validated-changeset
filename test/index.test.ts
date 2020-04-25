@@ -898,6 +898,22 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name).toBeUndefined();
   });
 
+  it('#execute keeps prototype of set object', function() {
+    class DogTag {}
+
+    const dog = new DogTag();
+    const originalProto = Object.getPrototypeOf(dog);
+
+    const c = Changeset({});
+    c.set('dog', dog);
+
+    c.execute();
+
+    const condition = c.dog instanceof DogTag;
+    expect(condition).toBeTruthy();
+    expect(Object.getPrototypeOf(c.dog)).toEqual(originalProto);
+  });
+
   it('#execute does not remove original nested objects', function() {
     class DogTag {}
 
@@ -908,6 +924,7 @@ describe('Unit | Utility | changeset', () => {
 
     const c = Changeset(dog);
     c.set('info.name', 'laika');
+
     c.execute();
 
     const condition = dog.info instanceof DogTag;
