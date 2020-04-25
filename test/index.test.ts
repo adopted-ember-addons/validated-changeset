@@ -49,9 +49,11 @@ const dummyValidations: Record<string, any> = {
       return !!value;
     },
     usa: {
-      ny(_k: string, value: unknown) {
-        return !!value || 'must be present';
-      }
+      ny: [
+        (_k: string, value: unknown) => {
+          return !!value || 'must be present';
+        }
+      ]
     }
   }
 };
@@ -194,7 +196,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', '');
 
     let expectedErrors = [
-      { key: 'org.usa.ny', validation: 'must be present', value: '' },
+      { key: 'org.usa.ny', validation: ['must be present'], value: '' },
       { key: 'name', validation: 'too short', value: '' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
@@ -1545,7 +1547,7 @@ describe('Unit | Utility | changeset', () => {
     let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
     await dummyChangeset.validate('org.usa.ny');
     expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({
-      validation: 'must be present',
+      validation: ['must be present'],
       value: null
     });
     /* expect(dummyChangeset.changes).toEqual([]); */
