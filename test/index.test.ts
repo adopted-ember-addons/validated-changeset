@@ -52,6 +52,9 @@ const dummyValidations: Record<string, any> = {
       ny: [
         (_k: string, value: unknown) => {
           return !!value || 'must be present';
+        },
+        (_k: string, value: string) => {
+          return /[A-z]/.test(value) ? true : 'only letters work';
         }
       ]
     }
@@ -209,7 +212,14 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', '');
 
     let expectedErrors = [
-      { key: 'org.usa.ny', validation: ['must be present'], value: '' },
+      { key: 'org.usa.ny', validation: ['must be present', 'only letters work'], value: '' },
+      { key: 'name', validation: 'too short', value: '' }
+    ];
+    expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
+
+    dummyChangeset.set('org.usa.ny', '1');
+    expectedErrors = [
+      { key: 'org.usa.ny', validation: ['only letters work'], value: '1' },
       { key: 'name', validation: 'too short', value: '' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
