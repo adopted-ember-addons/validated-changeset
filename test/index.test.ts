@@ -669,6 +669,33 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isValid).toEqual(true);
   });
 
+  it('#set adds errors if undefined value', () => {
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    let expectedResult = [{ key: 'name', validation: 'too short', value: undefined }];
+    dummyChangeset.set('name', undefined);
+
+    expect(dummyChangeset.errors).toEqual(expectedResult);
+    expect(dummyChangeset.get('errors')).toEqual(expectedResult);
+  });
+
+  it('#set if trigger null value', () => {
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    let expectedResult = [{ key: 'name', validation: 'too short', value: null }];
+    dummyChangeset.set('name', null);
+
+    expect(dummyChangeset.errors).toEqual(expectedResult);
+    expect(dummyChangeset.get('errors')).toEqual(expectedResult);
+  });
+
+  it('#set if trigger empty string value', () => {
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    let expectedResult = [{ key: 'name', validation: 'too short', value: '' }];
+    dummyChangeset.set('name', '');
+
+    expect(dummyChangeset.errors).toEqual(expectedResult);
+    expect(dummyChangeset.get('errors')).toEqual(expectedResult);
+  });
+
   it('#set should remove nested changes when setting roots', () => {
     dummyModel['org'] = {
       usa: {
