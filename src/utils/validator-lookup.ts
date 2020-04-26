@@ -43,9 +43,6 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
 
     return isPromise(validation)
       ? (validation as Promise<ValidationResult>).then(result => {
-          if (Array.isArray(result) && result.length > 0) {
-            return result[0];
-          }
           return result;
         })
       : validation;
