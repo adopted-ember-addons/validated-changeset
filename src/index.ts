@@ -523,7 +523,7 @@ export class BufferedChangeset implements IChangeset {
     // Add `key` to errors map.
     let errors: Errors<any> = this[ERRORS];
     // @tracked
-    this[ERRORS] = this.setDeep(errors, key, newError);
+    this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSEt });
 
     // Return passed-in `error`.
     return error;
@@ -549,7 +549,7 @@ export class BufferedChangeset implements IChangeset {
     validation = [...v, ...newErrors];
     let newError = new Err(value, validation);
     // @tracked
-    this[ERRORS] = this.setDeep(errors, key as string, newError);
+    this[ERRORS] = this.setDeep(errors, key as string, newError, { safeSet: this.safeSet });
 
     return { value, validation };
   }
@@ -748,7 +748,7 @@ export class BufferedChangeset implements IChangeset {
 
     // Happy path: update change map.
     if (oldValue !== value) {
-      const result = this.setDeep(changes, key, new Change(value));
+      const result = this.setDeep(changes, key, new Change(value), { safeSet: this.safeSet });
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
