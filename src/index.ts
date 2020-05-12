@@ -523,7 +523,7 @@ export class BufferedChangeset implements IChangeset {
     // Add `key` to errors map.
     let errors: Errors<any> = this[ERRORS];
     // @tracked
-    this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSEt });
+    this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSet });
 
     // Return passed-in `error`.
     return error;
