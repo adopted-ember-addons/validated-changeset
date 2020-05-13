@@ -748,9 +748,11 @@ export class BufferedChangeset implements IChangeset {
 
     // Happy path: update change map.
     if (oldValue !== value) {
+      // @tracked
       const result = this.setDeep(changes, key, new Change(value));
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
+      // @tracked
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
     }
   }
@@ -950,7 +952,7 @@ export class BufferedChangeset implements IChangeset {
     value: T
   ): void | Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
     if (this.hasOwnProperty(key) || keyInObject(this, key)) {
-      this[key] = value;
+      this.safeSet(this, key, value);
       return;
     }
 
