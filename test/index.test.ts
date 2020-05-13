@@ -963,18 +963,6 @@ describe('Unit | Utility | changeset', () => {
     expect(c.get('foo')).toEqual(model.foo);
   });
 
-  it('#set can set to empty object multiple times', () => {
-    const model = { foo: { bar: { baz: 42 } } };
-
-    const c = Changeset(model);
-    expect(c.get('foo')).toEqual(model.foo);
-
-    c.set('foo', {});
-    c.set('foo', {});
-    c.execute();
-    expect(c.get('foo')).toEqual({});
-  });
-
   /**
    * #prepare
    */

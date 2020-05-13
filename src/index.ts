@@ -152,14 +152,6 @@ export class BufferedChangeset implements IChangeset {
     return obj[key];
   }
 
-  /**
-   * @property safeSet
-   * @override
-   */
-  safeSet(obj: any, key: string, value: unknown) {
-    return (obj[key] = value);
-  }
-
   get _bareChanges() {
     function transform(c: Change) {
       return c.value;
@@ -952,7 +944,7 @@ export class BufferedChangeset implements IChangeset {
     value: T
   ): void | Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
     if (this.hasOwnProperty(key) || keyInObject(this, key)) {
-      this.safeSet(this, key, value);
+      this[key] = value;
       return;
     }
 
