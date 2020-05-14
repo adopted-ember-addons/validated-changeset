@@ -601,6 +601,7 @@ describe('Unit | Utility | changeset', () => {
     c.set('org.usa.ny', 'nye');
 
     expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.org).toEqual({ usa: { mn: 'mn', ny: 'nye', nz: 'nz' }, landArea: 100 });
     expect(c.get('org.usa.ny')).toBe('nye');
     expect(c.get('org.usa.mn')).toBe('mn');
     expect(c.get('org.usa.nz')).toBe('nz');
