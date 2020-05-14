@@ -511,6 +511,35 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('#set doesnt lose sibling keys', () => {
+    dummyModel['org'] = {
+      usa: {
+        mn: 'mn',
+        ny: 'ny',
+        nz: 'nz'
+      },
+      landArea: 100
+    };
+
+    const c = Changeset(dummyModel);
+    c.set('org.usa.ny', 'NY');
+
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.get('org.usa.ny')).toBe('NY');
+    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.nz')).toBe('nz');
+    expect(c.get('org.landArea')).toBe(100);
+
+    // set again
+    c.set('org.usa.ny', 'nye');
+
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.get('org.usa.ny')).toBe('nye');
+    expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.nz')).toBe('nz');
+    expect(c.get('org.landArea')).toBe(100);
+  });
+
   it('#set adds a change if the key is an object', () => {
     dummyModel['org'] = {
       usa: {
