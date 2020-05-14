@@ -896,7 +896,7 @@ export class BufferedChangeset implements IChangeset {
           isObject(content[baseKey]) &&
           !isLeafInChanges(key, changes)
         ) {
-          let netKeys = Object.keys(content[baseKey]).filter(k => !this.safeGet(result, k));
+          let netKeys = Object.keys(content[baseKey]);
           if (netKeys.length === 0) {
             return result;
           }
@@ -908,7 +908,18 @@ export class BufferedChangeset implements IChangeset {
             result
           );
           netKeys.forEach(k => {
-            data[k] = this.getDeep(content, `${baseKey}.${k}`);
+            const inResult = this.safeGet(result, k);
+            const contentData = this.getDeep(content, `${baseKey}.${k}`);
+
+            if (
+              isObject(inResult) &&
+              isObject(contentData) &&
+              contentData.constructor.name === 'Object'
+            ) {
+              data[k] = { ...contentData, ...inResult };
+            } else if (!inResult) {
+              data[k] = contentData;
+            }
           });
 
           return data;
