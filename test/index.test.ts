@@ -515,8 +515,10 @@ describe('Unit | Utility | changeset', () => {
     dummyModel['org'] = {
       usa: {
         mn: 'mn',
-        ny: 'ny'
-      }
+        ny: 'ny',
+        nz: 'nz'
+      },
+      landArea: 100
     };
 
     const c = Changeset(dummyModel);
@@ -525,6 +527,8 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org.usa.ny).toBe('ny');
     expect(c.get('org.usa.ny')).toBe('NY');
     expect(c.get('org.usa.mn')).toBe('mn');
+    expect(c.get('org.usa.nz')).toBe('nz');
+    expect(c.get('org.landArea')).toBe(100);
 
     const expectedChanges = [{ key: 'org.usa.ny', value: 'NY' }];
     const changes = c.changes;
