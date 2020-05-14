@@ -30,11 +30,34 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ name: { other: 'foo' } });
   });
 
-  it('it handles sibling keys', () => {
-    const objA = { name: { other: 'Ivan', koala: 'bear' }, star: 'wars' };
-    const value = setDeep(objA, 'name.other', 'foo');
+  it('it does not lose sibling keys', () => {
+    const objA = {
+      name: {
+        other: 'Ivan',
+        koala: 'bear',
+        location: {
+          state: 'MN',
+          zip: '45554'
+        }
+      },
+      star: 'wars'
+    };
 
-    expect(value).toEqual({ name: { other: 'foo', koala: 'bear' }, star: 'wars' });
+    let value = setDeep(objA, 'name.other', 'foo');
+    value = setDeep(objA, 'name.location.state', 'CO');
+
+    const expected = {
+      name: {
+        other: 'foo',
+        koala: 'bear',
+        location: {
+          state: 'CO',
+          zip: '45554'
+        }
+      },
+      star: 'wars'
+    };
+    expect(value).toEqual(expected);
   });
 
   it('it works with multiple values', () => {
