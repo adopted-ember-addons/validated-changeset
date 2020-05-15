@@ -7,6 +7,7 @@ import normalizeObject from './utils/normalize-object';
 import pureAssign from './utils/assign';
 import isChangeset, { CHANGESET } from './utils/is-changeset';
 import isObject from './utils/is-object';
+import { isLeafInChanges } from './utils/is-leaf';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
 import mergeNested from './utils/merge-nested';
@@ -867,7 +868,7 @@ export class BufferedChangeset implements IChangeset {
 
     if (Object.prototype.hasOwnProperty.call(this[CHANGES], baseKey)) {
       let changes: Changes = this[CHANGES];
-      let result;
+      let result: Record<string, any>;
 
       if (remaining.length > 0) {
         let c = changes[baseKey];
@@ -880,7 +881,51 @@ export class BufferedChangeset implements IChangeset {
       }
 
       if (result !== undefined && result !== null && isObject(result)) {
-        return normalizeObject(result);
+        // 1. Knock out any class Change{} instances
+        result = normalizeObject(result);
+        // 2. then ensure sibling keys are merged with the "result"
+        let content: Content = this[CONTENT];
+
+        // Merge the content with the changes to have a complete object for a nested property.
+        // Given a object with nested property and multiple properties inside of it, if the
+        // requested key is the top most nested property and we have changes in of the properties, we need to
+        // merge the original model data with the changes to have the complete object.
+        // eg. model = { user: { name: 'not changed', email: 'changed@prop.com'} }
+        if (
+          !Array.isArray(result) &&
+          isObject(content[baseKey]) &&
+          !isLeafInChanges(key, changes)
+        ) {
+          let netKeys = Object.keys(content[baseKey]);
+          if (netKeys.length === 0) {
+            return result;
+          }
+
+          // 3. Ok merge sibling keys.  Yes, shallow clone, but users should treat `c.get` as read only.  Mods to data
+          // structures should happen through `c.set(...)` or `{{changeset-set ...}}`
+          const data = Object.assign(
+            Object.create(Object.getPrototypeOf(content[baseKey])),
+            result
+          );
+          netKeys.forEach(k => {
+            const inResult = this.safeGet(result, k);
+            const contentData = this.getDeep(content, `${baseKey}.${k}`);
+
+            if (
+              isObject(inResult) &&
+              isObject(contentData) &&
+              contentData.constructor.name === 'Object'
+            ) {
+              data[k] = { ...contentData, ...inResult };
+            } else if (!inResult) {
+              data[k] = contentData;
+            }
+          });
+
+          return data;
+        }
+
+        return result;
       }
 
       if (result) {

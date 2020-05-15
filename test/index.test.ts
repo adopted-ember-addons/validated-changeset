@@ -321,6 +321,73 @@ describe('Unit | Utility | changeset', () => {
     expect(newValue.date).toBe(d);
   });
 
+  it('#get handles changes that are non primitives', () => {
+    class Moment {
+      _isUTC: boolean;
+      date: unknown;
+      constructor(date: Date) {
+        this.date = date;
+        this._isUTC = false;
+      }
+    }
+
+    const d = new Date('2015');
+    const momentInstance = new Moment(d);
+    momentInstance._isUTC = true;
+    const c = Changeset({
+      startDate: momentInstance
+    });
+
+    let newValue = c.get('startDate');
+    expect(newValue).toEqual(momentInstance);
+    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toBe(d);
+    expect(newValue._isUTC).toEqual(true);
+
+    const newD = new Date('2020');
+    const newMomentInstance = new Moment(newD);
+    c.set('startDate', newMomentInstance);
+
+    newValue = c.get('startDate');
+    expect(newValue).toEqual(newMomentInstance);
+    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toBe(newD);
+    expect(newValue._isUTC).toBe(false);
+  });
+
+  it('#get merges sibling keys from CONTENT with CHANGES', () => {
+    class Moment {
+      _isUTC: boolean;
+      date: unknown;
+      constructor(date: Date) {
+        this.date = date;
+        this._isUTC = false;
+      }
+    }
+
+    const d = new Date('2015');
+    const momentInstance = new Moment(d);
+    momentInstance._isUTC = true;
+    const c = Changeset({
+      startDate: momentInstance
+    });
+
+    let newValue = c.get('startDate');
+    expect(newValue).toEqual(momentInstance);
+    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toBe(d);
+    expect(newValue._isUTC).toEqual(true);
+
+    const newD = new Date('2020');
+    c.set('startDate.date', newD);
+
+    newValue = c.get('startDate');
+    expect(newValue).not.toEqual(momentInstance);
+    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toBe(newD);
+    expect(newValue._isUTC).toBe(true);
+  });
+
   it('#get returns change if present', () => {
     dummyModel.name = 'Jim Bob';
     const dummyChangeset = Changeset(dummyModel);
@@ -525,6 +592,7 @@ describe('Unit | Utility | changeset', () => {
     c.set('org.usa.ny', 'NY');
 
     expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.org).toEqual({ usa: { mn: 'mn', ny: 'NY', nz: 'nz' }, landArea: 100 });
     expect(c.get('org.usa.ny')).toBe('NY');
     expect(c.get('org.usa.mn')).toBe('mn');
     expect(c.get('org.usa.nz')).toBe('nz');
@@ -534,6 +602,7 @@ describe('Unit | Utility | changeset', () => {
     c.set('org.usa.ny', 'nye');
 
     expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.org).toEqual({ usa: { mn: 'mn', ny: 'nye', nz: 'nz' }, landArea: 100 });
     expect(c.get('org.usa.ny')).toBe('nye');
     expect(c.get('org.usa.mn')).toBe('mn');
     expect(c.get('org.usa.nz')).toBe('nz');
