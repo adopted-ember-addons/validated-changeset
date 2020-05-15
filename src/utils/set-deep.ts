@@ -1,5 +1,9 @@
 import Change from '../-private/change';
 
+interface Options {
+  safeSet: any;
+}
+
 function split(path: string): string[] {
   const keys = path.split('.');
 
@@ -18,11 +22,6 @@ function findSiblings(target: any, keys: string[]) {
   return { ...remaining };
 }
 
-// to avoid overwriting child keys of leaf node
-function result(target: any, path: string, value: unknown) {
-  target[path] = value;
-}
-
 function isValidKey(key: unknown) {
   return key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
 }
@@ -39,13 +38,24 @@ function isObject(val: unknown) {
  *
  * @method setDeep
  */
-export default function setDeep(target: any, path: string, value: unknown): any {
+export default function setDeep(
+  target: any,
+  path: string,
+  value: unknown,
+  options: Options = { safeSet: undefined }
+): any {
   const keys = split(path).filter(isValidKey);
   // We will mutate target and through complex reference, we will mutate the orig
   let orig = target;
 
+  options.safeSet =
+    options.safeSet ||
+    function(obj: any, key: string, value: unknown): any {
+      return (obj[key] = value);
+    };
+
   if (keys.length === 1) {
-    target[path] = value;
+    options.safeSet(target, path, value);
     return target;
   }
 
@@ -54,7 +64,7 @@ export default function setDeep(target: any, path: string, value: unknown): any 
 
     const obj = isObject(target[prop]);
     if (!obj) {
-      target[prop] = {};
+      options.safeSet(target, prop, {});
     } else if (obj && target[prop] instanceof Change) {
       if (typeof target[prop].value === 'object') {
         // if an object, we don't want to lose sibling keys
@@ -69,13 +79,13 @@ export default function setDeep(target: any, path: string, value: unknown): any 
       } else {
         // we don't want to merge new changes with a Change instance higher up in the obj tree
         // thus we nullify the current Change instance to
-        target[prop] = {};
+        options.safeSet(target, prop, {});
       }
     }
 
     // last iteration, set and return control
     if (i === keys.length - 1) {
-      result(target, prop, value);
+      options.safeSet(target, prop, value);
 
       break;
     }
