@@ -249,7 +249,7 @@ export class BufferedChangeset implements IChangeset {
     }
 
     this._setProperty({ key, value, oldValue });
-    this._validateKey(key, value);
+    this.#validateKey(key, value);
   }
 
   /**
@@ -639,7 +639,7 @@ export class BufferedChangeset implements IChangeset {
    * @method _validateKey
    * @private
    */
-  _validateKey<T>(
+  #validateKey<T>(
     key: string,
     value: T
   ): Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {

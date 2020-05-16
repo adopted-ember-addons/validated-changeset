@@ -1,7 +1,7 @@
 export { default as pureAssign } from './assign';
 export { default as getDeep } from './get-deep';
 export { default as setDeep } from './set-deep';
-export { default as getKeyValues } from './get-key-values';
+export { getKeyValues, getKeyErrorValues } from './get-key-values';
 export { default as handleMultipleValidations } from './handle-multiple-validations';
 export { default as isChangeset } from './is-changeset';
 export { default as isObject } from './is-object';
