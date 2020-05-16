@@ -52,7 +52,7 @@ describe('Unit | Utility | flattenValidations', function() {
       usa: {
         ny: [nyFunc, mnFunc],
         mn: {
-          stpaul: paulFunc,
+          stpaul: [paulFunc],
           grove: {
             village: villageFunc
           }
@@ -63,7 +63,7 @@ describe('Unit | Utility | flattenValidations', function() {
 
     expect(result.usa).toBeUndefined();
     expect(result['usa.ny']).toEqual([nyFunc, mnFunc]);
-    expect(result['usa.mn.stpaul']).toEqual(paulFunc);
+    expect(result['usa.mn.stpaul']).toEqual([paulFunc]);
     expect(result['usa.mn.grove.village']).toEqual(villageFunc);
   });
 });
