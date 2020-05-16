@@ -1683,7 +1683,6 @@ describe('Unit | Utility | changeset', () => {
 
     await dummyChangeset.validate();
 
-    console.log(dummyChangeset.errors)
     expect(get(dummyChangeset, 'errors.length')).toBe(0);
     expect(dummyChangeset.isValid).toEqual(true);
   });

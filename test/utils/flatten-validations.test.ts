@@ -42,4 +42,28 @@ describe('Unit | Utility | flattenValidations', function() {
     expect(result['usa.mn.stpaul']).toEqual(paulFunc);
     expect(result['usa.mn.grove']).toEqual(groveFunc);
   });
+
+  it('it works with mix of functions and nested keys', () => {
+    const nyFunc = () => {};
+    const mnFunc = () => {};
+    const paulFunc = () => {};
+    const villageFunc = () => {};
+    const input = {
+      usa: {
+        ny: [nyFunc, mnFunc],
+        mn: {
+          stpaul: paulFunc,
+          grove: {
+            village: villageFunc
+          }
+        }
+      }
+    };
+    const result: Record<string, any> = flattenValidations(input);
+
+    expect(result.usa).toBeUndefined();
+    expect(result['usa.ny']).toEqual([nyFunc, mnFunc]);
+    expect(result['usa.mn.stpaul']).toEqual(paulFunc);
+    expect(result['usa.mn.grove.village']).toEqual(villageFunc);
+  });
 });
