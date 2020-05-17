@@ -580,8 +580,6 @@ changeset.pushErrors('age', 'Too short', 'Not a valid number', 'Must be greater 
 changeset.pushErrors('dogYears.age', 'Too short', 'Not a valid number', 'Must be greater than 2.5');
 ```
 
-This is compatible with `validated-changeset-validations`, and allows you to either add a new error with multiple validation messages or push to an existing array of validation messages.
-
 **[⬆️ back to top](#api)**
 
 #### `snapshot`
