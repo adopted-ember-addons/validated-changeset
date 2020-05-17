@@ -5,6 +5,7 @@ import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
 import normalizeObject from './utils/normalize-object';
 import pureAssign from './utils/assign';
+import { flattenValidations } from './utils/flatten-validations';
 import isChangeset, { CHANGESET } from './utils/is-changeset';
 import isObject from './utils/is-object';
 import { isLeafInChanges } from './utils/is-leaf';
@@ -481,7 +482,9 @@ export class BufferedChangeset implements IChangeset {
     }
 
     validationKeys =
-      validationKeys.length > 0 ? validationKeys : keys(this.validationMap as object);
+      validationKeys.length > 0
+        ? validationKeys
+        : keys(flattenValidations(this.validationMap as object));
 
     let maybePromise = validationKeys.map(key => {
       const x = this._validateKey(key as string, this._valueFor(key as string));
@@ -644,7 +647,7 @@ export class BufferedChangeset implements IChangeset {
     value: T
   ): Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
     let content: Content = this[CONTENT];
-    let oldValue: any = this.safeGet(content, key);
+    let oldValue: any = this.getDeep(content, key);
     let validation: ValidationResult | Promise<ValidationResult> = this._validate(
       key,
       value,

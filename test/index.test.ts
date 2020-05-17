@@ -24,7 +24,7 @@ const dummyValidations: Record<string, any> = {
     return errors.length > 1 ? errors : errors[0];
   },
   password(_k: string, value: unknown) {
-    return value || ['foo', 'bar'];
+    return !!value || ['foo', 'bar'];
   },
   passwordConfirmation(
     _k: string,
@@ -46,7 +46,7 @@ const dummyValidations: Record<string, any> = {
   },
   org: {
     isCompliant(_k: string, value: unknown) {
-      return !!value;
+      return !!value || 'not provided';
     },
     usa: {
       ny: [
@@ -1593,7 +1593,20 @@ describe('Unit | Utility | changeset', () => {
       value: false
     });
     expect(dummyChangeset.changes).toEqual([]);
-    expect(get(dummyChangeset, 'errors.length')).toBe(5);
+    expect(get(dummyChangeset, 'errors.length')).toBe(7);
+  });
+
+  it('#validate/0 validates nested fields', async () => {
+    dummyModel.org = { usa: { ny: 7 } };
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
+
+    await dummyChangeset.validate();
+    expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({
+      validation: ['only letters work'],
+      value: 7
+    });
+    expect(dummyChangeset.changes).toEqual([]);
+    expect(get(dummyChangeset, 'errors.length')).toBe(7);
   });
 
   it('#validate/1 validates a single field immediately', async () => {
@@ -1631,27 +1644,42 @@ describe('Unit | Utility | changeset', () => {
         password: false,
         async: true,
         passwordConfirmation: false,
-        options: {}
+        options: {},
+        org: {
+          isCompliant: undefined,
+          usa: {
+            ny: undefined
+          }
+        }
       }
     };
     let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
 
+    expect(get(dummyChangeset, 'errors.length')).toBe(0);
+
     dummyChangeset.set('name', 'Jim Bob');
+
     await dummyChangeset.validate();
-    // expect(get(dummyChangeset, 'errors.length')).toBe(1);
+
+    expect(get(dummyChangeset, 'errors.length')).toBe(4);
     expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
     expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('passwordConfirmation', true);
+
     await dummyChangeset.validate();
-    expect(get(dummyChangeset, 'errors.length')).toBe(2);
-    expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
-    expect(get(dummyChangeset, 'errors.1.key')).toBe('passwordConfirmation');
+    expect(get(dummyChangeset, 'errors.length')).toBe(4);
+    expect(get(dummyChangeset, 'errors')[0].key).toBe('org.usa.ny');
+    expect(get(dummyChangeset, 'errors')[1].key).toBe('org.isCompliant');
+    expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
+    expect(get(dummyChangeset, 'errors')[3].key).toBe('passwordConfirmation');
     expect(dummyChangeset.isInvalid).toEqual(true);
 
-    dummyChangeset.set('password', true);
-    dummyChangeset.set('passwordConfirmation', true);
+    dummyChangeset.set('org.isCompliant', true);
+    dummyChangeset.set('password', 'foobar');
+    dummyChangeset.set('passwordConfirmation', 'foobar');
     dummyChangeset.set('email', 'scott.mail@gmail.com');
+    dummyChangeset.set('org.usa.ny', 'NY');
 
     await dummyChangeset.validate();
 
@@ -1695,7 +1723,19 @@ describe('Unit | Utility | changeset', () => {
     };
     dummyModel = {
       ...dummyModel,
-      ...{ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true, options }
+      ...{
+        name: 'Jim Bob',
+        password: true,
+        passwordConfirmation: true,
+        async: true,
+        options,
+        org: {
+          isCompliant: true,
+          usa: {
+            ny: 'NY'
+          }
+        }
+      }
     };
     let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
 
