@@ -289,6 +289,48 @@ describe('Unit | Utility | changeset', () => {
    * #isDirty
    */
 
+  it('#set dirties changeset', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('name', 'foo');
+
+    expect(dummyChangeset.isDirty).toBe(true);
+  });
+
+  it('#isDirty after set', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('name', 'foo');
+
+    expect(dummyChangeset.isDirty).toBe(true);
+  });
+
+  it('#isDirty not reset after execute', () => {
+    dummyModel.name = {};
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['name'] = {
+      short: 'foo'
+    };
+
+    expect(dummyChangeset.get('isDirty')).toBe(true);
+
+    dummyChangeset.execute();
+
+    expect(dummyChangeset.get('isDirty')).toBe(true);
+  });
+
+  it('#isDirty reset after rollback', () => {
+    dummyModel.name = {};
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['name'] = {
+      short: 'foo'
+    };
+
+    expect(dummyChangeset.get('isDirty')).toBe(true);
+
+    dummyChangeset.rollback();
+
+    expect(dummyChangeset.get('isDirty')).toBe(false);
+  });
+
   /**
    * #get
    */
