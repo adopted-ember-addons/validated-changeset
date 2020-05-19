@@ -1,3 +1,12 @@
+export interface ProxyHandler {
+  value: unknown;
+  changes: object;
+  content: unknown;
+  proxy: any;
+  children: object;
+  safeGet: Function;
+}
+
 export type Config = {
   skipValidate?: boolean;
 };
