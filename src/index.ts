@@ -873,31 +873,30 @@ export class BufferedChangeset implements IChangeset {
 
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
       let result: Record<string, any>;
+      let baseChanges = changes[baseKey];
 
       if (remaining.length > 0) {
-        let c = changes[baseKey];
-        result = this.getDeep(normalizeObject(c), remaining.join('.'));
-
-        if (isObject(result) && !(result instanceof Change)) {
-          // primitive or array
-          const tree = new ObjectTreeNode(result, changes, content, this.safeGet);
-          return tree.proxy;
-        } else {
-          // do i need to access value?
-          return result.value;
-        }
-      } else {
-        result = changes[baseKey];
+        result = this.getDeep(normalizeObject(baseChanges), remaining.join('.'));
 
         if (isObject(result)) {
           if (result instanceof Change) {
             return result.value;
           }
+
+          // give back and object that can further retrieve changes and/or content
           const tree = new ObjectTreeNode(result, changes, content, this.safeGet);
           return tree.proxy;
-        } else {
-          return result.value;
+        } else if (result) {
+          return result;
         }
+      }
+
+      // do it after checking remaining keys b/c
+      if (baseChanges instanceof Change) {
+        return baseChanges.value;
+      } else if (baseChanges) {
+        const tree = new ObjectTreeNode(baseChanges, changes, content, this.safeGet);
+        return tree.proxy;
       }
     }
 

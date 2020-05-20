@@ -1,14 +1,23 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
+import Change from '../-private/change';
 
 const objectProxyHandler = {
   get(node: Record<string, any>, key: string) {
     let childValue = node.safeGet(node.value, key);
-    let childChanges = node.safeGet(node.changes, key);
-    let childContent = node.safeGet(node.content, key);
+
+    if (!childValue) {
+      return node.safeGet(node.content, key);
+    }
+
+    if (childValue instanceof Change) {
+      return childValue.value;
+    }
 
     if (isObject(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
+      let childChanges = node.safeGet(node.changes, key);
+      let childContent = node.safeGet(node.content, key);
 
       if (childNode === undefined) {
         childNode = node.children[key] = new ObjectTreeNode(
