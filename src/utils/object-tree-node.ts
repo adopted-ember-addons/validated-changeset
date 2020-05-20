@@ -4,11 +4,7 @@ import Change from '../-private/change';
 
 const objectProxyHandler = {
   get(node: Record<string, any>, key: string) {
-    if (node[key]) {
-      return node[key];
-    }
-
-    if (node.hasOwnProperty(key)) {
+    if (typeof node[key] === 'function' || node.hasOwnProperty(key)) {
       return node[key];
     }
 
