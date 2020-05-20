@@ -11,22 +11,15 @@ describe('Unit | Utility | object tree node', () => {
   });
 
   it('it returns nested children', () => {
+    const initialVal = { details: { name: 'z' } };
     const result = new ObjectTreeNode(
-      { details: { name: 'z' } },
+      initialVal,
       { details: { name: 'b' } },
       { details: { name: 'c' } }
     );
 
     expect(result.value).toEqual({ details: { name: 'z' } });
-    const expectedDetails = {
-      changes: undefined,
-      children: undefined,
-      content: undefined,
-      proxy: undefined,
-      safeGet: undefined,
-      value: undefined
-    };
-    expect(result.proxy.details).toEqual(expectedDetails);
+    expect(result.proxy.details.toObject() === initialVal.details).toBe(true);
     const details = result.proxy.details;
     expect(details.name).toBe('z');
     expect(result.proxy.details.name).toBe('z');

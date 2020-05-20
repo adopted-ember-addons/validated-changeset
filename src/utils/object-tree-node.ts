@@ -4,6 +4,14 @@ import Change from '../-private/change';
 
 const objectProxyHandler = {
   get(node: Record<string, any>, key: string) {
+    if (node[key]) {
+      return node[key];
+    }
+
+    if (node.hasOwnProperty(key)) {
+      return node[key];
+    }
+
     let childValue = node.safeGet(node.value, key);
 
     if (!childValue) {
@@ -32,6 +40,22 @@ const objectProxyHandler = {
     }
 
     return childValue;
+  },
+
+  ownKeys(node: Record<string, any>) {
+    return Reflect.ownKeys(node.value);
+  },
+
+  getOwnPropertyDescriptor(node: Record<string, any>, prop: string) {
+    return Reflect.getOwnPropertyDescriptor(node.value, prop);
+  },
+
+  has(node: Record<string, any>, prop: string) {
+    return Reflect.has(node.value, prop);
+  },
+
+  set() {
+    return false;
   }
 };
 
@@ -57,6 +81,10 @@ class ObjectTreeNode implements ProxyHandler {
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
     this.children = Object.create(null);
+  }
+
+  toObject() {
+    return this.value;
   }
 }
 
