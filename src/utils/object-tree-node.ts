@@ -10,10 +10,6 @@ const objectProxyHandler = {
 
     let childValue = node.safeGet(node.value, key);
 
-    if (!childValue) {
-      return node.safeGet(node.content, key);
-    }
-
     if (childValue instanceof Change) {
       return childValue.value;
     }
@@ -35,7 +31,13 @@ const objectProxyHandler = {
       return childNode ? childNode.proxy : undefined;
     }
 
-    return childValue;
+    if (childValue) {
+      return childValue;
+    } else {
+      if (node.content && node.content.hasOwnProperty(key)) {
+        return node.safeGet(node.content, key);
+      }
+    }
   },
 
   ownKeys(node: Record<string, any>) {
@@ -67,7 +69,7 @@ class ObjectTreeNode implements ProxyHandler {
   children: Record<string, any>;
 
   constructor(
-    value: unknown,
+    value: unknown = {},
     changes: object | undefined,
     content: Content,
     public safeGet: Function = defaultSafeGet

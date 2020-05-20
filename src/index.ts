@@ -153,6 +153,14 @@ export class BufferedChangeset implements IChangeset {
     return obj[key];
   }
 
+  /**
+   * @property safeSet
+   * @override
+   */
+  safeSet(obj: any, key: string, value: unknown) {
+    return (obj[key] = value);
+  }
+
   get _bareChanges() {
     function transform(c: Change) {
       return c.value;
@@ -872,12 +880,12 @@ export class BufferedChangeset implements IChangeset {
     let content: Content = this[CONTENT];
 
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
-      let result: Record<string, any>;
       let baseChanges = changes[baseKey];
 
-      if (remaining.length > 0) {
-        result = this.getDeep(normalizeObject(baseChanges), remaining.join('.'));
-
+      // 'user.name'
+      const normalizedBaseChanges = normalizeObject(baseChanges);
+      if (isObject(normalizedBaseChanges)) {
+        const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
         if (isObject(result)) {
           if (result instanceof Change) {
             return result.value;
@@ -891,12 +899,8 @@ export class BufferedChangeset implements IChangeset {
         }
       }
 
-      // do it after checking remaining keys b/c
       if (baseChanges instanceof Change) {
         return baseChanges.value;
-      } else if (baseChanges) {
-        const tree = new ObjectTreeNode(baseChanges, changes, content, this.safeGet);
-        return tree.proxy;
       }
     }
 
@@ -911,9 +915,16 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    // finally return on underlying object
-    const result = this.getDeep(content, key);
-    return result;
+    // finally return on underlying object or proxy to further access nested keys
+    const subContent = this.getDeep(content, key);
+    const subChanges = this.getDeep(changes, key);
+    if (isObject(subContent)) {
+      // may still access a value on the changes or content objects
+      const tree = new ObjectTreeNode(subChanges, subChanges, subContent, this.safeGet);
+      return tree.proxy;
+    } else {
+      return subContent;
+    }
   }
 
   set<T>(
