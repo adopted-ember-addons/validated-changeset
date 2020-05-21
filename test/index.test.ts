@@ -358,8 +358,8 @@ describe('Unit | Utility | changeset', () => {
     });
 
     const newValue = c.get('startDate');
-    expect(newValue).toEqual(momentInstance);
-    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toEqual(momentInstance.date);
+    expect(newValue.content instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(d);
   });
 
@@ -381,8 +381,8 @@ describe('Unit | Utility | changeset', () => {
     });
 
     let newValue = c.get('startDate');
-    expect(newValue).toEqual(momentInstance);
-    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toEqual(momentInstance.date);
+    expect(newValue.content instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(d);
     expect(newValue._isUTC).toEqual(true);
 
@@ -415,8 +415,8 @@ describe('Unit | Utility | changeset', () => {
     });
 
     let newValue = c.get('startDate');
-    expect(newValue).toEqual(momentInstance);
-    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toEqual(momentInstance.date);
+    expect(newValue.content instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(d);
     expect(newValue._isUTC).toEqual(true);
 
@@ -424,8 +424,8 @@ describe('Unit | Utility | changeset', () => {
     c.set('startDate.date', newD);
 
     newValue = c.get('startDate');
-    expect(newValue).not.toEqual(momentInstance);
-    expect(newValue instanceof Moment).toBeTruthy();
+    expect(newValue.date).toEqual(newD);
+    expect(newValue.content instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(newD);
     expect(newValue._isUTC).toBe(true);
   });
@@ -725,12 +725,12 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
 
     let newValue = c.get('startDate');
-    expect(newValue).toEqual(momentInstance);
+    expect(newValue.date).toEqual(momentInstance.date);
     expect(newValue instanceof Moment).toBeTruthy();
     expect(newValue.date).toEqual(d);
 
     newValue = c.startDate;
-    expect(newValue).toEqual(momentInstance);
+    expect(newValue.date).toEqual(momentInstance.date);
     expect(newValue instanceof Moment).toBeTruthy();
     expect(newValue.date).toEqual(d);
   });

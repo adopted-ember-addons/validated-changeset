@@ -34,7 +34,7 @@ const objectProxyHandler = {
     if (childValue) {
       return childValue;
     } else {
-      if (node.content && node.content.hasOwnProperty(key)) {
+      if (node.content && node.safeGet(node.content, key)) {
         return node.safeGet(node.content, key);
       }
     }
