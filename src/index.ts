@@ -894,7 +894,7 @@ export class BufferedChangeset implements IChangeset {
           // give back and object that can further retrieve changes and/or content
           const tree = new ObjectTreeNode(result, content, this.safeGet);
           return tree.proxy;
-        } else if (result) {
+        } else if (typeof result !== 'undefined') {
           return result;
         }
       }

@@ -27,7 +27,7 @@ const objectProxyHandler = {
       return childNode ? childNode.proxy : undefined;
     }
 
-    if (childValue) {
+    if (typeof childValue !== 'undefined') {
       // primitive
       return childValue;
     } else {

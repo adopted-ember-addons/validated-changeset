@@ -965,6 +965,43 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org.usa.mn).toBe('undefined');
   });
 
+  it('#set works for deep set and access', async () => {
+    const resource = {
+      styles: {
+        colors: {
+          main: {
+            sync: true,
+            color: '#3D3D3D',
+            contrastColor: '#FFFFFF',
+            syncedColor: '#575757',
+            syncedContrastColor: '#FFFFFF'
+          },
+          accent: {
+            sync: true,
+            color: '#967E6E',
+            contrastColor: '#ffffff',
+            syncedColor: '#967E6E',
+            syncedContrastColor: '#ffffff'
+          },
+          ambient: {
+            sync: true,
+            color: '#FFFFFF',
+            contrastColor: '#3D3D3D',
+            syncedColor: '#FFFFFF',
+            syncedContrastColor: '#575757'
+          }
+        }
+      }
+    };
+
+    const changeset = Changeset(resource);
+
+    changeset.set('styles.colors.main.sync', false);
+
+    const result = changeset.get('styles.colors.main');
+    expect(result.sync).toEqual(false);
+  });
+
   it('it accepts async validations', async () => {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     /* const dummyChangeset = Changeset(dummyModel, dummyValidator); */
