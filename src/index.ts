@@ -892,7 +892,7 @@ export class BufferedChangeset implements IChangeset {
           }
 
           // give back and object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(result, changes, content, this.safeGet);
+          const tree = new ObjectTreeNode(result, content, this.safeGet);
           return tree.proxy;
         } else if (result) {
           return result;
@@ -920,7 +920,7 @@ export class BufferedChangeset implements IChangeset {
     const subChanges = this.getDeep(changes, key);
     if (isObject(subContent)) {
       // may still access a value on the changes or content objects
-      const tree = new ObjectTreeNode(subChanges, subChanges, subContent, this.safeGet);
+      const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
       return tree.proxy;
     } else {
       return subContent;

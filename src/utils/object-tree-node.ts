@@ -16,16 +16,10 @@ const objectProxyHandler = {
 
     if (isObject(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
-      let childChanges = node.safeGet(node.changes, key);
       let childContent = node.safeGet(node.content, key);
 
       if (childNode === undefined) {
-        childNode = node.children[key] = new ObjectTreeNode(
-          childValue,
-          childChanges,
-          childContent,
-          node.safeGet
-        );
+        childNode = node.children[key] = new ObjectTreeNode(childValue, childContent, node.safeGet);
       }
 
       return childNode ? childNode.proxy : undefined;
@@ -63,19 +57,12 @@ function defaultSafeGet(obj: Record<string, any>, key: string) {
 
 class ObjectTreeNode implements ProxyHandler {
   value: unknown;
-  changes: any;
   content: Content;
   proxy: any;
   children: Record<string, any>;
 
-  constructor(
-    value: unknown = {},
-    changes: object | undefined,
-    content: Content,
-    public safeGet: Function = defaultSafeGet
-  ) {
+  constructor(value: unknown = {}, content: Content, public safeGet: Function = defaultSafeGet) {
     this.value = value;
-    this.changes = changes;
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
     this.children = Object.create(null);
