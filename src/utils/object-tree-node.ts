@@ -3,11 +3,11 @@ import isObject from './is-object';
 import Change from '../-private/change';
 
 const objectProxyHandler = {
+  /**
+    Priority of access - changes, content, then check node
+    @property get
+   */
   get(node: Record<string, any>, key: string) {
-    if (typeof node[key] === 'function' || node.hasOwnProperty(key)) {
-      return node[key];
-    }
-
     let childValue = node.safeGet(node.changes, key);
 
     if (childValue instanceof Change) {
@@ -16,9 +16,9 @@ const objectProxyHandler = {
 
     if (isObject(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
-      let childContent = node.safeGet(node.content, key);
 
       if (childNode === undefined) {
+        let childContent = node.safeGet(node.content, key);
         childNode = node.children[key] = new ObjectTreeNode(childValue, childContent, node.safeGet);
       }
 
@@ -26,11 +26,16 @@ const objectProxyHandler = {
     }
 
     if (childValue) {
+      // primitive
       return childValue;
     } else {
       if (node.content && node.safeGet(node.content, key)) {
         return node.safeGet(node.content, key);
       }
+    }
+
+    if (typeof node[key] === 'function' || node.hasOwnProperty(key)) {
+      return node[key];
     }
   },
 
