@@ -8,7 +8,7 @@ const objectProxyHandler = {
       return node[key];
     }
 
-    let childValue = node.safeGet(node.value, key);
+    let childValue = node.safeGet(node.changes, key);
 
     if (childValue instanceof Change) {
       return childValue.value;
@@ -35,15 +35,15 @@ const objectProxyHandler = {
   },
 
   ownKeys(node: Record<string, any>) {
-    return Reflect.ownKeys(node.value);
+    return Reflect.ownKeys(node.changes);
   },
 
   getOwnPropertyDescriptor(node: Record<string, any>, prop: string) {
-    return Reflect.getOwnPropertyDescriptor(node.value, prop);
+    return Reflect.getOwnPropertyDescriptor(node.changes, prop);
   },
 
   has(node: Record<string, any>, prop: string) {
-    return Reflect.has(node.value, prop);
+    return Reflect.has(node.changes, prop);
   },
 
   set() {
@@ -56,20 +56,20 @@ function defaultSafeGet(obj: Record<string, any>, key: string) {
 }
 
 class ObjectTreeNode implements ProxyHandler {
-  value: unknown;
+  changes: unknown;
   content: Content;
   proxy: any;
   children: Record<string, any>;
 
-  constructor(value: unknown = {}, content: Content, public safeGet: Function = defaultSafeGet) {
-    this.value = value;
+  constructor(changes: unknown = {}, content: Content, public safeGet: Function = defaultSafeGet) {
+    this.changes = changes;
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
     this.children = Object.create(null);
   }
 
   toObject() {
-    return this.value;
+    return this.changes;
   }
 }
 

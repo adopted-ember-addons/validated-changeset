@@ -1,5 +1,5 @@
 export interface ProxyHandler {
-  value: unknown;
+  changes: unknown;
   content: unknown;
   proxy: any;
   children: Record<string, any>;
