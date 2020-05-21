@@ -167,4 +167,46 @@ describe('Unit | Utility | set deep', () => {
       })
     });
   });
+
+  it('super deep set does not lose siblings', () => {
+    const resource = {
+      styles: {
+        colors: {
+          main: {
+            sync: true,
+            color: '#3D3D3D',
+            contrastColor: '#FFFFFF',
+            syncedColor: '#575757',
+            syncedContrastColor: '#FFFFFF'
+          },
+          accent: {
+            sync: true,
+            color: '#967E6E',
+            contrastColor: '#ffffff',
+            syncedColor: '#967E6E',
+            syncedContrastColor: '#ffffff'
+          },
+          ambient: {
+            sync: true,
+            color: '#FFFFFF',
+            contrastColor: '#3D3D3D',
+            syncedColor: '#FFFFFF',
+            syncedContrastColor: '#575757'
+          }
+        }
+      }
+    };
+
+    setDeep(resource, 'styles.colors.main.sync', false);
+
+    const value = resource.styles.colors.main;
+
+    expect(value).toEqual({
+      sync: false,
+      color: '#3D3D3D',
+      contrastColor: '#FFFFFF',
+      syncedColor: '#575757',
+      syncedContrastColor: '#FFFFFF'
+    });
+  });
 });

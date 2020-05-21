@@ -21,4 +21,11 @@ describe('Unit | Utility | normalize object', () => {
 
     expect(value).toEqual({ name: 'Ivan', foo: 'bar' });
   });
+
+  it('it returns for deep nested', () => {
+    const objA = { details: { name: { value: 'Ivan' } } };
+    const value = normalizeObject(objA);
+
+    expect(value).toEqual({ details: { name: 'Ivan' } });
+  });
 });
