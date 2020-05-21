@@ -72,7 +72,11 @@ class ObjectTreeNode implements ProxyHandler {
   proxy: any;
   children: Record<string, any>;
 
-  constructor(changes: unknown = {}, content: Content = {}, public safeGet: Function = defaultSafeGet) {
+  constructor(
+    changes: unknown = {},
+    content: Content = {},
+    public safeGet: Function = defaultSafeGet
+  ) {
     this.changes = changes;
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
