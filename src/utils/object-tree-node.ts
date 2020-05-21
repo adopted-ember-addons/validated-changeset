@@ -8,6 +8,10 @@ const objectProxyHandler = {
    * @property get
    */
   get(node: Record<string, any>, key: string) {
+    if (typeof key === 'symbol') {
+      return;
+    }
+
     let childValue;
 
     if (node.changes.hasOwnProperty(key)) {
