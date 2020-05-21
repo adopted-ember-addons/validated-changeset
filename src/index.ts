@@ -899,6 +899,7 @@ export class BufferedChangeset implements IChangeset {
         }
       }
 
+      // this comes after the isObject check to ensure we don't lose remaining keys
       if (baseChanges instanceof Change) {
         return baseChanges.value;
       }

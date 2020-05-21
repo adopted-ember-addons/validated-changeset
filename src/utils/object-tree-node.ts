@@ -4,8 +4,8 @@ import Change from '../-private/change';
 
 const objectProxyHandler = {
   /**
-    Priority of access - changes, content, then check node
-    @property get
+   * Priority of access - changes, content, then check node
+   * @property get
    */
   get(node: Record<string, any>, key: string) {
     let childValue = node.safeGet(node.changes, key);
@@ -19,9 +19,11 @@ const objectProxyHandler = {
 
       if (childNode === undefined) {
         let childContent = node.safeGet(node.content, key);
+        // cache it
         childNode = node.children[key] = new ObjectTreeNode(childValue, childContent, node.safeGet);
       }
 
+      // return proxy if object so we can trap further access to changes or content
       return childNode ? childNode.proxy : undefined;
     }
 
