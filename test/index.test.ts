@@ -556,6 +556,19 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
   });
 
+  it('#set adds a change with plain assignment', () => {
+    dummyModel['name'] = 'bar';
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['name'] = 'foo';
+    const changes = dummyChangeset.changes;
+
+    expect(dummyModel.name).toBe('bar');
+    expect(dummyChangeset.name).toEqual('foo');
+
+    const expectedChanges = [{ key: 'name', value: 'foo' }];
+    expect(changes).toEqual(expectedChanges);
+  });
+
   it('#set adds a date', () => {
     const d = new Date();
     const expectedChanges = [{ key: 'dateOfBirth', value: d }];
@@ -1073,9 +1086,9 @@ describe('Unit | Utility | changeset', () => {
     const c: any = Changeset(model);
     expect(c.foo.bar.baz).toEqual(model.foo.bar.baz);
 
-    /* c.set('foo', 'not an object anymore'); */
-    /* c.execute(); */
-    /* expect(c.get('foo')).toEqual(model.foo); */
+    c.set('foo', 'not an object anymore');
+    c.execute();
+    expect(c.get('foo')).toEqual(model.foo);
   });
 
   /**
