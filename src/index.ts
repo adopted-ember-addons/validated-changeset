@@ -17,6 +17,7 @@ import take from './utils/take';
 import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep from './utils/get-deep';
+import { EMPTY_SIGIL, pruneEmptySigil } from './utils/prune-empty';
 
 import {
   Changes,
@@ -221,7 +222,7 @@ export class BufferedChangeset implements IChangeset {
    * @type {Boolean}
    */
   get isPristine() {
-    return Object.keys(this[CHANGES]).length === 0;
+    return Object.keys(pruneEmptySigil(this[CHANGES])).length === 0;
   }
   /**
    * @property isInvalid
@@ -925,7 +926,8 @@ export class BufferedChangeset implements IChangeset {
       if (!subChanges) {
         // if no changes, we need to add the path to the existing changes (mutate)
         // so further access to nested keys works
-        subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
+        // Add EMPTY_SIGIL to tag an object to potentially be deleted later on
+        subChanges = this.getDeep(this.setDeep(changes, key, { [EMPTY_SIGIL]: undefined }), key);
       }
 
       // may still access a value on the changes or content objects

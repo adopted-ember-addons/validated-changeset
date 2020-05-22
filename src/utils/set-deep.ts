@@ -1,4 +1,5 @@
 import Change from '../-private/change';
+import { EMPTY_SIGIL } from '../utils/prune-empty';
 
 interface Options {
   safeSet: any;
@@ -64,14 +65,14 @@ export default function setDeep(
 
     const obj = isObject(target[prop]);
     if (!obj) {
-      options.safeSet(target, prop, {});
+      options.safeSet(target, prop, { [EMPTY_SIGIL]: undefined });
     } else if (obj && target[prop] instanceof Change) {
       if (typeof target[prop].value === 'object') {
         // if an object, we don't want to lose sibling keys
         const siblings = findSiblings(target[prop].value, keys);
         const resolvedValue = value instanceof Change ? value.value : value;
         target[prop] = new Change(
-          setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue)
+          setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue, options)
         );
 
         // since we are done with the `path`, we can terminate the for loop and return control
@@ -96,7 +97,3 @@ export default function setDeep(
 
   return orig;
 }
-
-// function isPlainObject(o: unknown): o is object {
-//   return Object.prototype.toString.call(o) === '[object Object]';
-// }

@@ -331,6 +331,22 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('isDirty')).toBe(false);
   });
 
+  it('#isDirty is false when no set', () => {
+    dummyModel['name'] = { nick: 'bar' };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.name;
+
+    expect(dummyChangeset.isDirty).toBe(false);
+  });
+
+  it('#isDirty is false when no set with deep changes', () => {
+    dummyModel['details'] = { name: { nick: 'bar' } };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.get('details.name');
+
+    expect(dummyChangeset.isDirty).toBe(false);
+  });
+
   /**
    * #get
    */
@@ -565,6 +581,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('name')).toEqual('foo');
 
     expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isDirty).toBe(true);
   });
 
   it('#set adds a change with plain assignment without existing values', () => {
@@ -1469,9 +1486,11 @@ describe('Unit | Utility | changeset', () => {
 
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     expect(dummyChangeset.errors).toEqual(expectedErrors);
+    expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
     expect(dummyChangeset.errors).toEqual([]);
+    expect(dummyChangeset.isDirty).toBe(false);
   });
 
   it('#rollback resets valid state', () => {
@@ -1479,8 +1498,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', 'a');
 
     expect(dummyChangeset.isInvalid).toBeTruthy();
+    expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
     expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isDirty).toBe(false);
   });
 
   it('#rollback twice works', () => {
@@ -1495,8 +1516,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', 'mnop');
     expectedChanges = [{ key: 'name', value: 'mnop' }];
     expect(dummyChangeset.changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
+    expect(dummyChangeset.isDirty).toBe(false);
   });
 
   it('#rollback twice with nested keys works', () => {
