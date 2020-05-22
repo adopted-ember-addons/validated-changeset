@@ -4,6 +4,7 @@ import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
 import normalizeObject from './utils/normalize-object';
+import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
 import { flattenValidations } from './utils/flatten-validations';
 import isChangeset, { CHANGESET } from './utils/is-changeset';
@@ -17,7 +18,6 @@ import take from './utils/take';
 import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep from './utils/get-deep';
-import { EMPTY_SIGIL, pruneEmptySigil } from './utils/prune-empty';
 
 import {
   Changes,
@@ -199,7 +199,11 @@ export class BufferedChangeset implements IChangeset {
 
   get change() {
     let obj: Changes = this[CHANGES];
-    return normalizeObject(obj);
+    if (hasChanges(this[CHANGES])) {
+      return normalizeObject(obj);
+    }
+
+    return {};
   }
 
   get error() {
@@ -222,7 +226,12 @@ export class BufferedChangeset implements IChangeset {
    * @type {Boolean}
    */
   get isPristine() {
-    return Object.keys(pruneEmptySigil(this[CHANGES])).length === 0;
+    const isEmpty = Object.keys(this[CHANGES]).length === 0;
+    if (isEmpty) {
+      return true;
+    }
+
+    return !hasChanges(this[CHANGES]);
   }
   /**
    * @property isInvalid
@@ -324,7 +333,7 @@ export class BufferedChangeset implements IChangeset {
       let changes: Changes = this[CHANGES];
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = mergeDeep(content, pruneEmptySigil(changes));
+      this[CONTENT] = mergeDeep(content, changes);
     }
 
     // trigger any registered callbacks by same keyword as method name
@@ -926,8 +935,7 @@ export class BufferedChangeset implements IChangeset {
       if (!subChanges) {
         // if no changes, we need to add the path to the existing changes (mutate)
         // so further access to nested keys works
-        // Add EMPTY_SIGIL to tag an object to potentially be deleted later on
-        subChanges = this.getDeep(this.setDeep(changes, key, { [EMPTY_SIGIL]: undefined }), key);
+        subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
       }
 
       // may still access a value on the changes or content objects

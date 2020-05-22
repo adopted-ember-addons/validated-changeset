@@ -1,5 +1,4 @@
 import Change from '../-private/change';
-import { EMPTY_SIGIL } from '../utils/prune-empty';
 
 interface Options {
   safeSet: any;
@@ -65,7 +64,7 @@ export default function setDeep(
 
     const obj = isObject(target[prop]);
     if (!obj) {
-      options.safeSet(target, prop, { [EMPTY_SIGIL]: undefined });
+      options.safeSet(target, prop, {});
     } else if (obj && target[prop] instanceof Change) {
       if (typeof target[prop].value === 'object') {
         // if an object, we don't want to lose sibling keys
