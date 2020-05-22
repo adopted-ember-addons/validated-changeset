@@ -1,9 +1,10 @@
 export interface ProxyHandler {
-  changes: unknown;
+  changes: Record<string, any>;
   content: unknown;
   proxy: any;
   children: Record<string, any>;
   safeGet: Function;
+  [key: string]: any;
 }
 
 export type Config = {
