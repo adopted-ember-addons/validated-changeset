@@ -303,7 +303,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isDirty).toBe(true);
   });
 
-  it('#isDirty not reset after execute', () => {
+  it('#isDirty reset after execute', () => {
     dummyModel.name = {};
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset['name'] = {
@@ -314,7 +314,7 @@ describe('Unit | Utility | changeset', () => {
 
     dummyChangeset.execute();
 
-    expect(dummyChangeset.get('isDirty')).toBe(true);
+    expect(dummyChangeset.get('isDirty')).toBe(false);
   });
 
   it('#isDirty reset after rollback', () => {
@@ -1196,7 +1196,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.execute();
     expect(dummyModel.name).toBe('foo');
-    expect(dummyChangeset.isDirty).toBe(true);
+    expect(dummyChangeset.isDirty).toBe(false);
   });
 
   it('#execute does not apply changes to content if invalid', () => {
@@ -1215,14 +1215,18 @@ describe('Unit | Utility | changeset', () => {
     const dog = new DogTag();
     const originalProto = Object.getPrototypeOf(dog);
 
-    const c = Changeset({});
+    const model: Record<string, any> = {};
+    const c = Changeset(model);
     c.set('dog', dog);
-
-    c.execute();
 
     const condition = c.dog instanceof DogTag;
     expect(condition).toBeTruthy();
-    expect(Object.getPrototypeOf(c.dog)).toEqual(originalProto);
+
+    c.execute();
+
+    const modelDog = model.dog instanceof DogTag;
+    expect(modelDog).toBeTruthy();
+    expect(Object.getPrototypeOf(model.dog)).toEqual(originalProto);
   });
 
   it('#execute does not remove original nested objects', function() {
@@ -1310,7 +1314,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('org.usa.ny', 'ny');
     dummyChangeset.set('org.usa.ma', { name: 'Massachusetts' });
     dummyChangeset.execute();
-    expect(dummyChangeset.change).toEqual(expectedResult);
+    expect(dummyChangeset.change).toEqual({});
     expect(get(dummyChangeset, '_content.org')).toEqual(expectedResult.org);
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
@@ -1349,7 +1353,7 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBeUndefined();
     const promise = dummyChangeset.save({ foo: 'test options' });
     expect(result).toEqual('ok');
-    expect(dummyChangeset.change).toEqual({ name: 'foo' });
+    expect(dummyChangeset.change).toEqual({});
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
     promise
