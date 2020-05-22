@@ -1,10 +1,6 @@
 import Change from '../-private/change';
 import { EMPTY_SIGIL } from '../utils/prune-empty';
 
-function newObj() {
-  return {};
-}
-
 interface Options {
   safeSet: any;
 }
