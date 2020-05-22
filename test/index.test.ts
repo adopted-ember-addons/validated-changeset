@@ -184,6 +184,15 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.change).toEqual(expectedResult);
   });
 
+  it('#change removes EMPTY sigils', () => {
+    const model = { details: { name: { nickname: 'a' } } };
+    const dummyChangeset = Changeset(model);
+    dummyChangeset.set('details.name', { nickname: 'b' });
+
+    const expectedResult = { details: { name: { nickname: 'b' } } };
+    expect(dummyChangeset.change).toEqual(expectedResult);
+  });
+
   it('#change works with arrays', () => {
     const dummyChangeset = Changeset(dummyModel);
     const newArray = [...exampleArray, 'new'];
@@ -339,12 +348,31 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isDirty).toBe(false);
   });
 
-  it('#isDirty is false when no set with deep changes', () => {
+  it('#isDirty is false when no set with deep values', () => {
     dummyModel['details'] = { name: { nick: 'bar' } };
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset.get('details.name');
 
     expect(dummyChangeset.isDirty).toBe(false);
+    expect(dummyChangeset.change).toEqual({});
+  });
+
+  it('#isDirty is true when set with deep values', () => {
+    class Dog {
+      value: any;
+      '~EMPTY~': 'foo';
+      constructor(value: any) {
+        this.value = value;
+      }
+    }
+    dummyModel['details'] = { name: {} };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.get('details.name');
+    const dogKlass = new Dog({ nickname: 'bar' });
+    dummyChangeset['details'] = { name: dogKlass };
+
+    expect(dummyChangeset.isDirty).toBe(true);
+    expect(dummyChangeset.change).toEqual({ details: { name: dogKlass } });
   });
 
   /**
@@ -582,6 +610,7 @@ describe('Unit | Utility | changeset', () => {
 
     expect(changes).toEqual(expectedChanges);
     expect(dummyChangeset.isDirty).toBe(true);
+    expect(dummyChangeset.change).toEqual({ name: 'foo' });
   });
 
   it('#set adds a change with plain assignment without existing values', () => {

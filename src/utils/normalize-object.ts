@@ -1,4 +1,5 @@
 import isObject from './is-object';
+import { EMPTY_SIGIL } from './prune-empty';
 
 /**
  * traverse through target and unset `value` from leaf key so can access normally
@@ -33,6 +34,10 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
   let obj = { ...target };
 
   for (let key in obj) {
+    if (key === EMPTY_SIGIL) {
+      delete obj[key];
+    }
+
     if (key === 'value') {
       return obj[key];
     }

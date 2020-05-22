@@ -9,7 +9,7 @@ export const EMPTY_SIGIL = '~EMPTY~';
  */
 export function pruneEmptySigil(changes: Record<string, any>) {
   for (let key in changes) {
-    if (isObject(changes[key])) {
+    if (isObject(changes[key]) && changes[key].constructor.name === 'Object') {
       const subKeys = Object.keys(changes[key]);
       if (subKeys.length === 1 && subKeys[0] === EMPTY_SIGIL) {
         delete changes[key];
