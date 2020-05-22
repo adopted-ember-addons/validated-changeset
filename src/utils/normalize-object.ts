@@ -22,6 +22,10 @@ import isObject from './is-object';
  * @return {Object}
  */
 export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
+  if (!target) {
+    return target;
+  }
+
   if ('value' in target) {
     return target.value;
   }

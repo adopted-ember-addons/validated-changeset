@@ -520,9 +520,9 @@ describe('Unit | Utility | changeset', () => {
 
     {
       const c = Changeset(model);
-      const actual = c.get('foo.bar.dog').bark();
+      const actual = c.get('foo.bar.dog');
       const expectedResult = "woof i'm a shiba inu, wow";
-      expect(actual).toEqual(expectedResult);
+      expect(actual.bark()).toEqual(expectedResult);
     }
 
     {
@@ -553,6 +553,18 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name).toBeUndefined();
     expect(dummyChangeset.get('name')).toEqual('foo');
 
+    expect(changes).toEqual(expectedChanges);
+  });
+
+  it('#set adds a change with plain assignment without existing values', () => {
+    dummyModel['name'] = { nick: 'bar' };
+    const dummyChangeset = Changeset(dummyModel);
+    const proxy: any = dummyChangeset.name;
+    proxy['nick'] = 'foo';
+    expect(dummyChangeset.get('name.nick')).toEqual('foo');
+
+    const expectedChanges = [{ key: 'name.nick', value: 'foo' }];
+    const changes = dummyChangeset.changes;
     expect(changes).toEqual(expectedChanges);
   });
 

@@ -891,8 +891,10 @@ export class BufferedChangeset implements IChangeset {
             return result.value;
           }
 
+          const baseContent = this.safeGet(content, baseKey);
+          const subContent = this.getDeep(baseContent, remaining.join('.'));
           // give back and object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(result, content, this.safeGet);
+          const tree = new ObjectTreeNode(result, subContent, this.safeGet);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
@@ -918,8 +920,14 @@ export class BufferedChangeset implements IChangeset {
 
     // finally return on underlying object or proxy to further access nested keys
     const subContent = this.getDeep(content, key);
-    const subChanges = this.getDeep(changes, key);
+    let subChanges = this.getDeep(changes, key);
     if (isObject(subContent)) {
+      if (!subChanges) {
+        // if no changes, we need to add the path to the existing changes (mutate)
+        // so further access to nested keys works
+        subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
+      }
+
       // may still access a value on the changes or content objects
       const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
       return tree.proxy;
