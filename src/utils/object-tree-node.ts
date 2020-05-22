@@ -39,11 +39,9 @@ const objectProxyHandler = {
       // primitive
       return childValue;
     } else {
-      if (
-        (node.content as object).hasOwnProperty(key) ||
-        typeof node.safeGet(node.content, key) === 'function'
-      ) {
-        return node.safeGet(node.content, key);
+      const nodeContent = node.content;
+      if (node.safeGet(nodeContent, key) || typeof node.safeGet(nodeContent, key) === 'function') {
+        return node.safeGet(nodeContent, key);
       }
     }
 

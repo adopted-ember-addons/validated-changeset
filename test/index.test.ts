@@ -343,6 +343,17 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBe('Jim Bob');
   });
 
+  it('#get proxies to content prototype', () => {
+    class Dog {
+      name?: string;
+    }
+    Dog.prototype.name = 'Jim Bob';
+    const dummyChangeset = Changeset(new Dog());
+    const result = dummyChangeset.name;
+
+    expect(result).toBe('Jim Bob');
+  });
+
   it('#get returns the content when the proxied content is a class', () => {
     class Moment {
       date: unknown;
