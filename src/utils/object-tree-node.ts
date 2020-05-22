@@ -65,7 +65,7 @@ const objectProxyHandler = {
   },
 
   set(node: ProxyHandler, key: string, value: unknown): any {
-    return Reflect.set(node.changes, key, value);
+    return Reflect.set(node.changes, key, new Change(value));
   }
 };
 

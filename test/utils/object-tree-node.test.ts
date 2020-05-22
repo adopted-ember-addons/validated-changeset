@@ -28,7 +28,7 @@ describe('Unit | Utility | object tree node', () => {
     result.proxy.details['name'] = 'bla bla';
     expect(result.proxy.details.name).toBe('bla bla');
     expect(result.proxy.details.email).toBe('@');
-    expect(result.changes.details.name).toBe('bla bla');
+    expect(result.changes.details.name).toEqual({ value: 'bla bla' });
     expect(result.content.details.name).toBe('c');
   });
 });
