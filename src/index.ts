@@ -324,7 +324,7 @@ export class BufferedChangeset implements IChangeset {
       let changes: Changes = this[CHANGES];
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = mergeDeep(content, changes);
+      this[CONTENT] = mergeDeep(content, pruneEmptySigil(changes));
     }
 
     // trigger any registered callbacks by same keyword as method name

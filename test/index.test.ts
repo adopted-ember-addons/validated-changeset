@@ -1203,8 +1203,10 @@ describe('Unit | Utility | changeset', () => {
 
     expect(dummyModel.name).toBeUndefined();
     expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.execute();
     expect(dummyModel.name).toBe('foo');
+    expect(dummyChangeset.isDirty).toBe(true);
   });
 
   it('#execute does not apply changes to content if invalid', () => {
@@ -1250,6 +1252,17 @@ describe('Unit | Utility | changeset', () => {
     expect(condition).toBeTruthy();
   });
 
+  it('#execute removes EMPTY sigils', () => {
+    const model = { details: { name: { nickname: 'a' } } };
+    const dummyChangeset = Changeset(model);
+    dummyChangeset.set('details.name', { nickname: 'b' });
+
+    dummyChangeset.execute();
+
+    const expectedResult = { details: { name: { nickname: 'b' } } };
+    expect(model).toEqual(expectedResult);
+  });
+
   [
     {
       model: () => ({ org: { usa: { ny: '', ca: '' } } }),
@@ -1292,7 +1305,7 @@ describe('Unit | Utility | changeset', () => {
     });
   });
 
-  it('it works with nested keys', () => {
+  it('#execute it works with nested keys', () => {
     const expectedResult = {
       org: {
         asia: { sg: 'sg' },
