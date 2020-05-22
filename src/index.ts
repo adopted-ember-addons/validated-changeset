@@ -928,16 +928,12 @@ export class BufferedChangeset implements IChangeset {
     }
   }
 
-  set<T>(
-    key: string,
-    value: T
-  ): void | Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
+  set<T>(key: string, value: T): void {
     if (this.hasOwnProperty(key) || keyInObject(this, key)) {
       this[key] = value;
-      return;
+    } else {
+      this.setUnknownProperty(key, value);
     }
-
-    this.setUnknownProperty(key, value);
   }
 }
 

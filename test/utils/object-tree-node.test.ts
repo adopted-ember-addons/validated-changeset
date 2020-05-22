@@ -20,4 +20,12 @@ describe('Unit | Utility | object tree node', () => {
     expect(result.proxy.details.name).toBe('z');
     expect(result.content).toEqual({ details: { name: 'c' } });
   });
+
+  it('can set nested value on returned proxy', () => {
+    const initialVal = { details: { name: 'z' } };
+    const result = new ObjectTreeNode(initialVal, { details: { name: 'c' } });
+
+    result.proxy.details['name'] = 'bla bla';
+    expect(result.proxy.details.name).toBe('bla bla');
+  });
 });

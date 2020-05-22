@@ -7,7 +7,7 @@ const objectProxyHandler = {
    * Priority of access - changes, content, then check node
    * @property get
    */
-  get(node: Record<string, any>, key: string) {
+  get(node: ProxyHandler, key: string): any {
     if (typeof key === 'symbol') {
       return;
     }
@@ -40,7 +40,7 @@ const objectProxyHandler = {
       return childValue;
     } else {
       if (
-        node.content.hasOwnProperty(key) ||
+        (node.content as object).hasOwnProperty(key) ||
         typeof node.safeGet(node.content, key) === 'function'
       ) {
         return node.safeGet(node.content, key);
@@ -52,20 +52,20 @@ const objectProxyHandler = {
     }
   },
 
-  ownKeys(node: Record<string, any>) {
+  ownKeys(node: ProxyHandler): any {
     return Reflect.ownKeys(node.changes);
   },
 
-  getOwnPropertyDescriptor(node: Record<string, any>, prop: string) {
+  getOwnPropertyDescriptor(node: ProxyHandler, prop: string): any {
     return Reflect.getOwnPropertyDescriptor(node.changes, prop);
   },
 
-  has(node: Record<string, any>, prop: string) {
+  has(node: ProxyHandler, prop: string): any {
     return Reflect.has(node.changes, prop);
   },
 
-  set() {
-    return false;
+  set(node: ProxyHandler, key: string, value: unknown): any {
+    return Reflect.set(node.changes, key, value);
   }
 };
 
@@ -74,13 +74,13 @@ function defaultSafeGet(obj: Record<string, any>, key: string) {
 }
 
 class ObjectTreeNode implements ProxyHandler {
-  changes: unknown;
+  changes: Record<string, any>;
   content: Content;
   proxy: any;
   children: Record<string, any>;
 
   constructor(
-    changes: unknown = {},
+    changes: Record<string, any> = {},
     content: Content = {},
     public safeGet: Function = defaultSafeGet
   ) {
@@ -90,7 +90,7 @@ class ObjectTreeNode implements ProxyHandler {
     this.children = Object.create(null);
   }
 
-  toObject() {
+  toObject(): Record<string, any> {
     return this.changes;
   }
 }
