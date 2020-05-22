@@ -1,6 +1,6 @@
 {
   "name": "validated-changeset",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "Changesets for your local state",
   "main": "dist/validated-changeset.umd.js",
   "module": "dist/validated-changeset.es5.js",
