@@ -14,7 +14,7 @@ const objectProxyHandler = {
 
     let childValue;
 
-    if (node.changes.hasOwnProperty(key)) {
+    if (node.changes.hasOwnProperty && node.changes.hasOwnProperty(key)) {
       childValue = node.safeGet(node.changes, key);
     }
 
