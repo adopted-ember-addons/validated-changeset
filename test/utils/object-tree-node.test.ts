@@ -22,10 +22,13 @@ describe('Unit | Utility | object tree node', () => {
   });
 
   it('can set nested value on returned proxy', () => {
-    const initialVal = { details: { name: 'z' } };
+    const initialVal = { details: { name: 'z', email: '@' } };
     const result = new ObjectTreeNode(initialVal, { details: { name: 'c' } });
 
     result.proxy.details['name'] = 'bla bla';
     expect(result.proxy.details.name).toBe('bla bla');
+    expect(result.proxy.details.email).toBe('@');
+    expect(result.changes.details.name).toBe('bla bla');
+    expect(result.content.details.name).toBe('c');
   });
 });
