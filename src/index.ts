@@ -794,6 +794,11 @@ export class BufferedChangeset implements IChangeset {
     let errors: Errors<any> = this[ERRORS];
     let content: Content = this[CONTENT];
 
+    // Derived property, i.e. property defined in the changeset itself
+    if (Object.prototype.hasOwnProperty.apply(this, [key])) {
+      return this[key];
+    }
+
     if (errors.hasOwnProperty(key)) {
       let e: Err = errors[key];
       return e.value;
