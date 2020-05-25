@@ -1,4 +1,5 @@
 import Change from '../-private/change';
+import isObject from './is-object';
 
 interface Options {
   safeSet: any;
@@ -24,10 +25,6 @@ function findSiblings(target: any, keys: string[]) {
 
 function isValidKey(key: unknown) {
   return key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
-}
-
-function isObject(val: unknown) {
-  return val !== null && (typeof val === 'object' || typeof val === 'function');
 }
 
 /**
