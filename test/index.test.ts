@@ -2039,6 +2039,24 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isValid).toEqual(true);
   });
 
+  it('#addError adds an error then validates', async () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    await dummyChangeset.validate();
+
+    expect(get(dummyChangeset, 'error.email')).toEqual({
+      validation: 'Email already taken',
+      value: 'jim@bob.com'
+    });
+    expect(dummyChangeset.changes).toEqual([]);
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+  });
+
   it('#addError adds an error to the changeset using the shortcut', function() {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
