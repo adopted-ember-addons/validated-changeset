@@ -1942,6 +1942,60 @@ describe('Unit | Utility | changeset', () => {
     ]);
   });
 
+  it('#validate changeset getter', async () => {
+    class MyModel {
+      isOptionOne = false;
+      isOptionTwo = false;
+      isOptionThree = true;
+    }
+
+    const Validations = {
+      isOptionSelected: (newValue: boolean) => {
+        return newValue === true ? true : 'No options selected';
+      }
+    };
+
+    function myValidator({
+      key,
+      newValue,
+      oldValue,
+      changes,
+      content
+    }: {
+      key: string;
+      newValue: unknown;
+      oldValue: unknown;
+      changes: any;
+      content: any;
+    }) {
+      let validatorFn = get(Validations, key);
+
+      if (typeof validatorFn === 'function') {
+        return validatorFn(newValue, oldValue, changes, content);
+      }
+    }
+
+    const myObject = new MyModel();
+    const myChangeset = Changeset(myObject, myValidator, Validations);
+
+    Object.defineProperty(myChangeset, 'isOptionSelected', {
+      get() {
+        return this.get('isOptionOne') || this.get('isOptionTwo') || this.get('isOptionThree');
+      }
+    });
+
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(false);
+
+    myChangeset.set('isOptionThree', false);
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(true);
+
+    myChangeset.set('isOptionTwo', true);
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(false);
+  });
+
   it('#isInvalid does not trigger validations without validate keys', async () => {
     const model = { name: 'o' };
     const dummyChangeset = Changeset(model, lookupValidator(dummyValidations));
