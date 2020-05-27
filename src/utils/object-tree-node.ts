@@ -63,6 +63,9 @@ const objectProxyHandler = {
   },
 
   set(node: ProxyHandler, key: string, value: unknown): any {
+    if (key.startsWith('_')) {
+      return Reflect.set(node, key, value);
+    }
     return Reflect.set(node.changes, key, new Change(value));
   }
 };
