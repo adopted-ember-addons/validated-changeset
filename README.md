@@ -60,7 +60,7 @@ Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: 
 ```
 
 - `validationMap` - see [ember-changeset-validations](https://github.com/poteto/ember-changeset-validations#usage) for usage.
-- `validationKeys` will contain your changeset and related `isDirty` state to a specific enum of keys.  If a key that is not in `validationKeys` is set on the changeset, it will not dirty the changeset.
+- `validationKeys` will ensure your changeset and related `isDirty` state is contained to a specific enum of keys.  If a key that is not in `validationKeys` is set on the changeset, it will not dirty the changeset.
 
 ## Examples
 
