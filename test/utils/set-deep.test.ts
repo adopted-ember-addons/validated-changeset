@@ -23,6 +23,21 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ name: 'foo' });
   });
 
+  it('handles null case', () => {
+    const objA = { name: { other: 'Ivan', nick: null } };
+    const value = setDeep(objA, 'name.other', null);
+
+    expect(value).toEqual({ name: { other: null, nick: null } });
+  });
+
+  it('handles function case', () => {
+    const objA = { name: { other: 'Ivan' } };
+    const anon = () => {};
+    const value = setDeep(objA, 'name.other', anon);
+
+    expect(value).toEqual({ name: { other: anon } });
+  });
+
   it('it handles nested key', () => {
     const objA = { name: { other: 'Ivan' } };
     const value = setDeep(objA, 'name.other', 'foo');
@@ -91,6 +106,35 @@ describe('Unit | Utility | set deep', () => {
   it('it works with nested Changes', () => {
     const objA = {
       top: new Change({ name: 'jimmy', foo: { other: 'bar' } })
+    };
+    const value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: { other: 'bar' },
+        name: 'zoo' // value is not a Change instance
+      })
+    });
+  });
+
+  it('it works with nested Changes null', () => {
+    const objA = {
+      top: new Change({ name: 'jimmy', foo: { other: null } })
+    };
+    let value = setDeep(objA, 'top.name', new Change(null));
+    value = setDeep(objA, 'top.foo', new Change(null));
+
+    expect(value).toEqual({
+      top: new Change({
+        foo: null,
+        name: null
+      })
+    });
+  });
+
+  it('it works with nested Changes with different order', () => {
+    const objA = {
+      top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })
     };
     const value = setDeep(objA, 'top.name', new Change('zoo'));
 

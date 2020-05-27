@@ -1946,6 +1946,60 @@ describe('Unit | Utility | changeset', () => {
     ]);
   });
 
+  it('#validate changeset getter', async () => {
+    class MyModel {
+      isOptionOne = false;
+      isOptionTwo = false;
+      isOptionThree = true;
+    }
+
+    const Validations = {
+      isOptionSelected: (newValue: boolean) => {
+        return newValue === true ? true : 'No options selected';
+      }
+    };
+
+    function myValidator({
+      key,
+      newValue,
+      oldValue,
+      changes,
+      content
+    }: {
+      key: string;
+      newValue: unknown;
+      oldValue: unknown;
+      changes: any;
+      content: any;
+    }) {
+      let validatorFn = get(Validations, key);
+
+      if (typeof validatorFn === 'function') {
+        return validatorFn(newValue, oldValue, changes, content);
+      }
+    }
+
+    const myObject = new MyModel();
+    const myChangeset = Changeset(myObject, myValidator, Validations);
+
+    Object.defineProperty(myChangeset, 'isOptionSelected', {
+      get() {
+        return this.get('isOptionOne') || this.get('isOptionTwo') || this.get('isOptionThree');
+      }
+    });
+
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(false);
+
+    myChangeset.set('isOptionThree', false);
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(true);
+
+    myChangeset.set('isOptionTwo', true);
+    await myChangeset.validate();
+    expect(myChangeset.isInvalid).toEqual(false);
+  });
+
   it('#isInvalid does not trigger validations without validate keys', async () => {
     const model = { name: 'o' };
     const dummyChangeset = Changeset(model, lookupValidator(dummyValidations));
@@ -1987,6 +2041,24 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
     dummyChangeset.set('email', 'unique@email.com');
     expect(dummyChangeset.isValid).toEqual(true);
+  });
+
+  it('#addError adds an error then validates', async () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    await dummyChangeset.validate();
+
+    expect(get(dummyChangeset, 'error.email')).toEqual({
+      validation: 'Email already taken',
+      value: 'jim@bob.com'
+    });
+    expect(dummyChangeset.changes).toEqual([]);
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
   });
 
   it('#addError adds an error to the changeset using the shortcut', function() {
