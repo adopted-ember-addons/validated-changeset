@@ -59,6 +59,7 @@ On rollback, all changes are dropped and the underlying Object is left untouched
 Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, validationKeys: string[] });
 ```
 
+- `validationMap` - see [ember-changeset-validations](https://github.com/poteto/ember-changeset-validations#usage) for usage.
 - `validationKeys` will contain your changeset and related `isDirty` state to a specific enum of keys.  If a key that is not in `validationKeys` is set on the changeset, it will not dirty the changeset.
 
 ## Examples
