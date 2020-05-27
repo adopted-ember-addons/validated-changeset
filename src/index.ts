@@ -339,6 +339,8 @@ export class BufferedChangeset implements IChangeset {
     // trigger any registered callbacks by same keyword as method name
     this.trigger('execute');
 
+    this[CHANGES] = {};
+
     return this;
   }
 
