@@ -9,6 +9,7 @@ export interface ProxyHandler {
 
 export type Config = {
   skipValidate?: boolean;
+  validationKeys?: string[];
 };
 
 export type ValidationOk = boolean | [boolean];
