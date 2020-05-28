@@ -227,9 +227,9 @@ export class BufferedChangeset implements IChangeset {
    */
   get isPristine() {
     let validationKeys = Object.keys(this[CHANGES]);
-    const userValidationKeys: string[] | undefined = this[OPTIONS].validationKeys;
-    if (Array.isArray(userValidationKeys) && userValidationKeys.length) {
-      validationKeys = validationKeys.filter(k => userValidationKeys.includes(k));
+    const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
+    if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
+      validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
     }
 
     if (validationKeys.length === 0) {
