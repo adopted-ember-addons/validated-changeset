@@ -511,10 +511,7 @@ export class BufferedChangeset implements IChangeset {
         ? validationKeys
         : keys(flattenValidations(this.validationMap as object));
 
-    let maybePromise = validationKeys.map(key => {
-      const x = this._validateKey(key as string, this._valueFor(key as string));
-      return x;
-    });
+    let maybePromise = validationKeys.map(key => this._validateKey(key, this[key]));
 
     return Promise.all(maybePromise);
   }
@@ -791,43 +788,6 @@ export class BufferedChangeset implements IChangeset {
     }
 
     this.setDeep(running, key, value ? count + 1 : count - 1);
-  }
-
-  /**
-   * Value for change/error/content or the original value.
-   */
-  _valueFor(key: string): any {
-    let changes: Changes = this[CHANGES];
-    let content: Content = this[CONTENT];
-
-    // Derived property, i.e. property defined in the changeset itself
-    if (Object.prototype.hasOwnProperty.apply(this, [key])) {
-      return this[key];
-    }
-
-    // 'person'
-    if (Object.prototype.hasOwnProperty.apply(changes, [key])) {
-      let result: Change = changes[key];
-      if (isObject(result)) {
-        return normalizeObject(result);
-      }
-
-      return result.value;
-    }
-
-    // 'person.username'
-    let [baseKey, ...remaining] = key.split('.');
-    if (Object.prototype.hasOwnProperty.apply(changes, [baseKey])) {
-      let c: Change = changes[baseKey];
-      let result = this.getDeep(normalizeObject(c), remaining.join('.'));
-      // just b/c top level key exists doesn't mean it has the nested key we are looking for
-      if (typeof result !== 'undefined') {
-        return result;
-      }
-    }
-
-    let original: any = this.getDeep(content, key);
-    return original;
   }
 
   /**
