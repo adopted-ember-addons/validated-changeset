@@ -110,7 +110,7 @@ export class BufferedChangeset implements IChangeset {
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [VALIDATOR]: ValidatorAction;
-  [OPTIONS]: {};
+  [OPTIONS]: Config;
   [RUNNING_VALIDATIONS]: {};
 
   __changeset__ = CHANGESET;
@@ -226,8 +226,13 @@ export class BufferedChangeset implements IChangeset {
    * @type {Boolean}
    */
   get isPristine() {
-    const isEmpty = Object.keys(this[CHANGES]).length === 0;
-    if (isEmpty) {
+    let validationKeys = Object.keys(this[CHANGES]);
+    const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
+    if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
+      validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
+    }
+
+    if (validationKeys.length === 0) {
       return true;
     }
 

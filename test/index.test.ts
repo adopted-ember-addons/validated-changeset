@@ -285,6 +285,32 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('isPristine')).toBeTruthy();
   });
 
+  it('isPristine returns false if changes not in user provided changesetKeys', () => {
+    dummyModel.name = 'Bobby';
+    dummyModel.thing = 123;
+    dummyModel.nothing = null;
+    const changesetKeys = ['name'];
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
+      changesetKeys
+    });
+    dummyChangeset.set('nothing', 'something');
+
+    expect(dummyChangeset.get('isPristine')).toBe(true);
+  });
+
+  it('isPristine returns false if set a key in changesetKeys', () => {
+    dummyModel.name = 'Bobby';
+    dummyModel.thing = 123;
+    dummyModel.nothing = null;
+    const changesetKeys = ['razataz'];
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
+      changesetKeys
+    });
+    dummyChangeset.set('razataz', 'boom');
+
+    expect(dummyChangeset.get('isPristine')).toBe(false);
+  });
+
   /**
    * #isDirty
    */
