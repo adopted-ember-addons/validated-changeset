@@ -14,6 +14,7 @@ describe('Unit | Utility | object tree node', () => {
     const result = new ObjectTreeNode(initialVal, { details: { name: 'c' } });
 
     expect(result.changes).toEqual({ details: { name: 'z' } });
+    expect(result.unwrap() === initialVal).toBe(true);
     expect(result.proxy.details.unwrap() === initialVal.details).toBe(true);
     const details = result.proxy.details;
     expect(details.name).toBe('z');
