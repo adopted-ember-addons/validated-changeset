@@ -96,8 +96,8 @@ class ObjectTreeNode implements ProxyHandler {
     return this.changes;
   }
 
-  unwrap(key: string): any {
-    return this.safeGet(this.changes, key) || this.safeGet(this.content, key);
+  unwrap(): any {
+    return this.changes || this.content;
   }
 }
 
