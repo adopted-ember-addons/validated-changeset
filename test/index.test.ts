@@ -510,6 +510,28 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBe('Milton Waddams');
   });
 
+  it('#get handles change without Change value', () => {
+    const shallowValidations = { ...dummyValidations };
+    shallowValidations.profile = (_k: string, newValue: any) => {
+      return typeof newValue === 'undefined' ? 'Cannot be blank' : true;
+    };
+    dummyModel.profile = {};
+    const c = Changeset(dummyModel, lookupValidator(shallowValidations));
+
+    c.profile;
+    c.validate('profile');
+
+    let result: any = c.error.profile;
+    expect(result).toBe(undefined);
+
+    c.set('profile', undefined);
+
+    c.validate('profile');
+
+    result = c.error.profile.validation;
+    expect(result).toBe('Cannot be blank');
+  });
+
   it('#get returns change that is a blank value', () => {
     dummyModel.name = 'Jim Bob';
     const dummyChangeset = Changeset(dummyModel);
