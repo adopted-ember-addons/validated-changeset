@@ -855,7 +855,7 @@ export class BufferedChangeset implements IChangeset {
     let changes: Changes = this[CHANGES];
     let content: Content = this[CONTENT];
 
-    if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
+    if (Object.prototype.hasOwnProperty.call(changes, baseKey) && hasChanges(changes)) {
       let baseChanges = changes[baseKey];
 
       // 'user.name'
