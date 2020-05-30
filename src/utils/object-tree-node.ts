@@ -92,10 +92,6 @@ class ObjectTreeNode implements ProxyHandler {
     this.children = Object.create(null);
   }
 
-  toObject(): Record<string, any> {
-    return this.changes;
-  }
-
   unwrap(): any {
     return this.changes || this.content;
   }
