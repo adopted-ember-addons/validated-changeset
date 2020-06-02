@@ -32,4 +32,12 @@ describe('Unit | Utility | object tree node', () => {
     expect(result.changes.details.name).toEqual({ value: 'bla bla' });
     expect(result.content.details.name).toBe('c');
   });
+
+  it('it works with arrays', () => {
+    const initialVal = { users: ['user1', 'user2'] };
+    const result = new ObjectTreeNode(initialVal);
+
+    expect(result.proxy.users).toEqual(['user1', 'user2']);
+    expect(result.proxy.users.length).toEqual(2);
+  });
 });
