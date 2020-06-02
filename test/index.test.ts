@@ -566,7 +566,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
   });
 
-  it('nested objects can contain arrays', () => {
+  it('#get nested objects can contain arrays', () => {
     expect.assertions(7);
     dummyModel.name = 'Bob';
     dummyModel.contact = {
@@ -631,6 +631,13 @@ describe('Unit | Utility | changeset', () => {
       const expectedResult = get(model, 'foo.bar.dog');
       expect(actual).toEqual(expectedResult);
     }
+  });
+
+  it('#get proxies to underlying array properties', () => {
+    dummyModel.users = ['user1', 'user2'];
+    const dummyChangeset = Changeset(dummyModel);
+
+    expect((dummyChangeset.users as Array<string>).length).toBe(2);
   });
 
   /**
