@@ -1,6 +1,7 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
 import Change from '../-private/change';
+import normalizeObject from './normalize-object';
 
 const objectProxyHandler = {
   /**
@@ -92,8 +93,20 @@ class ObjectTreeNode implements ProxyHandler {
     this.children = Object.create(null);
   }
 
-  unwrap(): any {
-    return this.changes || this.content;
+  unwrap(): Record<string, any> {
+    let changes = this.changes;
+
+    if (isObject(changes)) {
+      changes = normalizeObject(changes);
+
+      const content = this.content;
+      if (isObject(content)) {
+        changes = normalizeObject(changes);
+        return { ...content, ...changes };
+      }
+    }
+
+    return changes;
   }
 }
 

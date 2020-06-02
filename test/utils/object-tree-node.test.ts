@@ -14,8 +14,8 @@ describe('Unit | Utility | object tree node', () => {
     const result = new ObjectTreeNode(initialVal, { details: { name: 'c' } });
 
     expect(result.changes).toEqual({ details: { name: 'z' } });
-    expect(result.unwrap() === initialVal).toBe(true);
-    expect(result.proxy.details.unwrap() === initialVal.details).toBe(true);
+    expect(result.unwrap()).toEqual({ details: { name: 'z' } });
+    expect(result.proxy.details.unwrap()).toEqual({ name: 'z' });
     const details = result.proxy.details;
     expect(details.name).toBe('z');
     expect(result.proxy.details.name).toBe('z');
@@ -39,5 +39,11 @@ describe('Unit | Utility | object tree node', () => {
 
     expect(result.proxy.users).toEqual(['user1', 'user2']);
     expect(result.proxy.users.length).toEqual(2);
+  });
+
+  it('unwrap merges sibling keys', () => {
+    const result = new ObjectTreeNode({ name: { value: 'z' } }, { name: 'c', email: '@email' });
+
+    expect(result.unwrap()).toEqual({ name: 'z', email: '@email' });
   });
 });
