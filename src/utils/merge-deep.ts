@@ -1,4 +1,5 @@
 import Change from '../-private/change';
+import normalizeObject from './normalize-object';
 
 interface Options {
   safeGet: any;
@@ -117,7 +118,7 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
         return options.safeSet(target, key, next.value);
       }
 
-      return options.safeSet(target, key, next);
+      return options.safeSet(target, key, normalizeObject(next));
     }
   });
 

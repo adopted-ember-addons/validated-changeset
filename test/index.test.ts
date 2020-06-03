@@ -1413,6 +1413,31 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.size.power10).toBe(10);
   });
 
+  it('#execute works if leaf property wasnt set before', () => {
+    dummyModel.size = {};
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
+
+    expect(dummyModel.size).toEqual({});
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBeUndefined();
+  });
+
+  it('#execute works if root property wasnt set before', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
+
+    expect(dummyModel.size).toBeUndefined();
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBeUndefined();
+  });
+
   /**
    * #save
    */
