@@ -511,7 +511,11 @@ export class BufferedChangeset implements IChangeset {
         ? validationKeys
         : keys(flattenValidations(this.validationMap as object));
 
-    let maybePromise = validationKeys.map(key => this._validateKey(key, this[key]));
+    let maybePromise = validationKeys.map(key => {
+      const value: any = this[key];
+      const resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
+      return this._validateKey(key, resolvedValue);
+    });
 
     return Promise.all(maybePromise);
   }
