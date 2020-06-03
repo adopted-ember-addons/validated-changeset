@@ -26,20 +26,22 @@ const objectProxyHandler = {
     if (isObject(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
 
-      if (childNode === undefined) {
+      if (childNode === undefined && node.content) {
         let childContent = node.safeGet(node.content, key);
         // cache it
         childNode = node.children[key] = new ObjectTreeNode(childValue, childContent, node.safeGet);
       }
 
       // return proxy if object so we can trap further access to changes or content
-      return childNode ? childNode.proxy : undefined;
+      if (childNode) {
+        return childNode.proxy;
+      }
     }
 
     if (typeof childValue !== 'undefined') {
       // primitive
       return childValue;
-    } else {
+    } else if (node.content) {
       const nodeContent = node.content;
       if (node.safeGet(nodeContent, key) || typeof node.safeGet(nodeContent, key) === 'function') {
         return node.safeGet(nodeContent, key);
