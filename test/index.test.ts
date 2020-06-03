@@ -1854,6 +1854,16 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyChangeset, 'errors.length')).toBe(2);
   });
 
+  it('#validate/1 validates a property with no validation', async () => {
+    dummyModel.org = {};
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
+
+    await dummyChangeset.validate('org');
+    expect(get(dummyChangeset, 'error.org')).toEqual(undefined);
+    expect(dummyChangeset.changes).toEqual([]);
+    expect(get(dummyChangeset, 'errors.length')).toBe(0);
+  });
+
   it('#validate works correctly with changeset values', async () => {
     dummyModel = {
       ...dummyModel,
