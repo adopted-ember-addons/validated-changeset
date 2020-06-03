@@ -1,4 +1,5 @@
 import Change from '../-private/change';
+import normalizeObject from './normalize-object';
 
 interface Options {
   safeGet: any;
@@ -62,7 +63,7 @@ function buildPathToValue(
 ): Record<string, any> {
   Object.keys(source).forEach((key: string): void => {
     let possible = source[key];
-    if (possible && possible.hasOwnProperty('value')) {
+    if (possible && possible.hasOwnProperty('value') && possible instanceof Change) {
       kv[[...possibleKeys, key].join('.')] = possible.value;
       return;
     }
@@ -104,9 +105,8 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
     if (
       propertyIsOnObject(target, key) &&
       isMergeableObject(source[key]) &&
-      !source[key].hasOwnProperty('value')
+      !(source[key] instanceof Change)
     ) {
-      /* eslint-disable @typescript-eslint/no-use-before-define */
       options.safeSet(
         target,
         key,
@@ -118,7 +118,7 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
         return options.safeSet(target, key, next.value);
       }
 
-      return options.safeSet(target, key, next);
+      return options.safeSet(target, key, normalizeObject(next));
     }
   });
 

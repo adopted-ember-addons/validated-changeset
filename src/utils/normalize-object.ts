@@ -1,3 +1,4 @@
+import Change from '../-private/change';
 import isObject from './is-object';
 
 /**
@@ -22,11 +23,11 @@ import isObject from './is-object';
  * @return {Object}
  */
 export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
-  if (!target) {
+  if (!target || !isObject(target)) {
     return target;
   }
 
-  if ('value' in target) {
+  if (target instanceof Change) {
     return target.value;
   }
 
@@ -37,11 +38,12 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
       return obj[key];
     }
 
-    if (obj[key] && isObject(obj[key])) {
-      if (Object.prototype.hasOwnProperty.call(obj[key], 'value')) {
-        obj[key] = obj[key].value;
+    const next: any = obj[key];
+    if (next && isObject(next)) {
+      if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
+        obj[key] = next.value;
       } else {
-        obj[key] = normalizeObject(obj[key]);
+        obj[key] = normalizeObject(next);
       }
     }
   }
