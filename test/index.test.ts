@@ -58,6 +58,11 @@ const dummyValidations: Record<string, any> = {
         }
       ]
     }
+  },
+  size: {
+    value(_k: string, value: unknown) {
+      return typeof value === 'number' || 'not a valid size.value';
+    }
   }
 };
 
@@ -1299,6 +1304,7 @@ describe('Unit | Utility | changeset', () => {
 
     const condition = dog.info instanceof DogTag;
     expect(condition).toBeTruthy();
+    expect(dog.info.name).toEqual('laika');
   });
 
   [
@@ -1388,6 +1394,23 @@ describe('Unit | Utility | changeset', () => {
     c.on('execute-2', callback);
 
     c.execute();
+  });
+
+  it('#execute works with an object with value key', () => {
+    dummyModel.size = {
+      value: 0
+    };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
+    dummyChangeset.set('size.power10', 10);
+
+    expect(dummyModel.size.value).toEqual(0);
+    expect(dummyModel.size.power10).toBeUndefined();
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBe(10);
   });
 
   /**
@@ -1812,7 +1835,7 @@ describe('Unit | Utility | changeset', () => {
       value: false
     });
     expect(dummyChangeset.changes).toEqual([]);
-    expect(get(dummyChangeset, 'errors.length')).toBe(7);
+    expect(get(dummyChangeset, 'errors.length')).toBe(8);
   });
 
   it('#validate/0 validates nested fields', async () => {
@@ -1825,7 +1848,7 @@ describe('Unit | Utility | changeset', () => {
       value: 7
     });
     expect(dummyChangeset.changes).toEqual([]);
-    expect(get(dummyChangeset, 'errors.length')).toBe(7);
+    expect(get(dummyChangeset, 'errors.length')).toBe(8);
   });
 
   it('#validate/1 validates a single field immediately', async () => {
@@ -1879,6 +1902,10 @@ describe('Unit | Utility | changeset', () => {
           usa: {
             ny: undefined
           }
+        },
+        size: {
+          value: undefined,
+          power10: 10
         }
       }
     };
@@ -1890,14 +1917,14 @@ describe('Unit | Utility | changeset', () => {
 
     await dummyChangeset.validate();
 
-    expect(get(dummyChangeset, 'errors.length')).toBe(4);
+    expect(get(dummyChangeset, 'errors.length')).toBe(5);
     expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
     expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('passwordConfirmation', true);
 
     await dummyChangeset.validate();
-    expect(get(dummyChangeset, 'errors.length')).toBe(4);
+    expect(get(dummyChangeset, 'errors.length')).toBe(5);
     expect(get(dummyChangeset, 'errors')[0].key).toBe('org.usa.ny');
     expect(get(dummyChangeset, 'errors')[1].key).toBe('org.isCompliant');
     expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
@@ -1909,11 +1936,14 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('passwordConfirmation', 'foobar');
     dummyChangeset.set('email', 'scott.mail@gmail.com');
     dummyChangeset.set('org.usa.ny', 'NY');
+    dummyChangeset.set('size.value', 1001);
 
     await dummyChangeset.validate();
 
     expect(get(dummyChangeset, 'errors.length')).toBe(0);
     expect(dummyChangeset.isValid).toEqual(true);
+    expect((dummyChangeset.size as Record<string, any>).value).toEqual(1001);
+    expect((dummyChangeset.size as Record<string, any>).power10).toEqual(10);
   });
 
   it('#validate works correctly with complex values', () => {
@@ -1963,6 +1993,10 @@ describe('Unit | Utility | changeset', () => {
           usa: {
             ny: 'NY'
           }
+        },
+        size: {
+          value: 1001,
+          power10: 10
         }
       }
     };
