@@ -35,10 +35,6 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
   let obj = { ...target };
 
   for (let key in obj) {
-    if (key === 'value') {
-      return obj[key];
-    }
-
     const next: any = obj[key];
     if (next && isObject(next)) {
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
