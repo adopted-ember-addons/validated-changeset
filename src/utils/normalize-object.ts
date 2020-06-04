@@ -1,4 +1,5 @@
 import Change from '../-private/change';
+import Empty from '../-private/empty';
 import isObject from './is-object';
 
 /**
@@ -31,7 +32,7 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
     return target.value;
   }
 
-  let obj = { ...target };
+  let obj: any = { ...target };
 
   for (let key in obj) {
     if (key === 'value') {
@@ -39,9 +40,11 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
     }
 
     const next: any = obj[key];
-    if (next && isObject(next)) {
+    if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Empty) {
+      obj[key] = undefined
+    } else if (next && isObject(next)) {
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
-        obj[key] = next.value;
+        obj[key] = normalizeObject(next.value);
       } else {
         obj[key] = normalizeObject(next);
       }

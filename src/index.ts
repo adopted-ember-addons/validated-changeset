@@ -3,6 +3,7 @@ import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
+import { EMPTY_SIGIL } from './-private/empty';
 import normalizeObject from './utils/normalize-object';
 import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
@@ -11,6 +12,7 @@ import isChangeset, { CHANGESET } from './utils/is-changeset';
 import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
+import { markUndefinedLeafKeys } from './utils/mark-undefined-leaf-keys';
 import mergeNested from './utils/merge-nested';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
@@ -770,7 +772,11 @@ export class BufferedChangeset implements IChangeset {
     // Happy path: update change map.
     if (oldValue !== value) {
       // @tracked
-      const result = this.setDeep(changes, key, new Change(value), { safeSet: this.safeSet });
+      let result: Changes = this.setDeep(changes, key, new Change(value), {
+        safeSet: this.safeSet
+      });
+      let content: Content = this[CONTENT];
+      result = markUndefinedLeafKeys(result, content, { safeGet: this.safeGet });
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
@@ -861,6 +867,11 @@ export class BufferedChangeset implements IChangeset {
 
     if (Object.prototype.hasOwnProperty.call(changes, baseKey) && hasChanges(changes)) {
       let baseChanges = changes[baseKey];
+
+      const maybeEmptyResult = this.getDeep(baseChanges, remaining.join('.'));
+      if (maybeEmptyResult === EMPTY_SIGIL) {
+        return;
+      }
 
       // 'user.name'
       const normalizedBaseChanges = normalizeObject(baseChanges);

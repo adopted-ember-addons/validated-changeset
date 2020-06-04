@@ -752,6 +752,18 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('nested objects can be replaced with different ones without changing the nested return values', () => {
+    dummyModel['org'] = { usa: { ny: 'ny' } };
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    dummyChangeset.set('org', { usa: { ca: 'ca' } });
+
+    expect(dummyChangeset.get('org')).toEqual({ usa: { ca: 'ca', ny: undefined } });
+    /* expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca' }); */
+    /* expect(dummyChangeset.get('org.usa.ca')).toBe('ca'); */
+    /* expect(dummyChangeset.get('org.usa.ny')).toBeUndefined(); */
+  });
+
   it('#set doesnt lose sibling keys', () => {
     dummyModel['org'] = {
       usa: {
