@@ -1,6 +1,7 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
 import Change from '../-private/change';
+import Empty from '../-private/empty';
 import normalizeObject from './normalize-object';
 
 const objectProxyHandler = {
@@ -21,6 +22,8 @@ const objectProxyHandler = {
 
     if (childValue instanceof Change) {
       return childValue.value;
+    } else if (childValue instanceof Empty) {
+      return;
     }
 
     if (isObject(childValue)) {

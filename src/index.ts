@@ -1,9 +1,10 @@
 import Change from './-private/change';
+import Empty from './-private/empty';
 import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
-import normalizeObject from './utils/normalize-object';
+import normalizeObject, { normalizeEmptyObject } from './utils/normalize-object';
 import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
 import { flattenValidations } from './utils/flatten-validations';
@@ -11,6 +12,7 @@ import isChangeset, { CHANGESET } from './utils/is-changeset';
 import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
+import { markUndefinedLeafKeys } from './utils/mark-undefined-leaf-keys';
 import mergeNested from './utils/merge-nested';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
@@ -770,7 +772,13 @@ export class BufferedChangeset implements IChangeset {
     // Happy path: update change map.
     if (oldValue !== value) {
       // @tracked
-      const result = this.setDeep(changes, key, new Change(value), { safeSet: this.safeSet });
+      let result: Changes = this.setDeep(changes, key, new Change(value), {
+        safeSet: this.safeSet
+      });
+
+      const content: Content = this[CONTENT];
+      result = markUndefinedLeafKeys(result, content, { safeGet: this.safeGet });
+
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
@@ -868,7 +876,11 @@ export class BufferedChangeset implements IChangeset {
         const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
         if (isObject(result)) {
           if (result instanceof Change) {
-            return result.value;
+            return normalizeEmptyObject(result.value);
+          }
+
+          if (result instanceof Empty) {
+            return;
           }
 
           const baseContent = this.safeGet(content, baseKey);
@@ -877,13 +889,13 @@ export class BufferedChangeset implements IChangeset {
           const tree = new ObjectTreeNode(result, subContent, this.safeGet);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
-          return result;
+          return normalizeEmptyObject(result);
         }
       }
 
       // this comes after the isObject check to ensure we don't lose remaining keys
-      if (baseChanges instanceof Change) {
-        return baseChanges.value;
+      if (baseChanges instanceof Change && remaining.length === 0) {
+        return normalizeEmptyObject(baseChanges.value);
       }
     }
 

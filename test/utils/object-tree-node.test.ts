@@ -1,4 +1,5 @@
 import { ObjectTreeNode } from '../../src/utils/object-tree-node';
+import Change from '../../src/-private/change';
 
 describe('Unit | Utility | object tree node', () => {
   it('it returns changes', () => {
@@ -42,7 +43,7 @@ describe('Unit | Utility | object tree node', () => {
   });
 
   it('unwrap merges sibling keys', () => {
-    const result = new ObjectTreeNode({ name: { value: 'z' } }, { name: 'c', email: '@email' });
+    const result = new ObjectTreeNode({ name: new Change('z') }, { name: 'c', email: '@email' });
 
     expect(result.unwrap()).toEqual({ name: 'z', email: '@email' });
   });
