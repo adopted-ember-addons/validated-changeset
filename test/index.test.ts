@@ -759,9 +759,9 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('org', { usa: { ca: 'ca' } });
 
     expect(dummyChangeset.get('org')).toEqual({ usa: { ca: 'ca', ny: undefined } });
-    /* expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca' }); */
-    /* expect(dummyChangeset.get('org.usa.ca')).toBe('ca'); */
-    /* expect(dummyChangeset.get('org.usa.ny')).toBeUndefined(); */
+    expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca', ny: undefined });
+    expect(dummyChangeset.get('org.usa.ca')).toBe('ca');
+    expect(dummyChangeset.get('org.usa.ny')).toBeUndefined();
   });
 
   it('#set doesnt lose sibling keys', () => {
