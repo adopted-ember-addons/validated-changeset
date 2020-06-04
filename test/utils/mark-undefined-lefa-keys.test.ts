@@ -23,7 +23,15 @@ describe('Unit | Utility | normalize object', () => {
     expect(value).toEqual({ name: new Change({ nickname: 'foo', other: new Empty() }) });
   });
 
-  it('it set EMPTY for missing nested', () => {
+  it('it set EMPTY for missing key with an array', () => {
+    const changes = { name: new Change({ nickname: ['foo'] }) };
+    const content = { name: { nickname: ['foo'], other: 'value' } };
+    const value = markUndefinedLeafKeys(changes, content, { safeGet });
+
+    expect(value).toEqual({ name: new Change({ nickname: ['foo'], other: new Empty() }) });
+  });
+
+  it('it set EMPTY for missing nested with sibling keys', () => {
     const changes = { org: new Change({ usa: { name: 'USA' } }) };
     const content = { org: { usa: { name: 'usa' }, au: { name: 'au' } } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
@@ -31,7 +39,7 @@ describe('Unit | Utility | normalize object', () => {
     expect(value).toEqual({ org: new Change({ usa: { name: 'USA' }, au: new Empty() }) });
   });
 
-  it('it set EMPTY for missing nested k', () => {
+  it('it set EMPTY for missing nested', () => {
     const changes = { org: new Change({ usa: { name: 'USA' } }) };
     const content = { org: { usa: { name: 'usa', foo: 'other' } } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
