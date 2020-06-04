@@ -82,7 +82,7 @@ export function normalizeEmptyObject<T extends { [key: string]: any }>(target: T
     return undefined;
   }
 
-  let obj: any = { ...target };
+  let obj = Object.assign(Object.create(Object.getPrototypeOf(target)), target);
 
   for (let key in obj) {
     if (key === 'value') {
