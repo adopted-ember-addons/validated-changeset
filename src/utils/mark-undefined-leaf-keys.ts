@@ -8,19 +8,29 @@ interface Options {
 }
 
 function markEmpty(changesNode: Record<string, any>, contentNode: unknown, options: Options) {
-  for (const key in changesNode) {
-    if (isObject(contentNode)) {
+  if (isObject(changesNode) && isObject(contentNode)) {
+    // first iterate changes and see if content has keys that aren't in there
+    for (const key in changesNode) {
+      const subChanges = changesNode[key];
       const nodeInContent = options.safeGet(contentNode, key);
       if (isObject(nodeInContent)) {
         for (let contentKey in nodeInContent) {
-          if (isObject(changesNode[key]) && !changesNode[key][contentKey]) {
-            changesNode[key][contentKey] = new Empty();
+          if (isObject(subChanges) && !subChanges[contentKey]) {
+            // mark empty if exists on content but not on changes
+            subChanges[contentKey] = new Empty();
           }
         }
       }
 
-      if (isObject(changesNode[key])) {
-        markEmpty(changesNode[key], options.safeGet(contentNode, key), options);
+      if (isObject(subChanges)) {
+        markEmpty(subChanges, options.safeGet(contentNode, key), options);
+      }
+    }
+
+    // also want to iterate content and see if something is missing from changes
+    for (const key in contentNode as Record<string, any>) {
+      if (!changesNode[key]) {
+        changesNode[key] = new Empty();
       }
     }
   }

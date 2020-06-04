@@ -1,6 +1,7 @@
 import { Changeset, ValidatedChangeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
+import Empty from '../src/-private/empty';
 import lookupValidator from '../src/utils/validator-lookup';
 
 let dummyModel: any;
@@ -441,7 +442,7 @@ describe('Unit | Utility | changeset', () => {
 
   it('#get handles changes that are non primitives', () => {
     class Moment {
-      _isUTC: boolean;
+      _isUTC: any;
       date: unknown;
       constructor(date: Date) {
         this.date = date;
@@ -467,10 +468,11 @@ describe('Unit | Utility | changeset', () => {
     c.set('startDate', newMomentInstance);
 
     newValue = c.get('startDate');
+    newMomentInstance._isUTC = undefined;
     expect(newValue).toEqual(newMomentInstance);
     expect(newValue instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(newD);
-    expect(newValue._isUTC).toBe(false);
+    expect(newValue._isUTC).toBeUndefined();
   });
 
   it('#get merges sibling keys from CONTENT with CHANGES', () => {
