@@ -81,10 +81,6 @@ export function normalizeEmptyObject<T extends { [key: string]: any }>(target: T
   let obj = Object.assign(Object.create(Object.getPrototypeOf(target)), target);
 
   for (let key in obj) {
-    if (key === 'value') {
-      return normalizeEmptyObject(obj[key]);
-    }
-
     const next: any = obj[key];
     if (next && isObject(next)) {
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Empty) {
