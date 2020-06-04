@@ -1,5 +1,5 @@
 import Change from './-private/change';
-import Empty, { EMPTY_SIGIL } from './-private/empty';
+import Empty from './-private/empty';
 import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';

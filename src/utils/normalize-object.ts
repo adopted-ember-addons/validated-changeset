@@ -55,7 +55,7 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
 /**
  * traverse through target and unset `value` from leaf key so can access normally
  * {
- *  name: Change {
+ *  name: Empty {
  *    value: 'Charles'
  *  }
  * }
