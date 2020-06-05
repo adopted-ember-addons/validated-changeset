@@ -3,7 +3,7 @@ import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
 import Err from './-private/err';
-import { hasKey } from './utils/has-key';
+import { hasKey, pathInChanges } from './utils/has-key';
 import normalizeObject from './utils/normalize-object';
 import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
@@ -12,7 +12,6 @@ import isChangeset, { CHANGESET } from './utils/is-changeset';
 import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
-import { markUndefinedLeafKeys } from './utils/mark-undefined-leaf-keys';
 import mergeNested from './utils/merge-nested';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
@@ -776,9 +775,6 @@ export class BufferedChangeset implements IChangeset {
         safeSet: this.safeSet
       });
 
-      const content: Content = this[CONTENT];
-      result = markUndefinedLeafKeys(result, content, { safeGet: this.safeGet });
-
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
@@ -875,7 +871,13 @@ export class BufferedChangeset implements IChangeset {
       if (isObject(normalizedBaseChanges)) {
         const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
 
-        if (typeof result === 'undefined' && hasKey(normalizedBaseChanges, remaining.join('.'))) {
+        // need to do this inside of Change object
+        if (
+          typeof result === 'undefined' &&
+          pathInChanges(changes, key, this.safeGet) &&
+          !hasKey(changes, key, this.safeGet) &&
+          this.getDeep(content, key)
+        ) {
           return;
         }
 
