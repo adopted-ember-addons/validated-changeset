@@ -1,28 +1,28 @@
 import { Content } from '../types';
-import isObject from './is-object';
 import Change from '../-private/change';
 import Empty from '../-private/empty';
 
 interface Options {
   safeGet: any;
+  isObject: Function;
 }
 
 function markEmpty(changesNode: Record<string, any>, contentNode: unknown, options: Options) {
-  if (isObject(changesNode) && isObject(contentNode)) {
+  if (options.isObject(changesNode) && options.isObject(contentNode)) {
     // first iterate changes and see if content has keys that aren't in there
     for (const key in changesNode) {
       const subChanges = changesNode[key];
       const nodeInContent = options.safeGet(contentNode, key);
-      if (isObject(nodeInContent)) {
+      if (options.isObject(nodeInContent)) {
         for (let contentKey in nodeInContent) {
-          if (isObject(subChanges) && !subChanges[contentKey]) {
+          if (options.isObject(subChanges) && !subChanges[contentKey]) {
             // mark empty if exists on content but not on changes
             subChanges[contentKey] = new Empty();
           }
         }
       }
 
-      if (isObject(subChanges)) {
+      if (options.isObject(subChanges)) {
         markEmpty(subChanges, options.safeGet(contentNode, key), options);
       }
     }
@@ -50,7 +50,7 @@ function markEmpty(changesNode: Record<string, any>, contentNode: unknown, optio
 export function markUndefinedLeafKeys<T>(changes: T, content: Content, options: Options): T {
   for (let key in changes) {
     const changesNode = changes[key];
-    if (isObject(changesNode) && isObject(content)) {
+    if (options.isObject(changesNode) && options.isObject(content)) {
       if (changesNode instanceof Change) {
         // here we need to start checking for empty keys
         markEmpty(changesNode.value, options.safeGet(content, key), options);

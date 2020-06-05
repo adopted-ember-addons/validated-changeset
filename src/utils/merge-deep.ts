@@ -1,9 +1,11 @@
 import Change from '../-private/change';
 import normalizeObject from './normalize-object';
+import isVCObject from './is-object';
 
 interface Options {
-  safeGet: any;
-  safeSet: any;
+  safeGet?: any;
+  safeSet?: any;
+  isObject: Function;
 }
 
 function isNonNullObject(value: any): boolean {
@@ -118,7 +120,7 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
         return options.safeSet(target, key, next.value);
       }
 
-      return options.safeSet(target, key, normalizeObject(next));
+      return options.safeSet(target, key, normalizeObject(next, options.isObject));
     }
   });
 
@@ -137,7 +139,7 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
 export default function mergeDeep(
   target: any,
   source: any,
-  options: Options = { safeGet: undefined, safeSet: undefined }
+  options: Options = { safeGet: undefined, safeSet: undefined, isObject: isVCObject }
 ): object | [any] {
   options.safeGet =
     options.safeGet ||
@@ -149,6 +151,7 @@ export default function mergeDeep(
     function(obj: any, key: string, value: unknown): any {
       return (obj[key] = value);
     };
+
   let sourceIsArray = Array.isArray(source);
   let targetIsArray = Array.isArray(target);
   let sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;

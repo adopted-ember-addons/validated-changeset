@@ -117,6 +117,8 @@ export class BufferedChangeset implements IChangeset {
 
   __changeset__ = CHANGESET;
 
+  isObject = isObject;
+
   _eventedNotifiers = {};
 
   on(eventName: string, callback: Function): INotifier {
@@ -201,8 +203,8 @@ export class BufferedChangeset implements IChangeset {
 
   get change() {
     let obj: Changes = this[CHANGES];
-    if (hasChanges(this[CHANGES])) {
-      return normalizeObject(obj);
+    if (hasChanges(this[CHANGES], this.isObject)) {
+      return normalizeObject(obj, this.isObject);
     }
 
     return {};
@@ -238,7 +240,7 @@ export class BufferedChangeset implements IChangeset {
       return true;
     }
 
-    return !hasChanges(this[CHANGES]);
+    return !hasChanges(this[CHANGES], this.isObject);
   }
   /**
    * @property isInvalid
@@ -310,10 +312,10 @@ export class BufferedChangeset implements IChangeset {
     let changes: { [s: string]: any } = this._bareChanges;
     let preparedChanges = prepareChangesFn(changes);
 
-    assert('Callback to `changeset.prepare` must return an object', isObject(preparedChanges));
+    assert('Callback to `changeset.prepare` must return an object', this.isObject(preparedChanges));
 
     let newObj: Changes = {};
-    if (isObject(preparedChanges)) {
+    if (this.isObject(preparedChanges)) {
       let newChanges: Changes = keys(preparedChanges as Record<string, any>).reduce(
         (newObj: Changes, key: keyof Changes) => {
           newObj[key] = new Change((preparedChanges as Record<string, any>)[key]);
@@ -533,7 +535,7 @@ export class BufferedChangeset implements IChangeset {
     let newError;
 
     const isIErr = <T>(error: unknown): error is IErr<T> =>
-      isObject(error) && !Array.isArray(error);
+      this.isObject(error) && !Array.isArray(error);
     if (isIErr(error)) {
       assert('Error must have value.', error.hasOwnProperty('value') || error.value !== undefined);
       assert('Error must have validation.', error.hasOwnProperty('validation'));
@@ -546,7 +548,10 @@ export class BufferedChangeset implements IChangeset {
     // Add `key` to errors map.
     let errors: Errors<any> = this[ERRORS];
     // @tracked
-    this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSet });
+    this[ERRORS] = this.setDeep(errors, key, newError, {
+      safeSet: this.safeSet,
+      isObject: this.isObject
+    });
 
     // Return passed-in `error`.
     return error;
@@ -572,7 +577,10 @@ export class BufferedChangeset implements IChangeset {
     validation = [...v, ...newErrors];
     let newError = new Err(value, validation);
     // @tracked
-    this[ERRORS] = this.setDeep(errors, key as string, newError, { safeSet: this.safeSet });
+    this[ERRORS] = this.setDeep(errors, key as string, newError, {
+      safeSet: this.safeSet,
+      isObject: this.isObject
+    });
 
     return { value, validation };
   }
@@ -773,11 +781,15 @@ export class BufferedChangeset implements IChangeset {
     if (oldValue !== value) {
       // @tracked
       let result: Changes = this.setDeep(changes, key, new Change(value), {
-        safeSet: this.safeSet
+        safeSet: this.safeSet,
+        isObject: this.isObject
       });
 
       const content: Content = this[CONTENT];
-      result = markUndefinedLeafKeys(result, content, { safeGet: this.safeGet });
+      result = markUndefinedLeafKeys(result, content, {
+        safeGet: this.safeGet,
+        isObject: this.isObject
+      });
 
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
@@ -799,7 +811,7 @@ export class BufferedChangeset implements IChangeset {
       return;
     }
 
-    this.setDeep(running, key, value ? count + 1 : count - 1);
+    this.setDeep(running, key, value ? count + 1 : count - 1, { isObject: this.isObject });
   }
 
   /**
@@ -843,7 +855,7 @@ export class BufferedChangeset implements IChangeset {
       let currentKey: string | undefined = base;
 
       // find leaf and delete from map
-      while (isObject(currentNode) && currentKey) {
+      while (this.isObject(currentNode) && currentKey) {
         let curr: { [key: string]: unknown } = currentNode;
         if (typeof curr.value !== 'undefined' || curr.validation) {
           delete previousNode[currentKey];
@@ -867,16 +879,19 @@ export class BufferedChangeset implements IChangeset {
     let changes: Changes = this[CHANGES];
     let content: Content = this[CONTENT];
 
-    if (Object.prototype.hasOwnProperty.call(changes, baseKey) && hasChanges(changes)) {
+    if (
+      Object.prototype.hasOwnProperty.call(changes, baseKey) &&
+      hasChanges(changes, this.isObject)
+    ) {
       let baseChanges = changes[baseKey];
 
       // 'user.name'
-      const normalizedBaseChanges = normalizeObject(baseChanges);
-      if (isObject(normalizedBaseChanges)) {
+      const normalizedBaseChanges = normalizeObject(baseChanges, this.isObject);
+      if (this.isObject(normalizedBaseChanges)) {
         const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
-        if (isObject(result)) {
+        if (this.isObject(result)) {
           if (result instanceof Change) {
-            return normalizeEmptyObject(result.value);
+            return normalizeEmptyObject(result.value, this.isObject);
           }
 
           if (result instanceof Empty) {
@@ -886,16 +901,16 @@ export class BufferedChangeset implements IChangeset {
           const baseContent = this.safeGet(content, baseKey);
           const subContent = this.getDeep(baseContent, remaining.join('.'));
           // give back and object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(result, subContent, this.safeGet);
+          const tree = new ObjectTreeNode(result, subContent, this.isObject, this.safeGet);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
-          return normalizeEmptyObject(result);
+          return normalizeEmptyObject(result, this.isObject);
         }
       }
 
       // this comes after the isObject check to ensure we don't lose remaining keys
       if (baseChanges instanceof Change && remaining.length === 0) {
-        return normalizeEmptyObject(baseChanges.value);
+        return normalizeEmptyObject(baseChanges.value, this.isObject);
       }
     }
 
@@ -904,7 +919,7 @@ export class BufferedChangeset implements IChangeset {
       return this[key];
     } else if (typeof this[baseKey] !== 'undefined') {
       const v: unknown = this[baseKey];
-      if (isObject(v)) {
+      if (this.isObject(v)) {
         const result = this.getDeep(v as Record<string, any>, remaining.join('.'));
         return result;
       }
@@ -913,15 +928,26 @@ export class BufferedChangeset implements IChangeset {
     // finally return on underlying object or proxy to further access nested keys
     const subContent = this.getDeep(content, key);
     let subChanges = this.getDeep(changes, key);
-    if (isObject(subContent)) {
+    if (this.isObject(subContent)) {
       if (!subChanges) {
         // if no changes, we need to add the path to the existing changes (mutate)
         // so further access to nested keys works
-        subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
+        subChanges = this.getDeep(
+          this.setDeep(
+            changes,
+            key,
+            {},
+            {
+              safeSet: this.safeSet,
+              isObject: this.isObject
+            }
+          ),
+          key
+        );
       }
 
       // may still access a value on the changes or content objects
-      const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
+      const tree = new ObjectTreeNode(subChanges, subContent, this.isObject, this.safeGet);
       return tree.proxy;
     } else {
       return subContent;

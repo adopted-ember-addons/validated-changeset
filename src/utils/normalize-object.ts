@@ -1,6 +1,6 @@
 import Change from '../-private/change';
 import Empty from '../-private/empty';
-import isObject from './is-object';
+import isVCObject from './is-object';
 
 /**
  * traverse through target and unset `value` from leaf key so can access normally
@@ -23,7 +23,10 @@ import isObject from './is-object';
  * @param {Object} target
  * @return {Object}
  */
-export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
+export default function normalizeObject<T extends { [key: string]: any }>(
+  target: T,
+  isObject: Function = isVCObject
+): T {
   if (!target || !isObject(target)) {
     return target;
   }
@@ -40,7 +43,7 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
         obj[key] = next.value;
       } else {
-        obj[key] = normalizeObject(next);
+        obj[key] = normalizeObject(next, isObject);
       }
     }
   }
@@ -69,7 +72,10 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
  * @param {Object} target
  * @return {Object | string}
  */
-export function normalizeEmptyObject<T extends { [key: string]: any }>(target: T): T | undefined {
+export function normalizeEmptyObject<T extends { [key: string]: any }>(
+  target: T,
+  isObject: Function
+): T | undefined {
   if (!target || !isObject(target)) {
     return target;
   }
@@ -86,7 +92,7 @@ export function normalizeEmptyObject<T extends { [key: string]: any }>(target: T
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Empty) {
         obj[key] = undefined;
       } else {
-        obj[key] = normalizeEmptyObject(next);
+        obj[key] = normalizeEmptyObject(next, isObject);
       }
     }
   }

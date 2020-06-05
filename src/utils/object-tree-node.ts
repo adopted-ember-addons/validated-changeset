@@ -1,8 +1,8 @@
 import { ProxyHandler, Content } from '../types';
-import isObject from './is-object';
 import Change from '../-private/change';
 import Empty from '../-private/empty';
 import normalizeObject from './normalize-object';
+import isVCObject from './is-object';
 
 const objectProxyHandler = {
   /**
@@ -26,13 +26,18 @@ const objectProxyHandler = {
       return;
     }
 
-    if (isObject(childValue)) {
+    if (node.isObject(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
 
       if (childNode === undefined && node.content) {
         let childContent = node.safeGet(node.content, key);
         // cache it
-        childNode = node.children[key] = new ObjectTreeNode(childValue, childContent, node.safeGet);
+        childNode = node.children[key] = new ObjectTreeNode(
+          childValue,
+          childContent,
+          node.isObject,
+          node.safeGet
+        );
       }
 
       // return proxy if object so we can trap further access to changes or content
@@ -90,6 +95,7 @@ class ObjectTreeNode implements ProxyHandler {
   constructor(
     changes: Record<string, any> = {},
     content: Content = {},
+    public isObject: Function = isVCObject,
     public safeGet: Function = defaultSafeGet
   ) {
     this.changes = changes;
@@ -101,12 +107,12 @@ class ObjectTreeNode implements ProxyHandler {
   unwrap(): Record<string, any> {
     let changes = this.changes;
 
-    if (isObject(changes)) {
-      changes = normalizeObject(changes);
+    if (this.isObject(changes)) {
+      changes = normalizeObject(changes, this.isObject);
 
       const content = this.content;
-      if (isObject(content)) {
-        changes = normalizeObject(changes);
+      if (this.isObject(content)) {
+        changes = normalizeObject(changes, this.isObject);
         return { ...content, ...changes };
       }
     }

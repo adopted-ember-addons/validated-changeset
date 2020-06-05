@@ -4,7 +4,7 @@ export interface ProxyHandler {
   proxy: any;
   children: Record<string, any>;
   safeGet: Function;
-  unwrap: Function,
+  unwrap: Function;
   [key: string]: any;
 }
 
@@ -105,6 +105,8 @@ export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any
 
 export interface ChangesetDef {
   __changeset__: string;
+
+  isObject: Function;
 
   _content: object;
   _changes: Changes;
