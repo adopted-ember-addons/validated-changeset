@@ -872,6 +872,7 @@ export class BufferedChangeset implements IChangeset {
         const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
 
         // need to do this inside of Change object
+        // basically anything inside of a Change object that is undefined means it was removed
         if (
           typeof result === 'undefined' &&
           pathInChanges(changes, key, this.safeGet) &&
