@@ -5,7 +5,7 @@ function safeGet(obj: any, key: string) {
   return obj[key];
 }
 
-describe('Unit | Utility | has changes', () => {
+describe('Unit | Utility | has key', () => {
   it('it returns true with Change class', () => {
     const objA = new Change({ value: 'Ivan' });
     const value = hasKey(objA, 'value', safeGet);
