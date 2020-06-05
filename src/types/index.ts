@@ -4,7 +4,7 @@ export interface ProxyHandler {
   proxy: any;
   children: Record<string, any>;
   safeGet: Function;
-  unwrap: Function,
+  unwrap: Function;
   [key: string]: any;
 }
 
