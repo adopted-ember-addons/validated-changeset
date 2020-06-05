@@ -1,5 +1,4 @@
 import Change from '../../src/-private/change';
-import Empty from '../../src/-private/empty';
 import { markUndefinedLeafKeys } from '../../src/utils/mark-undefined-leaf-keys';
 
 const safeGet = function(obj: Record<string, any>, key: string) {
@@ -20,7 +19,7 @@ describe('Unit | Utility | normalize object', () => {
     const content = { name: { nickname: 'bar', other: 'value' } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
 
-    expect(value).toEqual({ name: new Change({ nickname: 'foo', other: new Empty() }) });
+    expect(value).toEqual({ name: new Change({ nickname: 'foo', other: undefined }) });
   });
 
   it('it set EMPTY for missing key with an array', () => {
@@ -28,7 +27,7 @@ describe('Unit | Utility | normalize object', () => {
     const content = { name: { nickname: ['foo'], other: 'value' } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
 
-    expect(value).toEqual({ name: new Change({ nickname: ['foo'], other: new Empty() }) });
+    expect(value).toEqual({ name: new Change({ nickname: ['foo'], other: undefined }) });
   });
 
   it('it set EMPTY for missing nested with sibling keys', () => {
@@ -36,7 +35,7 @@ describe('Unit | Utility | normalize object', () => {
     const content = { org: { usa: { name: 'usa' }, au: { name: 'au' } } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
 
-    expect(value).toEqual({ org: new Change({ usa: { name: 'USA' }, au: new Empty() }) });
+    expect(value).toEqual({ org: new Change({ usa: { name: 'USA' }, au: undefined }) });
   });
 
   it('it set EMPTY for missing nested', () => {
@@ -44,6 +43,6 @@ describe('Unit | Utility | normalize object', () => {
     const content = { org: { usa: { name: 'usa', foo: 'other' } } };
     const value = markUndefinedLeafKeys(changes, content, { safeGet });
 
-    expect(value).toEqual({ org: new Change({ usa: { name: 'USA', foo: new Empty() } }) });
+    expect(value).toEqual({ org: new Change({ usa: { name: 'USA', foo: undefined } }) });
   });
 });

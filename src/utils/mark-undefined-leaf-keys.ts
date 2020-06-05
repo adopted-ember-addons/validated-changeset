@@ -1,7 +1,6 @@
 import { Content } from '../types';
 import isObject from './is-object';
 import Change from '../-private/change';
-import Empty from '../-private/empty';
 
 interface Options {
   safeGet: any;
@@ -17,7 +16,7 @@ function markEmpty(changesNode: Record<string, any>, contentNode: unknown, optio
         for (let contentKey in nodeInContent) {
           if (isObject(subChanges) && !subChanges[contentKey]) {
             // mark empty if exists on content but not on changes
-            subChanges[contentKey] = new Empty();
+            subChanges[contentKey] = undefined;
           }
         }
       }
@@ -30,7 +29,7 @@ function markEmpty(changesNode: Record<string, any>, contentNode: unknown, optio
     // also want to iterate content and see if something is missing from changes
     for (const key in contentNode as Record<string, any>) {
       if (!changesNode[key]) {
-        changesNode[key] = new Empty();
+        changesNode[key] = undefined;
       }
     }
   }
