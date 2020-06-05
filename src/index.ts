@@ -887,9 +887,9 @@ export class BufferedChangeset implements IChangeset {
 
       // 'user.name'
       const normalizedBaseChanges = normalizeObject(baseChanges, this.isObject);
-      if (this.isObject(normalizedBaseChanges)) {
+      if (isObject(normalizedBaseChanges)) {
         const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
-        if (this.isObject(result)) {
+        if (isObject(result)) {
           if (result instanceof Change) {
             return normalizeEmptyObject(result.value, this.isObject);
           }
@@ -919,7 +919,7 @@ export class BufferedChangeset implements IChangeset {
       return this[key];
     } else if (typeof this[baseKey] !== 'undefined') {
       const v: unknown = this[baseKey];
-      if (this.isObject(v)) {
+      if (isObject(v)) {
         const result = this.getDeep(v as Record<string, any>, remaining.join('.'));
         return result;
       }
@@ -928,7 +928,7 @@ export class BufferedChangeset implements IChangeset {
     // finally return on underlying object or proxy to further access nested keys
     const subContent = this.getDeep(content, key);
     let subChanges = this.getDeep(changes, key);
-    if (this.isObject(subContent)) {
+    if (isObject(subContent)) {
       if (!subChanges) {
         // if no changes, we need to add the path to the existing changes (mutate)
         // so further access to nested keys works
