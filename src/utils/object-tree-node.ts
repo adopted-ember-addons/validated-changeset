@@ -1,7 +1,6 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
 import Change from '../-private/change';
-import Empty from '../-private/empty';
 import normalizeObject from './normalize-object';
 
 const objectProxyHandler = {
@@ -18,12 +17,13 @@ const objectProxyHandler = {
 
     if (node.changes.hasOwnProperty && node.changes.hasOwnProperty(key)) {
       childValue = node.safeGet(node.changes, key);
+      if (typeof childValue === 'undefined') {
+        return;
+      }
     }
 
     if (childValue instanceof Change) {
       return childValue.value;
-    } else if (childValue instanceof Empty) {
-      return;
     }
 
     if (isObject(childValue)) {

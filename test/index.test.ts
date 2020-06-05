@@ -1,7 +1,6 @@
 import { Changeset, ValidatedChangeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
-import Empty from '../src/-private/empty';
 import lookupValidator from '../src/utils/validator-lookup';
 
 let dummyModel: any;
@@ -764,6 +763,25 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca', ny: undefined });
     expect(dummyChangeset.get('org.usa.ca')).toBe('ca');
     expect(dummyChangeset.get('org.usa.ny')).toBeUndefined();
+  });
+
+  it('nested objects can be replaced with different ones as classes', () => {
+    class Country {
+      details: object;
+      constructor(details: object) {
+        this.details = details;
+      }
+    }
+    dummyModel['org'] = new Country({ usa: { ny: 'ny' } });
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    dummyChangeset.set('org', new Country({ usa: { ca: 'ca' } }));
+
+    expect(dummyChangeset.get('org')).toEqual(new Country({ usa: { ca: 'ca', ny: undefined } }));
+    expect(dummyChangeset.get('org.details')).toEqual({ usa: { ca: 'ca', ny: undefined } });
+    expect(dummyChangeset.get('org.details.usa')).toEqual({ ca: 'ca', ny: undefined });
+    expect(dummyChangeset.get('org.details.usa.ca')).toBe('ca');
+    expect(dummyChangeset.get('org.details.usa.ny')).toBeUndefined();
   });
 
   it('#set doesnt lose sibling keys', () => {
