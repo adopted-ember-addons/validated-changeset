@@ -1,9 +1,8 @@
 import Change from '../-private/change';
-import isVCObject from './is-object';
+import isObject from './is-object';
 
 interface Options {
-  safeSet?: any;
-  isObject: Function;
+  safeSet: any;
 }
 
 function split(path: string): string[] {
@@ -40,7 +39,7 @@ export default function setDeep(
   target: any,
   path: string,
   value: unknown,
-  options: Options = { safeSet: undefined, isObject: isVCObject }
+  options: Options = { safeSet: undefined }
 ): any {
   const keys = split(path).filter(isValidKey);
   // We will mutate target and through complex reference, we will mutate the orig
@@ -60,11 +59,11 @@ export default function setDeep(
   for (let i = 0; i < keys.length; i++) {
     let prop = keys[i];
 
-    const isObj = options.isObject(target[prop]);
+    const isObj = isObject(target[prop]);
     if (!isObj) {
       options.safeSet(target, prop, {});
     } else if (isObj && target[prop] instanceof Change) {
-      if (options.isObject(target[prop].value)) {
+      if (isObject(target[prop].value)) {
         // if an object, we don't want to lose sibling keys
         const siblings = findSiblings(target[prop].value, keys);
         const resolvedValue = value instanceof Change ? value.value : value;

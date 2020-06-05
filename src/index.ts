@@ -549,8 +549,7 @@ export class BufferedChangeset implements IChangeset {
     let errors: Errors<any> = this[ERRORS];
     // @tracked
     this[ERRORS] = this.setDeep(errors, key, newError, {
-      safeSet: this.safeSet,
-      isObject: this.isObject
+      safeSet: this.safeSet
     });
 
     // Return passed-in `error`.
@@ -578,8 +577,7 @@ export class BufferedChangeset implements IChangeset {
     let newError = new Err(value, validation);
     // @tracked
     this[ERRORS] = this.setDeep(errors, key as string, newError, {
-      safeSet: this.safeSet,
-      isObject: this.isObject
+      safeSet: this.safeSet
     });
 
     return { value, validation };
@@ -781,8 +779,7 @@ export class BufferedChangeset implements IChangeset {
     if (oldValue !== value) {
       // @tracked
       let result: Changes = this.setDeep(changes, key, new Change(value), {
-        safeSet: this.safeSet,
-        isObject: this.isObject
+        safeSet: this.safeSet
       });
 
       const content: Content = this[CONTENT];
@@ -811,7 +808,7 @@ export class BufferedChangeset implements IChangeset {
       return;
     }
 
-    this.setDeep(running, key, value ? count + 1 : count - 1, { isObject: this.isObject });
+    this.setDeep(running, key, value ? count + 1 : count - 1);
   }
 
   /**
@@ -938,8 +935,7 @@ export class BufferedChangeset implements IChangeset {
             key,
             {},
             {
-              safeSet: this.safeSet,
-              isObject: this.isObject
+              safeSet: this.safeSet
             }
           ),
           key
