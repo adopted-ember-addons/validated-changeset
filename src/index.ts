@@ -862,7 +862,17 @@ export class BufferedChangeset implements IChangeset {
     let [baseKey, ...remaining] = key.split('.');
     let changes: Changes = this[CHANGES];
     let content: Content = this[CONTENT];
+    if (
+      Object.prototype.hasOwnProperty.call(changes, baseKey) &&
+      !isObject(this.safeGet(changes, key)) &&
+      this.safeGet(changes, key) !== undefined
+    ) {
+      // if safeGet returns a primitive, then go ahead return
+      return this.safeGet(changes, key);
+    }
 
+    // At this point, we may have a changes object, a dot separated key, or a need to access the `key`
+    // on `this` or `content`
     if (Object.prototype.hasOwnProperty.call(changes, baseKey) && hasChanges(changes)) {
       let baseChanges = changes[baseKey];
 
