@@ -862,15 +862,13 @@ export class BufferedChangeset implements IChangeset {
     let [baseKey, ...remaining] = key.split('.');
     let changes: Changes = this[CHANGES];
     let content: Content = this[CONTENT];
-    if (
-      Object.prototype.hasOwnProperty.call(changes, baseKey) &&
-      !isObject(this.safeGet(changes, key)) &&
-      this.safeGet(changes, key) !== undefined
-    ) {
-      // if safeGet returns a primitive, then go ahead return
-      return this.safeGet(changes, key);
+    if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
+      const changesValue = this.getDeep(changes, key);
+      if (!isObject(changesValue) && changesValue !== undefined) {
+        // if safeGet returns a primitive, then go ahead return
+        return changesValue;
+      }
     }
-
     // At this point, we may have a changes object, a dot separated key, or a need to access the `key`
     // on `this` or `content`
     if (Object.prototype.hasOwnProperty.call(changes, baseKey) && hasChanges(changes)) {
@@ -914,20 +912,13 @@ export class BufferedChangeset implements IChangeset {
     }
 
     // return getters/setters/methods on BufferedProxy instance
-    if (typeof this[key] !== 'undefined') {
-      return this[key];
-    } else if (typeof this[baseKey] !== 'undefined') {
-      const v: unknown = this[baseKey];
-      if (isObject(v)) {
-        const result = this.getDeep(v as Record<string, any>, remaining.join('.'));
-        return result;
-      }
+    if (baseKey in this || key in this) {
+      return this.getDeep(this, key);
     }
 
-    // finally return on underlying object or proxy to further access nested keys
     const subContent = this.getDeep(content, key);
-    let subChanges = this.getDeep(changes, key);
     if (isObject(subContent)) {
+      let subChanges = this.getDeep(changes, key);
       if (!subChanges) {
         // if no changes, we need to add the path to the existing changes (mutate)
         // so further access to nested keys works
@@ -937,9 +928,9 @@ export class BufferedChangeset implements IChangeset {
       // may still access a value on the changes or content objects
       const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
       return tree.proxy;
-    } else {
-      return subContent;
     }
+
+    return subContent;
   }
 
   set<T>(key: string, value: T): void {
