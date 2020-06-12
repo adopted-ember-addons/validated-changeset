@@ -913,8 +913,7 @@ export class BufferedChangeset implements IChangeset {
 
     // return getters/setters/methods on BufferedProxy instance
     if (
-      (Object.prototype.hasOwnProperty.call(this, baseKey) ||
-        Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), baseKey)) &&
+      Object.prototype.hasOwnProperty.call(this, baseKey) ||
       typeof this.getDeep(this, key) !== 'undefined'
     ) {
       return this.getDeep(this, key);
