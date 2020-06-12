@@ -46,7 +46,7 @@ const objectProxyHandler = {
       return childValue;
     } else if (node.content) {
       const nodeContent = node.content;
-      if (node.safeGet(nodeContent, key) || typeof node.safeGet(nodeContent, key) === 'function') {
+      if (node.safeGet(nodeContent, key)) {
         return node.safeGet(nodeContent, key);
       }
     }

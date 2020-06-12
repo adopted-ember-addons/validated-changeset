@@ -113,15 +113,6 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.toString()).toEqual('changeset:[object Object]');
   });
 
-  it('content can be an empty hash', () => {
-    expect.assertions(1);
-
-    const emptyObject = {};
-    const dummyChangeset = new ValidatedChangeset(emptyObject, lookupValidator(dummyValidations));
-
-    expect(dummyChangeset.toString()).toEqual('changeset:[object Object]');
-  });
-
   /**
    * #error
    */
