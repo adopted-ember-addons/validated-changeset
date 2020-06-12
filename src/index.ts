@@ -911,17 +911,12 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    const subContent = this.getDeep(content, key);
-
     // return getters/setters/methods on BufferedProxy instance
-    if (
-      typeof subContent === 'undefined' &&
-      (Object.prototype.hasOwnProperty.call(this, baseKey) ||
-        typeof this.getDeep(this, key) !== 'undefined')
-    ) {
+    if (baseKey in this || key in this) {
       return this.getDeep(this, key);
     }
 
+    const subContent = this.getDeep(content, key);
     if (isObject(subContent)) {
       let subChanges = this.getDeep(changes, key);
       if (!subChanges) {
