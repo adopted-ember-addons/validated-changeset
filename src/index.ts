@@ -911,19 +911,15 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
+    const subContent = this.getDeep(content, key);
+
     // return getters/setters/methods on BufferedProxy instance
     if (
-      Object.prototype.hasOwnProperty.call(this, baseKey) ||
-      typeof this.getDeep(this, key) !== 'undefined'
+      typeof subContent === 'undefined' &&
+      (Object.prototype.hasOwnProperty.call(this, baseKey) ||
+        typeof this.getDeep(this, key) !== 'undefined')
     ) {
       return this.getDeep(this, key);
-    }
-
-    // finally return on underlying object or proxy to further access nested keys
-    const subContent = this.getDeep(content, key);
-    if (!isObject(subContent) && subContent !== undefined) {
-      // if safeGet returns a primitive, then go ahead return.  No need to start at base key and go down tree
-      return subContent;
     }
 
     if (isObject(subContent)) {
@@ -938,6 +934,8 @@ export class BufferedChangeset implements IChangeset {
       const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
       return tree.proxy;
     }
+
+    return subContent;
   }
 
   set<T>(key: string, value: T): void {
