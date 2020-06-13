@@ -130,6 +130,7 @@ export interface ChangesetDef {
     key: string,
     value: T
   ) => void | T | IErr<T> | Promise<T> | Promise<ValidationResult | T | IErr<T>> | ValidationResult;
+  maybeUnwrapProxy: Function;
   getDeep: any;
   setDeep: any;
   safeGet: (obj: any, key: string) => any;

@@ -82,6 +82,10 @@ function assert(msg: string, property: unknown): void {
   }
 }
 
+function maybeUnwrapProxy(content) {
+  return content;
+}
+
 export class BufferedChangeset implements IChangeset {
   constructor(
     obj: object,
@@ -134,6 +138,12 @@ export class BufferedChangeset implements IChangeset {
       notifier.trigger(...args);
     }
   }
+
+  /**
+   * @property maybeUnwrapProxy
+   * @override
+   */
+  maybeUnwrapProxy = maybeUnwrapProxy;
 
   /**
    * @property setDeep
@@ -367,10 +377,7 @@ export class BufferedChangeset implements IChangeset {
       // we might be getting this off a proxy object.  For example, when a
       // belongsTo relationship (a proxy on the parent model)
       // another way would be content(belongsTo).content.save
-      let saveFunc: Function = this.safeGet(content, 'save');
-      if (saveFunc) {
-        savePromise = saveFunc(options);
-      }
+      savePromise = this.maybeUnwrapProxy(content).save();
     }
 
     const result = await savePromise;
