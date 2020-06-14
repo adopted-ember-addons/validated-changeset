@@ -49,7 +49,8 @@ module.exports = {
         'no-console': 'off',
         'no-process-exit': 'off',
         '@typescript-eslint/no-var-requires': 'off',
-        'node/no-unpublished-require': 'off'
+        'node/no-unpublished-require': 'off',
+        'node/shebang': 'off'
       }),
     },
   ]
