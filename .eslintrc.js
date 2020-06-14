@@ -16,5 +16,13 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 0,
     '@typescript-eslint/no-explicit-any': 0,
     'prefer-const': 0
-  }
+  },
+  overrides: [
+    // node files
+    {
+      files: [
+        'bin/**'
+      ]
+    }
+  ]
 };
