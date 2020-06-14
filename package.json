@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc && tsc --outDir dist/es && rollup -c rollup.config.ts",
     "test": "jest",
+    "test:all": "npm run test && npm run test-external:ember-changeset && npm run test-external:ember-changeset-validations",
     "test.watch": "jest --watch",
     "lint": "eslint .",
     "prepare": "npm run build",
