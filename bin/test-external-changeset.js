@@ -29,11 +29,6 @@ console.log(
   `Preparing to test external project ${externalProjectName} located at ${gitUrl} against this validated-changeset commit.`
 );
 
-function execCommand(command, force) {
-  command = `cd ${projectTempDir} && ${command}`;
-  return execWithLog(command, force);
-}
-
 function execWithLog(command, force) {
   debug(chalk.cyan('Executing: ') + chalk.yellow(command));
   if (force) {
@@ -41,6 +36,11 @@ function execWithLog(command, force) {
   }
 
   return execa.sync(command, { shell: true }).stdout;
+}
+
+function execCommand(command, force) {
+  command = `cd ${projectTempDir} && ${command}`;
+  return execWithLog(command, force);
 }
 
 if (!fs.existsSync(tempDir)) {
@@ -114,8 +114,10 @@ if (!fs.existsSync(tarballDir)) {
 }
 
 function generateTarball() {
-  execWithLog(`cd ${tarballDir}`);
-  execWithLog(`npm pack ${root}`);
+  execWithLog(`
+  cd ${tarballDir};
+  npm pack ${root};
+    `);
 
   debug(`npm pack successful at: ${tarballDir}`);
   const pkgPath = path.join(root, 'package.json');
