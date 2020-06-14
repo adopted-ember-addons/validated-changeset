@@ -48,7 +48,8 @@ module.exports = {
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         'no-console': 'off',
         'no-process-exit': 'off',
-        '@typescript-eslint/no-var-requires': 0
+        '@typescript-eslint/no-var-requires': 'off',
+        'node/no-unpublished-require': 'off'
       }),
     },
   ]

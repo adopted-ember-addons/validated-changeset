@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const fs = require('fs');
@@ -97,7 +95,7 @@ try {
  */
 const currentSha = execWithLog(`git rev-parse HEAD`);
 const cacheDir = path.join(root, `../__tarball-cache`);
-const tarballDir = path.join(cacheDir, currentSha)
+const tarballDir = path.join(cacheDir, currentSha);
 
 if (!fs.existsSync(cacheDir)) {
   debug(`Ensuring Cache Root at: ${cacheDir}`);
@@ -124,7 +122,7 @@ function generateTarball() {
   return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
 }
 
-function insertTarballsToPackageJson(location) {
+function insertTarballsToPackageJson() {
   const thisPkgTarballPath = generateTarball();
 
   execCommand(`yarn add ${thisPkgTarballPath} --save`);
