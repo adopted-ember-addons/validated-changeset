@@ -17,12 +17,39 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 0,
     'prefer-const': 0
   },
+  env: {
+    browser: true,
+    node: false,
+  },
   overrides: [
     // node files
     {
       files: [
+        '.eslintrc',
         'bin/**'
-      ]
-    }
+      ],
+      parserOptions: {
+        sourceType: 'script',
+        ecmaVersion: 2015,
+      },
+      env: {
+        browser: false,
+        node: true,
+        es6: true,
+      },
+      plugins: ['node', 'import'],
+      extends: 'plugin:node/recommended',
+    },
+
+    // bin files
+    {
+      files: ['bin/**'],
+      // eslint-disable-next-line node/no-unpublished-require
+      rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
+        'no-console': 'off',
+        'no-process-exit': 'off',
+        '@typescript-eslint/no-var-requires': 0
+      }),
+    },
   ]
 };
