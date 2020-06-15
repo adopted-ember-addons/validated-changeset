@@ -830,6 +830,7 @@ See all the wonderful [contributors](https://github.com/poteto/ember-changeset#c
 ## Running Tests
 
 * `npm run test`
+* `npm run test:all` will run the current commit sha against both `ember-changeset` and `ember-changeset-validations`.
 
 ## Building
 
