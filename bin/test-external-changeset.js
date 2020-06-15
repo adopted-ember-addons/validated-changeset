@@ -57,6 +57,7 @@ if (fs.existsSync(projectTempDir)) {
 // install the project
 try {
   execWithLog(`git clone --depth=1 ${gitUrl} ${projectTempDir}`);
+  // execWithLog(`git checkout **branc**`);
 } catch (e) {
   debug(e);
   throw new Error(
