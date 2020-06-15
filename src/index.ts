@@ -82,6 +82,10 @@ function assert(msg: string, property: unknown): void {
   }
 }
 
+function maybeUnwrapProxy(content: Content): any {
+  return content;
+}
+
 export class BufferedChangeset implements IChangeset {
   constructor(
     obj: object,
@@ -134,6 +138,12 @@ export class BufferedChangeset implements IChangeset {
       notifier.trigger(...args);
     }
   }
+
+  /**
+   * @property maybeUnwrapProxy
+   * @override
+   */
+  maybeUnwrapProxy = maybeUnwrapProxy;
 
   /**
    * @property setDeep
@@ -367,9 +377,9 @@ export class BufferedChangeset implements IChangeset {
       // we might be getting this off a proxy object.  For example, when a
       // belongsTo relationship (a proxy on the parent model)
       // another way would be content(belongsTo).content.save
-      let saveFunc: Function = this.safeGet(content, 'save');
-      if (saveFunc) {
-        savePromise = saveFunc(options);
+      let maybePromise = this.maybeUnwrapProxy(content).save();
+      if (maybePromise) {
+        savePromise = maybePromise;
       }
     }
 
@@ -514,7 +524,8 @@ export class BufferedChangeset implements IChangeset {
 
     let maybePromise = validationKeys.map(key => {
       const value: any = this[key];
-      const resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
+      const resolvedValue =
+        value instanceof ObjectTreeNode ? value.unwrap() : this.maybeUnwrapProxy(value);
       return this._validateKey(key, resolvedValue);
     });
 
@@ -877,7 +888,9 @@ export class BufferedChangeset implements IChangeset {
       // 'user.name'
       const normalizedBaseChanges = normalizeObject(baseChanges);
       if (isObject(normalizedBaseChanges)) {
-        const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
+        const result = this.maybeUnwrapProxy(
+          this.getDeep(normalizedBaseChanges, remaining.join('.'))
+        );
 
         // need to do this inside of Change object
         // basically anything inside of a Change object that is undefined means it was removed
@@ -916,7 +929,7 @@ export class BufferedChangeset implements IChangeset {
       return this.getDeep(this, key);
     }
 
-    const subContent = this.getDeep(content, key);
+    const subContent = this.maybeUnwrapProxy(this.getDeep(content, key));
     if (isObject(subContent)) {
       let subChanges = this.getDeep(changes, key);
       if (!subChanges) {

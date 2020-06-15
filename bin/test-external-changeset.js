@@ -111,10 +111,7 @@ if (!fs.existsSync(tarballDir)) {
 }
 
 function generateTarball() {
-  execWithLog(`
-  cd ${tarballDir};
-  npm pack ${root};
-    `);
+  execWithLog(`cd ${tarballDir}; npm pack ${root};`);
 
   debug(`npm pack successful at: ${tarballDir}`);
   const pkgPath = path.join(root, 'package.json');
