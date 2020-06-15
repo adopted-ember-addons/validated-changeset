@@ -888,7 +888,9 @@ export class BufferedChangeset implements IChangeset {
       // 'user.name'
       const normalizedBaseChanges = normalizeObject(baseChanges);
       if (isObject(normalizedBaseChanges)) {
-        const result = this.getDeep(normalizedBaseChanges, remaining.join('.'));
+        const result = this.maybeUnwrapProxy(
+          this.getDeep(normalizedBaseChanges, remaining.join('.'))
+        );
 
         // need to do this inside of Change object
         // basically anything inside of a Change object that is undefined means it was removed
@@ -927,7 +929,7 @@ export class BufferedChangeset implements IChangeset {
       return this.getDeep(this, key);
     }
 
-    const subContent = this.getDeep(content, key);
+    const subContent = this.maybeUnwrapProxy(this.getDeep(content, key));
     if (isObject(subContent)) {
       let subChanges = this.getDeep(changes, key);
       if (!subChanges) {
