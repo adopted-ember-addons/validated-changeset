@@ -281,7 +281,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('isPristine')).toBeTruthy();
   });
 
-  it('isPristine returns false if changes not in user provided changesetKeys', () => {
+  it('isPristine returns true if changes not in user provided changesetKeys', () => {
     dummyModel.name = 'Bobby';
     dummyModel.thing = 123;
     dummyModel.nothing = null;
@@ -290,6 +290,17 @@ describe('Unit | Utility | changeset', () => {
       changesetKeys
     });
     dummyChangeset.set('nothing', 'something');
+
+    expect(dummyChangeset.get('isPristine')).toBe(true);
+  });
+
+  it('isPristine returns true if nested changes not in user provided changesetKeys', () => {
+    dummyModel.obj = { name: 'Bobby' };
+    const changesetKeys = ['name'];
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
+      changesetKeys
+    });
+    dummyChangeset.set('obj.name', 'something');
 
     expect(dummyChangeset.get('isPristine')).toBe(true);
   });
@@ -303,6 +314,16 @@ describe('Unit | Utility | changeset', () => {
       changesetKeys
     });
     dummyChangeset.set('razataz', 'boom');
+
+    expect(dummyChangeset.get('isPristine')).toBe(false);
+  });
+
+  it('isPristine returns false if nested changes in user provided changesetKeys', () => {
+    const changesetKeys = ['org'];
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
+      changesetKeys
+    });
+    dummyChangeset.set('org.usa.ny', 'NYE');
 
     expect(dummyChangeset.get('isPristine')).toBe(false);
   });
