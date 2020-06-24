@@ -292,6 +292,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('nothing', 'something');
 
     expect(dummyChangeset.get('isPristine')).toBe(true);
+    expect(dummyChangeset.get('isDirty')).toBe(false);
   });
 
   it('isPristine returns true if nested changes not in user provided changesetKeys', () => {
@@ -303,6 +304,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('obj.name', 'something');
 
     expect(dummyChangeset.get('isPristine')).toBe(true);
+    expect(dummyChangeset.get('isDirty')).toBe(false);
   });
 
   it('isPristine returns false if set a key in changesetKeys', () => {
@@ -316,6 +318,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('razataz', 'boom');
 
     expect(dummyChangeset.get('isPristine')).toBe(false);
+    expect(dummyChangeset.get('isDirty')).toBe(true);
   });
 
   it('isPristine returns false if nested changes in user provided changesetKeys', () => {
@@ -326,6 +329,7 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('org.usa.ny', 'NYE');
 
     expect(dummyChangeset.get('isPristine')).toBe(false);
+    expect(dummyChangeset.get('isDirty')).toBe(true);
   });
 
   /**
