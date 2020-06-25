@@ -21,6 +21,11 @@ describe('Unit | Utility | is object', function() {
       label: 'ObjectProxies',
       value: new Proxy({ content: Object.create({ foo: 'bar' }) }, {}),
       expected: true
+    },
+    {
+      label: 'RegExps',
+      value: /foo/,
+      expected: false
     }
   ];
 
