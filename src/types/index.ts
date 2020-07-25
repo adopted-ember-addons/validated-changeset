@@ -50,7 +50,7 @@ export type ValidatorMapFunc = {
     | Promise<ValidationResult>;
 };
 
-export interface ValidatorMapClass {
+export interface ValidatorClass {
   validate: ValidatorMapFunc;
   [s: string]: any;
 };
