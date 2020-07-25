@@ -8,7 +8,10 @@ function flatten(
 ): object {
   for (let key of keys) {
     const value: any = validatorMap[key];
-    if (isObject(value)) {
+    if (typeof value.validate === 'function') {
+      // class with .validate function
+      obj[key] = value;
+    } else if (isObject(value)) {
       flatten(value, obj, Object.keys(value), [...keysUpToFunction, key]);
     } else if (typeof value === 'function') {
       const dotSeparatedKeys = [...keysUpToFunction, key].join('.');

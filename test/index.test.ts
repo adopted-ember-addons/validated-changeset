@@ -1,7 +1,8 @@
-import { Changeset, ValidatedChangeset } from '../src';
+import { Changeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 import lookupValidator from '../src/utils/validator-lookup';
+import { prependOnceListener } from 'process';
 
 let dummyModel: any;
 const exampleArray: Array<any> = [];
@@ -2170,6 +2171,34 @@ describe('Unit | Utility | changeset', () => {
     myChangeset.set('isOptionTwo', true);
     await myChangeset.validate();
     expect(myChangeset.isInvalid).toEqual(false);
+  });
+
+  it('#validate/0 works with a class', async () => {
+    class PersonalValidator {
+      _validate() {
+        return 'oh no';
+      }
+      async validate(key: string, newValue: unknown) {
+        return this._validate();
+      }
+    }
+    const validationMap = {
+      name: new PersonalValidator()
+    };
+    dummyModel.name = 'J';
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(validationMap), validationMap);
+    dummyChangeset.name = null;
+
+    await dummyChangeset.validate();
+
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+    expect(get(dummyChangeset, 'error.name.validation')).toEqual('oh no');
+    expect(dummyChangeset.changes).toEqual([
+      {
+        key: 'name',
+        value: null,
+      }
+    ]);
   });
 
   it('#isInvalid does not trigger validations without validate keys', async () => {
