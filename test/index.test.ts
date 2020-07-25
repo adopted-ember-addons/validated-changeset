@@ -2175,8 +2175,11 @@ describe('Unit | Utility | changeset', () => {
 
   it('#validate/0 works with a class', async () => {
     class PersonalValidator {
-      async validate(key: string, newValue: unknown) {
+      _validate() {
         return 'oh no';
+      }
+      async validate(key: string, newValue: unknown) {
+        return this._validate();
       }
     }
     const validationMap = {

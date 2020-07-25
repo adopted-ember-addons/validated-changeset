@@ -16,7 +16,7 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     let validator: ValidatorMapFunc | ValidatorMapFunc[] | ValidatorClass = get(validations, key);
     const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass => !!(maybeClass as Record<string, any>).validate;
     if (validator && isValidatorClass(validator)) {
-      validator = validator.validate;
+      validator = validator.validate.bind(validator);
     }
 
     if (!validator || isObject(validator)) {
