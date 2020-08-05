@@ -77,4 +77,11 @@ describe('Unit | Utility | path in changes', () => {
 
     expect(value).toEqual(false);
   });
+
+  it('it returns false', () => {
+    const objA = { details: { name: { value: 'Ivan' } } };
+    const value = pathInChanges(objA, 'wat.other.path', safeGet);
+
+    expect(value).toBe(false);
+  });
 });
