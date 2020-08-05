@@ -28,6 +28,10 @@ export function pathInChanges(
 
   let obj = record;
   for (const key of keys) {
+    if (!obj) {
+      return false;
+    }
+
     if (keys[keys.length - 1] !== key && safeGet(obj, key) instanceof Change) {
       return true;
     }
