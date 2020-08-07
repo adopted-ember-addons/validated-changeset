@@ -333,6 +333,17 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('isDirty')).toBe(true);
   });
 
+  it('isPristine returns false if nested changes in user provided changesetKeys', () => {
+    const changesetKeys = ['org.usa.ny'];
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
+      changesetKeys
+    });
+    dummyChangeset.set('org.usa', 'USA');
+
+    expect(dummyChangeset.get('isPristine')).toBe(true);
+    expect(dummyChangeset.get('isDirty')).toBe(false);
+  });
+
   /**
    * #isDirty
    */
