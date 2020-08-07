@@ -333,7 +333,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('isDirty')).toBe(true);
   });
 
-  it('isPristine returns false if nested changes in user provided changesetKeys', () => {
+  it('isPristine returns true if nested path does not match at the deepest level', () => {
     const changesetKeys = ['org.usa.ny'];
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), null, {
       changesetKeys
