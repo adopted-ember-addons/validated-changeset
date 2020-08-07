@@ -273,7 +273,7 @@ export class BufferedChangeset implements IChangeset {
   setUnknownProperty<T>(key: string, value: T): void {
     let config: Config = this[OPTIONS];
     let changesetKeys = config.changesetKeys;
-    if (changesetKeys) {
+    if (Array.isArray(changesetKeys) && changesetKeys.length > 0) {
       const hasKey = changesetKeys.find(chKey => key.match(chKey));
       if (!hasKey) {
         return;
