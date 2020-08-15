@@ -1498,6 +1498,38 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.size.power10).toBeUndefined();
   });
 
+  test('execute returns correct object after setting value on empty initial object', async function() {
+    let c = Changeset({});
+
+    c.set('country', 'usa');
+
+    expect(c.execute().data).toEqual({
+      country: 'usa'
+    });
+
+    c.set('org.usa.ny', 'any value');
+
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value'
+        }
+      }
+    });
+    c.set('org.usa.il', '2nd value');
+
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value',
+          il: '2nd value'
+        }
+      }
+    });
+  });
+
   /**
    * #save
    */
