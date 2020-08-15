@@ -272,6 +272,14 @@ export class BufferedChangeset implements IChangeset {
    */
   setUnknownProperty<T>(key: string, value: T): void {
     let config: Config = this[OPTIONS];
+    let changesetKeys = config.changesetKeys;
+    if (Array.isArray(changesetKeys) && changesetKeys.length > 0) {
+      const hasKey = changesetKeys.find(chKey => key.match(chKey));
+      if (!hasKey) {
+        return;
+      }
+    }
+
     let skipValidate: boolean | undefined = config['skipValidate'];
 
     let content: Content = this[CONTENT];
