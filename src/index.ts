@@ -13,6 +13,7 @@ import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
 import mergeNested from './utils/merge-nested';
+import { buildOldValues } from './utils/build-old-values';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
 import take from './utils/take';
@@ -71,6 +72,8 @@ const AFTER_VALIDATION_EVENT = 'afterValidation';
 const AFTER_ROLLBACK_EVENT = 'afterRollback';
 const defaultValidatorFn = () => true;
 const defaultOptions = { skipValidate: false };
+
+let OLD_CONTENT: object | undefined;
 
 const DEBUG = process.env.NODE_ENV !== 'production';
 
@@ -352,9 +355,14 @@ export class BufferedChangeset implements IChangeset {
    * @method execute
    */
   execute(): this {
+    let oldContent;
     if (this.isValid && this.isDirty) {
       let content: Content = this[CONTENT];
       let changes: Changes = this[CHANGES];
+
+      // keep old values in case of error and we want to rollback
+      oldContent = buildOldValues(content, this.changes, this.getDeep);
+
       // we want mutation on original object
       // @tracked
       this[CONTENT] = mergeDeep(content, changes);
@@ -364,6 +372,7 @@ export class BufferedChangeset implements IChangeset {
     this.trigger('execute');
 
     this[CHANGES] = {};
+    OLD_CONTENT = oldContent;
 
     return this;
   }
@@ -391,10 +400,22 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    const result = await savePromise;
+    try {
+      const result = await savePromise;
 
-    this.rollback();
-    return result;
+      // cleanup changeset
+      this.rollback();
+
+      return result;
+    } catch (e) {
+      if (OLD_CONTENT) {
+        this[CONTENT] = mergeDeep(content, OLD_CONTENT, {
+          safeGet: this.safeGet,
+          safeSet: this.safeSet
+        });
+      }
+      throw new Error(e);
+    }
   }
 
   /**
