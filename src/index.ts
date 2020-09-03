@@ -62,6 +62,7 @@ export {
 
 const { keys } = Object;
 const CONTENT = '_content';
+const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
 const ERRORS = '_errors';
 const VALIDATOR = '_validator';
@@ -72,8 +73,6 @@ const AFTER_VALIDATION_EVENT = 'afterValidation';
 const AFTER_ROLLBACK_EVENT = 'afterRollback';
 const defaultValidatorFn = () => true;
 const defaultOptions = { skipValidate: false };
-
-let OLD_CONTENT: object | undefined;
 
 const DEBUG = process.env.NODE_ENV !== 'production';
 
@@ -97,6 +96,7 @@ export class BufferedChangeset implements IChangeset {
     options: Config = {}
   ) {
     this[CONTENT] = obj;
+    this[PREVIOUS_CONTENT] = obj;
     this[CHANGES] = {};
     this[ERRORS] = {};
     this[VALIDATOR] = validateFn;
@@ -115,6 +115,7 @@ export class BufferedChangeset implements IChangeset {
    */
   [key: string]: unknown;
   [CONTENT]: object;
+  [PREVIOUS_CONTENT]: object | undefined;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [VALIDATOR]: ValidatorAction;
@@ -372,7 +373,7 @@ export class BufferedChangeset implements IChangeset {
     this.trigger('execute');
 
     this[CHANGES] = {};
-    OLD_CONTENT = oldContent;
+    this[PREVIOUS_CONTENT] = oldContent;
 
     return this;
   }
@@ -408,8 +409,8 @@ export class BufferedChangeset implements IChangeset {
 
       return result;
     } catch (e) {
-      if (OLD_CONTENT) {
-        this[CONTENT] = mergeDeep(content, OLD_CONTENT, {
+      if (this[PREVIOUS_CONTENT]) {
+        this[CONTENT] = mergeDeep(content, this[PREVIOUS_CONTENT], {
           safeGet: this.safeGet,
           safeSet: this.safeSet
         });
