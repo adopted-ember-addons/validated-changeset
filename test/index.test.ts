@@ -1507,27 +1507,27 @@ describe('Unit | Utility | changeset', () => {
       country: 'usa'
     });
 
-    /* c.set('org.usa.ny', 'any value'); */
+    c.set('org.usa.ny', 'any value');
 
-    /* expect(c.execute().data).toEqual({ */
-    /*   country: 'usa', */
-    /*   org: { */
-    /*     usa: { */
-    /*       ny: 'any value' */
-    /*     } */
-    /*   } */
-    /* }); */
-    /* c.set('org.usa.il', '2nd value'); */
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value'
+        }
+      }
+    });
+    c.set('org.usa.il', '2nd value');
 
-    /* expect(c.execute().data).toEqual({ */
-    /*   country: 'usa', */
-    /*   org: { */
-    /*     usa: { */
-    /*       ny: 'any value', */
-    /*       il: '2nd value' */
-    /*     } */
-    /*   } */
-    /* }); */
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value',
+          il: '2nd value'
+        }
+      }
+    });
   });
 
   /**
