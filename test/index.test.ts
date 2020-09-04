@@ -1596,7 +1596,7 @@ describe('Unit | Utility | changeset', () => {
         expect(false).toBeTruthy();
       })
       .catch(error => {
-        expect(error.message).toEqual('some ember data error');
+        expect(error.message).toEqual('Error: some ember data error');
       })
       .finally(() => done());
   });

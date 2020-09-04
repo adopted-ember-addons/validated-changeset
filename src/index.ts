@@ -13,6 +13,7 @@ import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
 import mergeNested from './utils/merge-nested';
+import { buildOldValues } from './utils/build-old-values';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
 import take from './utils/take';
@@ -61,6 +62,7 @@ export {
 
 const { keys } = Object;
 const CONTENT = '_content';
+const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
 const ERRORS = '_errors';
 const VALIDATOR = '_validator';
@@ -94,6 +96,7 @@ export class BufferedChangeset implements IChangeset {
     options: Config = {}
   ) {
     this[CONTENT] = obj;
+    this[PREVIOUS_CONTENT] = obj;
     this[CHANGES] = {};
     this[ERRORS] = {};
     this[VALIDATOR] = validateFn;
@@ -112,6 +115,7 @@ export class BufferedChangeset implements IChangeset {
    */
   [key: string]: unknown;
   [CONTENT]: object;
+  [PREVIOUS_CONTENT]: object | undefined;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [VALIDATOR]: ValidatorAction;
@@ -352,9 +356,14 @@ export class BufferedChangeset implements IChangeset {
    * @method execute
    */
   execute(): this {
+    let oldContent;
     if (this.isValid && this.isDirty) {
       let content: Content = this[CONTENT];
       let changes: Changes = this[CHANGES];
+
+      // keep old values in case of error and we want to rollback
+      oldContent = buildOldValues(content, this.changes, this.getDeep);
+
       // we want mutation on original object
       // @tracked
       this[CONTENT] = mergeDeep(content, changes);
@@ -364,6 +373,7 @@ export class BufferedChangeset implements IChangeset {
     this.trigger('execute');
 
     this[CHANGES] = {};
+    this[PREVIOUS_CONTENT] = oldContent;
 
     return this;
   }
@@ -391,10 +401,22 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    const result = await savePromise;
+    try {
+      const result = await savePromise;
 
-    this.rollback();
-    return result;
+      // cleanup changeset
+      this.rollback();
+
+      return result;
+    } catch (e) {
+      if (this[PREVIOUS_CONTENT]) {
+        this[CONTENT] = mergeDeep(content, this[PREVIOUS_CONTENT], {
+          safeGet: this.safeGet,
+          safeSet: this.safeSet
+        });
+      }
+      throw new Error(e);
+    }
   }
 
   /**
