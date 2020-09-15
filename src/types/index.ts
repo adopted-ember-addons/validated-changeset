@@ -53,7 +53,7 @@ export type ValidatorMapFunc = {
 export interface ValidatorClass {
   validate: ValidatorMapFunc;
   [s: string]: any;
-};
+}
 
 export type ValidatorMap =
   | { [s: string]: ValidatorMapFunc | ValidatorMapFunc[] | any }

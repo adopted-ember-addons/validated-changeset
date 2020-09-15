@@ -44,6 +44,7 @@ export {
   CHANGESET,
   Change,
   Err,
+  buildOldValues,
   isChangeset,
   isObject,
   isPromise,
@@ -415,7 +416,7 @@ export class BufferedChangeset implements IChangeset {
           safeSet: this.safeSet
         });
       }
-      throw new Error(e);
+      throw e;
     }
   }
 
@@ -623,20 +624,9 @@ export class BufferedChangeset implements IChangeset {
    * @method snapshot
    */
   snapshot(): Snapshot {
-    let changes: Changes = this[CHANGES];
-    let errors: Errors<any> = this[ERRORS];
-
     return {
-      changes: keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
-        newObj[key] = changes[key].value;
-        return newObj;
-      }, {}),
-
-      errors: keys(errors).reduce((newObj: Errors<any>, key: keyof Errors<any>) => {
-        let e = errors[key];
-        newObj[key] = { value: e.value, validation: e.validation };
-        return newObj;
-      }, {})
+      changes: this.changes,
+      errors: this.errors
     };
   }
 
@@ -652,11 +642,14 @@ export class BufferedChangeset implements IChangeset {
       return newObj;
     }, {});
 
-    let newErrors: Errors<any> = keys(errors).reduce((newObj: Errors<any>, key: keyof Changes) => {
-      let e: IErr<any> = errors[key];
-      newObj[key] = new Err(e.value, e.validation);
-      return newObj;
-    }, {});
+    let newErrors: Errors<any> = keys(errors).reduce(
+      (newObj: Errors<any>, key: keyof Errors<string>) => {
+        let e: IErr<any> = errors[key];
+        newObj[key] = new Err(e.value, e.validation);
+        return newObj;
+      },
+      {}
+    );
 
     // @tracked
     this[CHANGES] = newChanges;
