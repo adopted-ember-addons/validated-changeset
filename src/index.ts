@@ -44,6 +44,7 @@ export {
   CHANGESET,
   Change,
   Err,
+  buildOldValues,
   isChangeset,
   isObject,
   isPromise,
@@ -415,7 +416,7 @@ export class BufferedChangeset implements IChangeset {
           safeSet: this.safeSet
         });
       }
-      throw new Error(e);
+      throw e;
     }
   }
 
@@ -637,7 +638,7 @@ export class BufferedChangeset implements IChangeset {
         newObj[key] = { value: e.value, validation: e.validation };
         return newObj;
       }, {})
-    };
+    }
   }
 
   /**
