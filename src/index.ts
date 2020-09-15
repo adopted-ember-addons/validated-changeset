@@ -638,7 +638,7 @@ export class BufferedChangeset implements IChangeset {
         newObj[key] = { value: e.value, validation: e.validation };
         return newObj;
       }, {})
-    }
+    };
   }
 
   /**
