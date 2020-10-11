@@ -1,7 +1,6 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
 import setDeep from './set-deep';
-import getDeep from './get-deep';
 import Change from '../-private/change';
 import normalizeObject from './normalize-object';
 
