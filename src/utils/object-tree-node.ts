@@ -1,5 +1,6 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
+import setDeep from './set-deep';
 import Change from '../-private/change';
 import normalizeObject from './normalize-object';
 
@@ -96,6 +97,14 @@ class ObjectTreeNode implements ProxyHandler {
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
     this.children = Object.create(null);
+  }
+
+  get(key: string) {
+    return this.safeGet(this.changes, key);
+  }
+
+  set(key: string, value: unknown) {
+    return setDeep(this.changes, key, value);
   }
 
   unwrap(): Record<string, any> {

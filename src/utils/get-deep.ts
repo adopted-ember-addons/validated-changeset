@@ -1,3 +1,5 @@
+import Change from '../-private/change';
+
 /**
  * Handles both single key or nested string keys ('person.name')
  *
@@ -12,7 +14,7 @@ export default function getDeep<T extends Record<string, any>>(
   if (path.indexOf('.') === -1) {
     return obj[path as string];
   }
-  const parts = typeof path === 'string' ? path.split('.') : path;
+  const parts: string[] = typeof path === 'string' ? path.split('.') : path;
 
   for (let i = 0; i < parts.length; i++) {
     if (obj === undefined || obj === null) {
@@ -21,6 +23,35 @@ export default function getDeep<T extends Record<string, any>>(
 
     // next iteration has next level
     obj = obj[parts[i]];
+  }
+
+  return obj;
+}
+
+/**
+ * Returns subObject while skipping `Change` instances
+ *
+ * @method getSubObject
+ */
+export function getSubObject<T extends Record<string, any>>(root: T, path: string | string[]): any {
+  let obj: T = root;
+
+  if (path.indexOf('.') === -1) {
+    return obj[path as string];
+  }
+
+  const parts: string[] = typeof path === 'string' ? path.split('.') : path;
+
+  for (let i = 0; i < parts.length; i++) {
+    if (obj === undefined || obj === null) {
+      return undefined;
+    }
+
+    if (obj[parts[i]] instanceof Change) {
+      obj = obj[parts[i]].value;
+    } else {
+      obj = obj[parts[i]];
+    }
   }
 
   return obj;

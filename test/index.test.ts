@@ -584,22 +584,6 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBeUndefined();
   });
 
-  it('nested objects will return correct values', () => {
-    dummyModel['org'] = {
-      asia: { sg: '_initial' }, // for the sake of disambiguating nulls
-      usa: {
-        ca: null,
-        ny: null,
-        ma: { name: null }
-      }
-    };
-
-    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
-    expect(dummyChangeset.get('org.asia.sg')).toBe('_initial');
-    dummyChangeset.set('org.asia.sg', 'sg');
-    expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
-  });
-
   it('#get nested objects can contain arrays', () => {
     expect.assertions(7);
     dummyModel.name = 'Bob';
@@ -1192,6 +1176,31 @@ describe('Unit | Utility | changeset', () => {
 
     const result = changeset.get('styles.colors.main');
     expect(result.sync).toEqual(false);
+  });
+
+  it('#set nested objects at various level of tree will return correct values', () => {
+    dummyModel['org'] = {
+      asia: { sg: '_initial' }, // for the sake of disambiguating nulls
+      usa: {
+        ca: null,
+        ny: null,
+        ma: { name: null }
+      }
+    };
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    expect(dummyChangeset.get('org.asia.sg')).toBe('_initial');
+
+    dummyChangeset.set('org.asia.sg', 'sg');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
+
+    dummyChangeset.get('org.asia').set('sg', 'SG');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('SG');
+
+    dummyChangeset.get('org').set('asia.sg', 'sg');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
+
+    expect(dummyChangeset.get('org').get('asia.sg')).toBe('sg');
   });
 
   it('it accepts async validations', async () => {
