@@ -19,7 +19,7 @@ import objectWithout from './utils/object-without';
 import take from './utils/take';
 import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
-import getDeep from './utils/get-deep';
+import getDeep, { getSubObject } from './utils/get-deep';
 
 import {
   Changes,
@@ -947,8 +947,9 @@ export class BufferedChangeset implements IChangeset {
 
           const baseContent = this.safeGet(content, baseKey);
           const subContent = this.getDeep(baseContent, remaining.join('.'));
+          const subChanges = getSubObject(changes, key);
           // give back and object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(result, subContent, this.safeGet);
+          const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
@@ -976,7 +977,7 @@ export class BufferedChangeset implements IChangeset {
       }
 
       // may still access a value on the changes or content objects
-      const tree = new ObjectTreeNode(subChanges, subContent, this.safeGet);
+      const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep);
       return tree.proxy;
     }
 
