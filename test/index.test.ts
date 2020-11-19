@@ -749,6 +749,7 @@ describe('Unit | Utility | changeset', () => {
   it('#set works for nested', () => {
     const expectedChanges = [{ key: 'name', value: { short: 'foo' } }];
     dummyModel.name = {};
+    dummyModel.org = {};
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset['name'] = {
       short: 'foo'
@@ -759,6 +760,8 @@ describe('Unit | Utility | changeset', () => {
 
     const changes = dummyChangeset.changes;
     expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.name).toEqual({ short: 'foo' });
+    expect(dummyChangeset.org).toEqual({});
 
     dummyChangeset.execute();
 
