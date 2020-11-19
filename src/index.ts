@@ -561,8 +561,7 @@ export class BufferedChangeset implements IChangeset {
 
     let maybePromise = validationKeys.map(key => {
       const value: any = this[key];
-      const resolvedValue =
-        value instanceof ObjectTreeNode ? value.unwrap() : value;
+      const resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
       return this._validateKey(key, resolvedValue);
     });
 

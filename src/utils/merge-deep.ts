@@ -68,7 +68,7 @@ function buildPathToValue(
       return;
     }
 
-    if (typeof possible === 'object') {
+    if (possible && typeof possible === 'object') {
       buildPathToValue(possible, options, kv, [...possibleKeys, key]);
     }
   });
