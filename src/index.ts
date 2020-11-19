@@ -169,6 +169,12 @@ export class BufferedChangeset implements IChangeset {
   getDeep = getDeep;
 
   /**
+   * @property mergeDeep
+   * @override
+   */
+  mergeDeep = mergeDeep;
+
+  /**
    * @property safeGet
    * @override
    */
@@ -373,7 +379,7 @@ export class BufferedChangeset implements IChangeset {
 
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = mergeDeep(content, changes);
+      this[CONTENT] = this.mergeDeep(content, changes);
     }
 
     // trigger any registered callbacks by same keyword as method name
@@ -417,7 +423,7 @@ export class BufferedChangeset implements IChangeset {
       return result;
     } catch (e) {
       if (this[PREVIOUS_CONTENT]) {
-        this[CONTENT] = mergeDeep(content, this[PREVIOUS_CONTENT], {
+        this[CONTENT] = this.mergeDeep(content, this[PREVIOUS_CONTENT], {
           safeGet: this.safeGet,
           safeSet: this.safeSet
         });
