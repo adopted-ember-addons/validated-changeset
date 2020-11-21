@@ -297,11 +297,10 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    let skipValidate: boolean | undefined = config['skipValidate'];
-
     let content: Content = this[CONTENT];
     let oldValue = this.safeGet(content, key);
 
+    let skipValidate: boolean | undefined = config.skipValidate;
     if (skipValidate) {
       this._setProperty({ key, value, oldValue });
       this._handleValidation(true, { key, value });
