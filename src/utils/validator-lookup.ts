@@ -1,7 +1,13 @@
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
 import isObject from './is-object';
-import { ValidatorAction, ValidatorMapFunc, ValidatorClass, ValidationResult, ValidatorMap } from '../types';
+import {
+  ValidatorAction,
+  ValidatorMapFunc,
+  ValidatorClass,
+  ValidationResult,
+  ValidatorMap
+} from '../types';
 import get from './get-deep';
 
 /**
@@ -13,8 +19,14 @@ import get from './get-deep';
 export default function lookupValidator(validationMap: ValidatorMap): ValidatorAction {
   return ({ key, newValue, oldValue, changes, content }) => {
     const validations = validationMap || {};
-    let validator: ValidatorMapFunc | ValidatorMapFunc[] | ValidatorClass = get(validations, key);
-    const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass => !!(maybeClass as Record<string, any>).validate;
+    let validator:
+      | ValidatorMapFunc
+      | ValidatorMapFunc[]
+      | ValidatorClass
+      | ValidatorClass[]
+      | Array<ValidatorMapFunc | ValidatorClass> = get(validations, key);
+    const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass =>
+      !!(maybeClass as Record<string, any>).validate;
     if (validator && isValidatorClass(validator)) {
       validator = validator.validate.bind(validator);
     }
@@ -23,27 +35,18 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
       return true;
     }
 
-    if (Array.isArray(validator) && validator.some(v => typeof v !== 'function')) {
-      return true;
-    }
-
+    let validation: ValidationResult | Promise<ValidationResult>;
     if (Array.isArray(validator)) {
-      return handleMultipleValidations(validator as ValidatorMapFunc[], {
+      validation = handleMultipleValidations(validator, {
         key,
         newValue,
         oldValue,
         changes,
         content
       });
+    } else {
+      validation = (validator as ValidatorMapFunc)(key, newValue, oldValue, changes, content);
     }
-
-    let validation: ValidationResult | Promise<ValidationResult> = (validator as ValidatorMapFunc)(
-      key,
-      newValue,
-      oldValue,
-      changes,
-      content
-    );
 
     return isPromise(validation)
       ? (validation as Promise<ValidationResult>).then(result => {
