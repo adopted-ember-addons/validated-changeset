@@ -1,5 +1,11 @@
 import isPromise from './is-promise';
-import { ValidatorMapFunc, ValidationResult } from '../types';
+import {
+  ValidatorMapFunc,
+  ValidationResult,
+  ValidatorAction,
+  ValidatorClass,
+  ValidatorMap
+} from '../types';
 
 /**
  * Rejects `true` values from an array of validations. Returns `true` when there
@@ -48,13 +54,21 @@ function handleValidationsSync(validations: Array<ValidationResult>): boolean | 
  * @return {Promise|boolean|Any}
  */
 export default function handleMultipleValidations(
-  validators: ValidatorMapFunc[],
+  validators: Array<ValidatorMapFunc | ValidatorClass>,
   { key, newValue, oldValue, changes, content }: { [s: string]: any }
 ): boolean | any {
   let validations: Array<ValidationResult | Promise<ValidationResult>> = Array.from(
-    validators.map((validator: ValidatorMapFunc): ValidationResult | Promise<ValidationResult> =>
-      validator(key, newValue, oldValue, changes, content)
-    )
+    validators.map((validator: ValidatorMapFunc | ValidatorClass):
+      | ValidationResult
+      | Promise<ValidationResult> => {
+      const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass =>
+        !!(maybeClass as Record<string, any>).validate;
+      if (validator && isValidatorClass(validator)) {
+        validator = validator.validate.bind(validator);
+      }
+
+      return validator(key, newValue, oldValue, changes, content);
+    })
   );
 
   if (validations.some(isPromise)) {

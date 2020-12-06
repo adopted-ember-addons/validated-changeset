@@ -6,6 +6,7 @@ import { prependOnceListener } from 'process';
 
 let dummyModel: any;
 const exampleArray: Array<any> = [];
+
 const dummyValidations: Record<string, any> = {
   name(_k: string, value: any) {
     return (!!value && value.length > 3) || 'too short';
@@ -2293,7 +2294,38 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes).toEqual([
       {
         key: 'name',
-        value: null,
+        value: null
+      }
+    ]);
+  });
+
+  it('#validate/0 works with a class and multiple validators', async () => {
+    function validatePresence(): Function {
+      return (val: unknown) => !!val;
+    }
+    class PersonalValidator {
+      _validate() {
+        return 'oh no';
+      }
+      async validate(key: string, newValue: unknown) {
+        return this._validate();
+      }
+    }
+    const validationMap = {
+      name: [validatePresence(), new PersonalValidator()]
+    };
+    dummyModel.name = 'J';
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(validationMap), validationMap);
+    dummyChangeset.name = null;
+
+    await dummyChangeset.validate();
+
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+    expect(get(dummyChangeset, 'error.name.validation')).toEqual(['oh no']);
+    expect(dummyChangeset.changes).toEqual([
+      {
+        key: 'name',
+        value: null
       }
     ]);
   });
