@@ -169,6 +169,12 @@ export class BufferedChangeset implements IChangeset {
   getDeep = getDeep;
 
   /**
+   * @property mergeDeep
+   * @override
+   */
+  mergeDeep = mergeDeep;
+
+  /**
    * @property safeGet
    * @override
    */
@@ -287,11 +293,10 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    let skipValidate: boolean | undefined = config['skipValidate'];
-
     let content: Content = this[CONTENT];
     let oldValue = this.safeGet(content, key);
 
+    let skipValidate: boolean | undefined = config.skipValidate;
     if (skipValidate) {
       this._setProperty({ key, value, oldValue });
       this._handleValidation(true, { key, value });
@@ -369,7 +374,7 @@ export class BufferedChangeset implements IChangeset {
 
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = mergeDeep(content, changes);
+      this[CONTENT] = this.mergeDeep(content, changes);
     }
 
     // trigger any registered callbacks by same keyword as method name
@@ -413,7 +418,7 @@ export class BufferedChangeset implements IChangeset {
       return result;
     } catch (e) {
       if (this[PREVIOUS_CONTENT]) {
-        this[CONTENT] = mergeDeep(content, this[PREVIOUS_CONTENT], {
+        this[CONTENT] = this.mergeDeep(content, this[PREVIOUS_CONTENT], {
           safeGet: this.safeGet,
           safeSet: this.safeSet
         });
@@ -557,8 +562,7 @@ export class BufferedChangeset implements IChangeset {
 
     let maybePromise = validationKeys.map(key => {
       const value: any = this[key];
-      const resolvedValue =
-        value instanceof ObjectTreeNode ? value.unwrap() : value;
+      const resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
       return this._validateKey(key, resolvedValue);
     });
 

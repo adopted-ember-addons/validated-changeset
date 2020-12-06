@@ -749,6 +749,7 @@ describe('Unit | Utility | changeset', () => {
   it('#set works for nested', () => {
     const expectedChanges = [{ key: 'name', value: { short: 'foo' } }];
     dummyModel.name = {};
+    dummyModel.org = {};
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset['name'] = {
       short: 'foo'
@@ -759,6 +760,8 @@ describe('Unit | Utility | changeset', () => {
 
     const changes = dummyChangeset.changes;
     expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.name).toEqual({ short: 'foo' });
+    expect(dummyChangeset.org).toEqual({});
 
     dummyChangeset.execute();
 
@@ -1617,6 +1620,39 @@ describe('Unit | Utility | changeset', () => {
         expect(error.message).toEqual('some ember data error');
       })
       .finally(() => done());
+  });
+
+  it('#save restores values on content after rejected Promise', done => {
+    expect.assertions(2);
+
+    dummyModel.name = 'previous';
+    const dummyChangeset = Changeset(dummyModel);
+
+    dummyModel['save'] = () => {
+      dummyModel.errors = [
+        {
+          message: 'oops I did it again'
+        }
+      ];
+      return Promise.reject(new Error('some ember data error'));
+    };
+
+    dummyChangeset.set('name', 'new');
+
+    dummyChangeset
+      .save()
+      .then(() => {
+        expect(false).toBeTruthy();
+      })
+      .finally(() => {
+        expect(dummyModel.name).toEqual('previous');
+        expect(dummyModel.errors).toEqual([
+          {
+            message: 'oops I did it again'
+          }
+        ]);
+        done();
+      });
   });
 
   it('#save proxies to content even if it does not implement #save', done => {
