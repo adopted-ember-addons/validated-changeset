@@ -1316,7 +1316,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#prepare works with initial model containing an object property', () => {
-    const dummyChangeset = Changeset(Object.assign({ obj: {} },));
+    const dummyChangeset = Changeset({ obj: {} });
 
     dummyChangeset.get('obj').unwrap();
     dummyChangeset.prepare(function (changes) { return changes; });
