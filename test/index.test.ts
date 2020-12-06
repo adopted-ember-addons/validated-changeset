@@ -1613,6 +1613,39 @@ describe('Unit | Utility | changeset', () => {
       .finally(() => done());
   });
 
+  it('#save restores values on content after rejected Promise', done => {
+    expect.assertions(2);
+
+    dummyModel.name = 'previous';
+    const dummyChangeset = Changeset(dummyModel);
+
+    dummyModel['save'] = () => {
+      dummyModel.errors = [
+        {
+          message: 'oops I did it again'
+        }
+      ];
+      return Promise.reject(new Error('some ember data error'));
+    };
+
+    dummyChangeset.set('name', 'new');
+
+    dummyChangeset
+      .save()
+      .then(() => {
+        expect(false).toBeTruthy();
+      })
+      .finally(() => {
+        expect(dummyModel.name).toEqual('previous');
+        expect(dummyModel.errors).toEqual([
+          {
+            message: 'oops I did it again'
+          }
+        ]);
+        done();
+      });
+  });
+
   it('#save proxies to content even if it does not implement #save', done => {
     const person = { name: 'Jim' };
     const dummyChangeset = Changeset(person);
