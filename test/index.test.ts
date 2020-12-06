@@ -1315,6 +1315,15 @@ describe('Unit | Utility | changeset', () => {
     expect(() => dummyChangeset.prepare(() => null)).toThrow();
   });
 
+  it('#prepare works with initial model containing an object property', () => {
+    const dummyChangeset = Changeset({ obj: {} });
+
+    dummyChangeset.get('obj').unwrap();
+    dummyChangeset.prepare(function (changes) { return changes; });
+
+    expect(dummyChangeset.isPristine).toEqual(true);
+  });
+
   /**
    * #execute
    */

@@ -191,14 +191,10 @@ export class BufferedChangeset implements IChangeset {
   }
 
   get _bareChanges() {
-    function transform(c: Change) {
-      return c.value;
-    }
-
     let obj = this[CHANGES];
 
-    return keys(obj).reduce((newObj: { [key: string]: any }, key: string) => {
-      newObj[key] = transform(obj[key]);
+    return getKeyValues(obj).reduce((newObj: { [key: string]: any }, { key, value }) => {
+      newObj[key] = value;
       return newObj;
     }, Object.create(null));
   }
