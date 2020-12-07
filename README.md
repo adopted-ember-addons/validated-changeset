@@ -442,6 +442,19 @@ changeset.on('execute', callback);
 changeset.execute();
 ```
 
+#### `unexecute`
+
+Undo changes made to underlying Object for changeset. This is often useful if you want to remove changes from underlying Object if `save` fails.
+
+```js
+changeset
+  .save()
+  .catch(() => {
+    // save applies changes to the underlying Object via this.execute(). This may be undesired for your use case.
+    dummyChangeset.unexecute();
+  })
+```
+
 **[⬆️ back to top](#api)**
 
 #### `save`

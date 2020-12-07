@@ -386,6 +386,17 @@ export class BufferedChangeset implements IChangeset {
     return this;
   }
 
+  unexecute(): this {
+    if (this[PREVIOUS_CONTENT]) {
+      this[CONTENT] = this.mergeDeep(this[CONTENT], this[PREVIOUS_CONTENT], {
+        safeGet: this.safeGet,
+        safeSet: this.safeSet
+      });
+    }
+
+    return this;
+  }
+
   /**
    * Executes the changeset and saves the underlying content.
    *
@@ -417,12 +428,6 @@ export class BufferedChangeset implements IChangeset {
 
       return result;
     } catch (e) {
-      if (this[PREVIOUS_CONTENT]) {
-        this[CONTENT] = this.mergeDeep(content, this[PREVIOUS_CONTENT], {
-          safeGet: this.safeGet,
-          safeSet: this.safeSet
-        });
-      }
       throw e;
     }
   }
