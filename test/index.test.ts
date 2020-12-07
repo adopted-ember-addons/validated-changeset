@@ -1623,7 +1623,7 @@ describe('Unit | Utility | changeset', () => {
       .finally(() => done());
   });
 
-  it('#save restores values on content after rejected Promise', done => {
+  it('#save restores values on content after rejected Promise if user calls unexecute', done => {
     expect.assertions(2);
 
     dummyModel.name = 'previous';
@@ -1644,6 +1644,9 @@ describe('Unit | Utility | changeset', () => {
       .save()
       .then(() => {
         expect(false).toBeTruthy();
+      })
+      .catch(() => {
+        dummyChangeset.unexecute();
       })
       .finally(() => {
         expect(dummyModel.name).toEqual('previous');
