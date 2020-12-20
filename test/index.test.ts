@@ -2,12 +2,14 @@ import { Changeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 import lookupValidator from '../src/utils/validator-lookup';
-import { prependOnceListener } from 'process';
 
 let dummyModel: any;
 const exampleArray: Array<any> = [];
 
 const dummyValidations: Record<string, any> = {
+  age(_k: string, value: any) {
+    return !!value ? value < 120 || '' : true;
+  },
   name(_k: string, value: any) {
     return (!!value && value.length > 3) || 'too short';
   },
@@ -2033,6 +2035,16 @@ describe('Unit | Utility | changeset', () => {
 
     await dummyChangeset.validate('name');
     expect(get(dummyChangeset, 'error.name')).toEqual({ validation: 'too short', value: 'J' });
+    expect(dummyChangeset.changes).toEqual([]);
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+  });
+
+  it('#validate/1 validates with an falsey string value for the validator message', async () => {
+    dummyModel.age = 120;
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations), dummyValidations);
+
+    await dummyChangeset.validate('age');
+    expect(get(dummyChangeset, 'error.age')).toEqual({ validation: '', value: 120 });
     expect(dummyChangeset.changes).toEqual([]);
     expect(get(dummyChangeset, 'errors.length')).toBe(1);
   });
