@@ -808,7 +808,7 @@ export class BufferedChangeset implements IChangeset {
         content
       });
 
-      return typeof isValid === 'boolean' || Boolean(isValid) ? isValid : true;
+      return typeof isValid === 'boolean' || Boolean(isValid) || isValid === '' ? isValid : true;
     }
 
     return true;
