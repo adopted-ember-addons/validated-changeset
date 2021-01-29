@@ -10,6 +10,18 @@ describe('Unit | Utility | object tree node', () => {
     expect(result.content).toEqual({ name: 'c' });
   });
 
+  it('can pass custom isObject', () => {
+    function isObject() {
+      return true;
+    }
+    const result = new ObjectTreeNode({ name: 'z' }, { name: 'c' }, undefined, isObject);
+
+    expect(result.changes).toEqual({ name: 'z' });
+    expect(result.proxy.name).toBe('z');
+    expect(result.content).toEqual({ name: 'c' });
+    expect(result.unwrap()).toEqual({ name: 'z' });
+  });
+
   it('it returns nested children', () => {
     const initialVal = { details: { name: 'z' } };
     const result = new ObjectTreeNode(initialVal, { details: { name: 'c' } });
