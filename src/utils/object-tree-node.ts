@@ -91,7 +91,8 @@ class ObjectTreeNode implements ProxyHandler {
   constructor(
     changes: Record<string, any> = {},
     content: Content = {},
-    public safeGet: Function = defaultSafeGet
+    public safeGet: Function = defaultSafeGet,
+    public isObject: Function = isObject
   ) {
     this.changes = changes;
     this.content = content;
@@ -111,11 +112,11 @@ class ObjectTreeNode implements ProxyHandler {
     let changes = this.changes;
 
     if (isObject(changes)) {
-      changes = normalizeObject(changes);
+      changes = normalizeObject(changes, this.isObject);
 
       const content = this.content;
       if (isObject(content)) {
-        changes = normalizeObject(changes);
+        changes = normalizeObject(changes, this.isObject);
         return { ...content, ...changes };
       }
     }

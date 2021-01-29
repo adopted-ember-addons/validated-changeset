@@ -22,8 +22,11 @@ import isObject from './is-object';
  * @param {Object} target
  * @return {Object}
  */
-export default function normalizeObject<T extends { [key: string]: any }>(target: T): T {
-  if (!target || !isObject(target)) {
+export default function normalizeObject<T extends { [key: string]: any }>(
+  target: T,
+  isObj: Function = isObject
+): T {
+  if (!target || !isObj(target)) {
     return target;
   }
 
@@ -35,7 +38,7 @@ export default function normalizeObject<T extends { [key: string]: any }>(target
 
   for (let key in obj) {
     const next: any = obj[key];
-    if (next && isObject(next)) {
+    if (next && isObj(next)) {
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
         obj[key] = next.value;
       } else {
