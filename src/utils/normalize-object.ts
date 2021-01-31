@@ -42,6 +42,11 @@ export default function normalizeObject<T extends { [key: string]: any }>(
       if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
         obj[key] = next.value;
       } else {
+        try {
+          JSON.stringify(next);
+        } catch (e) {
+          break;
+        }
         obj[key] = normalizeObject(next);
       }
     }
