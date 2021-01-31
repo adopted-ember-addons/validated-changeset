@@ -36,4 +36,13 @@ describe('Unit | Utility | normalize object', () => {
 
     expect(value).toEqual({ details: { name: 'Ivan' } });
   });
+
+  it('it handles cyclical structures', () => {
+    let cyclical = { key: { cyclical: {}, name: 'not scoot' } };
+    cyclical.key = { cyclical, name: 'scoot' };
+    let obj = { cyclical };
+    const value = normalizeObject(obj);
+
+    expect(value.cyclical.key.name).toEqual('scoot');
+  });
 });
