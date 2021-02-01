@@ -771,6 +771,26 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('#set works for nested when the root key is "value"', () => {
+    const expectedChanges = [{ key: 'value', value: { short: 'foo' } }];
+    dummyModel.value = {};
+    dummyModel.org = {};
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('value.short', 'foo');
+
+    expect(dummyChangeset.get('value.short')).toBe('foo');
+    expect(dummyModel.value).toEqual({});
+
+    const changes = dummyChangeset.changes;
+    expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.value).toEqual({ short: 'foo' });
+    expect(dummyChangeset.org).toEqual({});
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.value.short).toBe('foo');
+  });
+
   it('nested objects can be replaced with different ones without changing the nested return values', () => {
     dummyModel['org'] = { usa: { ny: 'ny' } };
 

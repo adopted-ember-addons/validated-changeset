@@ -1,4 +1,4 @@
-import Change from '../-private/change';
+import { isChange } from '../-private/change';
 
 export function hasKey(record: Record<string, any>, path: string, safeGet: Function): boolean {
   const keys = path.split('.');
@@ -20,7 +20,7 @@ export function pathInChanges(
   path: string,
   safeGet: Function
 ): boolean {
-  if (record instanceof Change) {
+  if (isChange(record)) {
     return false;
   }
 
@@ -32,7 +32,7 @@ export function pathInChanges(
       return false;
     }
 
-    if (keys[keys.length - 1] !== key && safeGet(obj, key) instanceof Change) {
+    if (keys[keys.length - 1] !== key && isChange(safeGet(obj, key))) {
       return true;
     }
 

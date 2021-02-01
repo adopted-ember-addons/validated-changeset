@@ -1,4 +1,4 @@
-import Change from './-private/change';
+import Change, { getChangeValue, isChange } from './-private/change';
 import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
@@ -946,8 +946,8 @@ export class BufferedChangeset implements IChangeset {
         }
 
         if (this.isObject(result)) {
-          if (result instanceof Change) {
-            return result.value;
+          if (isChange(result)) {
+            return getChangeValue(result);
           }
 
           const baseContent = this.safeGet(content, baseKey);
@@ -962,8 +962,8 @@ export class BufferedChangeset implements IChangeset {
       }
 
       // this comes after the isObject check to ensure we don't lose remaining keys
-      if (baseChanges instanceof Change && remaining.length === 0) {
-        return baseChanges.value;
+      if (isChange(baseChanges) && remaining.length === 0) {
+        return getChangeValue(baseChanges);
       }
     }
 

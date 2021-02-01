@@ -1,7 +1,7 @@
 import { ProxyHandler, Content } from '../types';
 import isObject from './is-object';
 import setDeep from './set-deep';
-import Change from '../-private/change';
+import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
 
 const objectProxyHandler = {
@@ -23,8 +23,8 @@ const objectProxyHandler = {
       }
     }
 
-    if (childValue instanceof Change) {
-      return childValue.value;
+    if (isChange(childValue)) {
+      return getChangeValue(childValue);
     }
 
     if (isObject(childValue)) {

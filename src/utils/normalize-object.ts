@@ -1,4 +1,4 @@
-import Change from '../-private/change';
+import { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
 
 /**
@@ -30,8 +30,8 @@ export default function normalizeObject<T extends { [key: string]: any }>(
     return target;
   }
 
-  if (target instanceof Change) {
-    return target.value;
+  if (isChange(target)) {
+    return getChangeValue(target);
   }
 
   let obj = { ...target };
@@ -39,8 +39,8 @@ export default function normalizeObject<T extends { [key: string]: any }>(
   for (let key in obj) {
     const next: any = obj[key];
     if (next && isObj(next)) {
-      if (Object.prototype.hasOwnProperty.call(next, 'value') && next instanceof Change) {
-        obj[key] = next.value;
+      if (isChange(next)) {
+        obj[key] = getChangeValue(next);
       } else {
         try {
           JSON.stringify(next);

@@ -60,11 +60,12 @@ export type ValidatorMap =
   | null
   | undefined;
 
-export interface IChange {
-  value: any;
-}
+// https://github.com/microsoft/TypeScript/pull/26797
+/* export interface IChange { */
+/*   [s: symbol]: any; */
+/* } */
 export interface Changes {
-  [s: string]: IChange;
+  [s: string]: any; //IChange;
 }
 
 export interface Content {
