@@ -639,8 +639,8 @@ export class BufferedChangeset implements IChangeset {
     let errors: Errors<any> = this[ERRORS];
 
     return {
-      changes: keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
-        newObj[key] = changes[key].value;
+      changes: getKeyValues(changes).reduce((newObj: Changes, { key, value }) => {
+        newObj[key] = value;
         return newObj;
       }, {}),
 

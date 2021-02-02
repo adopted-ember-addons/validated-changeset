@@ -2512,6 +2512,25 @@ describe('Unit | Utility | changeset', () => {
     expect(snapshot).toEqual(expectedResult);
   });
 
+  it('#snapshot creates a snapshot of the changeset with nested values', () => {
+    let dummyChangeset = Changeset(dummyModel, dummyValidator);
+    dummyChangeset.set('name', 'Pokemon Go');
+    dummyChangeset.set('password', false);
+    dummyChangeset.set('org.usa.ny', 'foo');
+
+    let snapshot = dummyChangeset.snapshot();
+    let expectedResult = {
+      changes: {
+        name: 'Pokemon Go',
+        password: false,
+        'org.usa.ny': 'foo'
+      },
+      errors: { password: { validation: ['foo', 'bar'], value: false } }
+    };
+
+    expect(snapshot).toEqual(expectedResult);
+  });
+
   /**
    * #restore
    */
@@ -2528,6 +2547,26 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangesetB.isInvalid).toEqual(true);
     expect(get(dummyChangesetB, 'change.name')).toBe('Pokemon Go');
     expect(get(dummyChangesetB, 'error.password')).toEqual({
+      validation: ['foo', 'bar'],
+      value: false
+    });
+  });
+
+  it('#restore restores a snapshot of the changeset with nested values', () => {
+    let dummyChangesetA = Changeset(dummyModel, dummyValidator);
+    let dummyChangesetB = Changeset(dummyModel, dummyValidator);
+    dummyChangesetA.set('name', 'Pokemon Go');
+    dummyChangesetA.set('password', false);
+    dummyChangesetA.set('org.usa.ny', 'foo');
+    let snapshot = dummyChangesetA.snapshot();
+
+    expect(dummyChangesetB.isValid).toBeTruthy();
+    dummyChangesetB.restore(snapshot);
+    expect(dummyChangesetB.isInvalid).toBeTruthy();
+    expect(dummyChangesetB.get('name')).toBe('Pokemon Go');
+    expect(dummyChangesetB.get('password')).toBe(false);
+    expect(dummyChangesetB.get('org.usa.ny')).toBe('foo');
+    expect(dummyChangesetB.error.password).toEqual({
       validation: ['foo', 'bar'],
       value: false
     });
