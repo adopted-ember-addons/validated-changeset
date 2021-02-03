@@ -6,17 +6,13 @@ function safeGet(obj: any, key: string) {
 }
 
 describe('Unit | Utility | has key', () => {
-  it('it returns true with Change class', () => {
-    const objA = new Change({ value: 'Ivan' });
-    const value = hasKey(objA, 'value', safeGet);
-
-    expect(value).toBe(false);
-  });
-
-  it('it returns true', () => {
+  it('it returns true for keys', () => {
     const objA = { name: new Change({ value: 'Ivan' }) };
-    const value = hasKey(objA, 'name', safeGet);
 
+    let value = hasKey(objA, 'name', safeGet);
+    expect(value).toEqual(true);
+
+    value = hasKey(objA, 'name.value', safeGet);
     expect(value).toEqual(true);
   });
 

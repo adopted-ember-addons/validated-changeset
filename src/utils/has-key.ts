@@ -1,4 +1,4 @@
-import { isChange } from '../-private/change';
+import { getChangeValue, isChange } from '../-private/change';
 
 export function hasKey(record: Record<string, any>, path: string, safeGet: Function): boolean {
   const keys = path.split('.');
@@ -10,6 +10,9 @@ export function hasKey(record: Record<string, any>, path: string, safeGet: Funct
     }
 
     obj = safeGet(obj, key);
+    if (isChange(obj)) {
+      obj = getChangeValue(obj);
+    }
   }
 
   return true;
