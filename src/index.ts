@@ -640,7 +640,7 @@ export class BufferedChangeset implements IChangeset {
 
     return {
       changes: keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
-        newObj[key] = changes[key].value;
+        newObj[key] = getChangeValue(changes[key]);
         return newObj;
       }, {}),
 

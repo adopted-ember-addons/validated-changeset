@@ -1,3 +1,4 @@
+import { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
 import Err from '../-private/err';
 import { PublicErrors } from '../types';
@@ -18,6 +19,8 @@ export function getKeyValues<T extends Record<string, any>>(
     if (obj[key] && isObject(obj[key])) {
       if (Object.prototype.hasOwnProperty.call(obj[key], 'value')) {
         map.push({ key: [...keysUpToValue, key].join('.'), value: obj[key].value });
+      } else if (isChange(obj[key])) {
+        map.push({ key: [...keysUpToValue, key].join('.'), value: getChangeValue(obj[key]) });
       } else if (key !== 'value') {
         map.push(...getKeyValues(obj[key], [...keysUpToValue, key]));
       }

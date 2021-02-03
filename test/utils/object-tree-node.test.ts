@@ -1,5 +1,5 @@
 import { ObjectTreeNode } from '../../src/utils/object-tree-node';
-import Change from '../../src/-private/change';
+import Change, { VALUE } from '../../src/-private/change';
 
 describe('Unit | Utility | object tree node', () => {
   it('it returns changes', () => {
@@ -42,7 +42,7 @@ describe('Unit | Utility | object tree node', () => {
     result.proxy.details['name'] = 'bla bla';
     expect(result.proxy.details.name).toBe('bla bla');
     expect(result.proxy.details.email).toBe('@');
-    expect(result.changes.details.name).toEqual({ value: 'bla bla' });
+    expect(result.changes.details.name).toEqual({ [VALUE]: 'bla bla' });
     expect(result.content.details.name).toBe('c');
   });
 

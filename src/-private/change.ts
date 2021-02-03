@@ -1,7 +1,7 @@
 /* import { IChange } from '../types'; */
 import isObject from '../utils/is-object';
 
-const VALUE = Symbol('__value__');
+export const VALUE = Symbol('__value__');
 
 export default class Change {
   [VALUE]: unknown;

@@ -10,7 +10,7 @@ describe('Unit | Utility | has key', () => {
     const objA = new Change({ value: 'Ivan' });
     const value = hasKey(objA, 'value', safeGet);
 
-    expect(value).toBe(true);
+    expect(value).toBe(false);
   });
 
   it('it returns true', () => {
