@@ -1,9 +1,9 @@
 import isObject from './is-object';
-import Change from '../-private/change';
+import { isChange } from '../-private/change';
 
 export function hasChanges(changes: Record<string, any>): boolean {
   for (let key in changes) {
-    if (changes[key] instanceof Change) {
+    if (isChange(changes[key])) {
       return true;
     }
 

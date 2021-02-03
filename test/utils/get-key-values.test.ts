@@ -1,9 +1,10 @@
 import { getKeyValues, getKeyErrorValues } from '../../src/utils/get-key-values';
 import Err from '../../src/-private/err';
+import { VALUE } from '../../src/-private/change';
 
 describe('Unit | Utility | getKeyValues', function() {
   it('it works with single level values', () => {
-    const result = getKeyValues({ test: { value: 1 } });
+    const result = getKeyValues({ test: { [VALUE]: 1 } });
 
     expect(result).toEqual([{ key: 'test', value: 1 }]);
   });
@@ -11,11 +12,11 @@ describe('Unit | Utility | getKeyValues', function() {
   it('it works with nested keys', () => {
     const result = getKeyValues({
       user: {
-        firstName: { value: 'Michael' },
-        lastName: { value: 'Bolton' },
+        firstName: { [VALUE]: 'Michael' },
+        lastName: { [VALUE]: 'Bolton' },
         address: {
-          city: { value: 'NYC' },
-          state: { value: 'New York' }
+          city: { [VALUE]: 'NYC' },
+          state: { [VALUE]: 'New York' }
         }
       }
     });

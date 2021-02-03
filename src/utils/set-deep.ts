@@ -1,4 +1,4 @@
-import Change from '../-private/change';
+import Change, { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
 
 interface Options {
@@ -62,11 +62,12 @@ export default function setDeep(
     const isObj = isObject(target[prop]);
     if (!isObj) {
       options.safeSet(target, prop, {});
-    } else if (isObj && target[prop] instanceof Change) {
-      if (isObject(target[prop].value)) {
+    } else if (isObj && isChange(target[prop])) {
+      let changeValue = getChangeValue(target[prop]);
+      if (isObject(changeValue)) {
         // if an object, we don't want to lose sibling keys
-        const siblings = findSiblings(target[prop].value, keys);
-        const resolvedValue = value instanceof Change ? value.value : value;
+        const siblings = findSiblings(changeValue, keys);
+        const resolvedValue = isChange(value) ? getChangeValue(value) : value;
         target[prop] = new Change(
           setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue, options)
         );

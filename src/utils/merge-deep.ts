@@ -1,4 +1,4 @@
-import Change from '../-private/change';
+import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
 
 interface Options {
@@ -63,8 +63,8 @@ function buildPathToValue(
 ): Record<string, any> {
   Object.keys(source).forEach((key: string): void => {
     let possible = source[key];
-    if (possible && possible.hasOwnProperty('value') && possible instanceof Change) {
-      kv[[...possibleKeys, key].join('.')] = possible.value;
+    if (possible && isChange(possible)) {
+      kv[[...possibleKeys, key].join('.')] = getChangeValue(possible);
       return;
     }
 
@@ -105,7 +105,7 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
     if (
       propertyIsOnObject(target, key) &&
       isMergeableObject(source[key]) &&
-      !(source[key] instanceof Change)
+      !isChange(source[key])
     ) {
       options.safeSet(
         target,
@@ -114,8 +114,8 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
       );
     } else {
       let next = source[key];
-      if (next && next instanceof Change) {
-        return options.safeSet(target, key, next.value);
+      if (next && isChange(next)) {
+        return options.safeSet(target, key, getChangeValue(next));
       }
 
       return options.safeSet(target, key, normalizeObject(next));

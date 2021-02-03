@@ -1,4 +1,4 @@
-import Change from '../-private/change';
+import { isChange, getChangeValue } from '../-private/change';
 
 /**
  * Handles both single key or nested string keys ('person.name')
@@ -47,8 +47,8 @@ export function getSubObject<T extends Record<string, any>>(root: T, path: strin
       return undefined;
     }
 
-    if (obj[parts[i]] instanceof Change) {
-      obj = obj[parts[i]].value;
+    if (isChange(obj[parts[i]])) {
+      obj = getChangeValue(obj[parts[i]]);
     } else {
       obj = obj[parts[i]];
     }
