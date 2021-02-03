@@ -980,6 +980,7 @@ describe('Unit | Utility | changeset', () => {
   it('#set removes a change if set back to original value in nested context', () => {
     const model = { name: { email: 'foo' } };
     const dummyChangeset = Changeset(model);
+    dummyChangeset.safeGet = get;
 
     dummyChangeset.set('name.email', 'bar');
     expect(dummyChangeset.changes).toEqual([{ key: 'name.email', value: 'bar' }]);
