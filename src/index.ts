@@ -243,7 +243,7 @@ export class BufferedChangeset implements IChangeset {
    * @type {Array}
    */
   get isValid() {
-    return getKeyValues(this[ERRORS]).length === 0;
+    return getKeyErrorValues(this[ERRORS]).length === 0;
   }
   /**
    * @property isPristine

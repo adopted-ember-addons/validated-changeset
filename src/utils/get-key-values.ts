@@ -17,11 +17,9 @@ export function getKeyValues<T extends Record<string, any>>(
 
   for (let key in obj) {
     if (obj[key] && isObject(obj[key])) {
-      if (Object.prototype.hasOwnProperty.call(obj[key], 'value')) {
-        map.push({ key: [...keysUpToValue, key].join('.'), value: obj[key].value });
-      } else if (isChange(obj[key])) {
+      if (isChange(obj[key])) {
         map.push({ key: [...keysUpToValue, key].join('.'), value: getChangeValue(obj[key]) });
-      } else if (key !== 'value') {
+      } else {
         map.push(...getKeyValues(obj[key], [...keysUpToValue, key]));
       }
     }

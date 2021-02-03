@@ -772,7 +772,6 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#set works for nested when the root key is "value"', () => {
-    const expectedChanges = [{ key: 'value', value: { short: 'foo' } }];
     dummyModel.value = {};
     dummyModel.org = {};
     const dummyChangeset = Changeset(dummyModel);
@@ -782,6 +781,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.value).toEqual({});
 
     const changes = dummyChangeset.changes;
+    const expectedChanges = [{ key: 'value.short', value: 'foo' }];
     expect(changes).toEqual(expectedChanges);
     expect(dummyChangeset.value).toEqual({ short: 'foo' });
     expect(dummyChangeset.org).toEqual({});
