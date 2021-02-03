@@ -47,6 +47,8 @@ export {
   buildOldValues,
   isChangeset,
   isObject,
+  isChange,
+  getChangeValue,
   isPromise,
   getKeyValues,
   keyInObject,
