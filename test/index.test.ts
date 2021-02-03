@@ -977,6 +977,17 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes).toEqual([]);
   });
 
+  it('#set removes a change if set back to original value in nested context', () => {
+    const model = { name: { email: 'foo' } };
+    const dummyChangeset = Changeset(model);
+
+    dummyChangeset.set('name.email', 'bar');
+    expect(dummyChangeset.changes).toEqual([{ key: 'name.email', value: 'bar' }]);
+
+    dummyChangeset.set('name.email', 'foo');
+    expect(dummyChangeset.changes).toEqual([]);
+  });
+
   it('#set does add a change if invalid', () => {
     const expectedErrors = [
       { key: 'name', validation: 'too short', value: 'a' },
