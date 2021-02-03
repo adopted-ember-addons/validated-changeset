@@ -817,8 +817,7 @@ export class BufferedChangeset implements IChangeset {
   }
 
   /**
-   * Sets property or error on the changeset.
-   * Returns value or error
+   * Sets property on the changeset.
    */
   _setProperty<T>({ key, value, oldValue }: NewProperty<T>): void {
     let changes: Changes = this[CHANGES];
@@ -833,6 +832,7 @@ export class BufferedChangeset implements IChangeset {
       this[CHANGES] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
+      // remove key if setting back to original
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
     }
   }
@@ -896,7 +896,7 @@ export class BufferedChangeset implements IChangeset {
       // find leaf and delete from map
       while (this.isObject(currentNode) && currentKey) {
         let curr: { [key: string]: unknown } = currentNode;
-        if (typeof curr.value !== 'undefined' || curr.validation) {
+        if (isChange(curr) || typeof curr.value !== 'undefined' || curr.validation) {
           delete previousNode[currentKey];
         }
 
