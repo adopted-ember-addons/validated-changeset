@@ -794,8 +794,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('contact.emails.0', 'fred@email.com');
     dummyChangeset.set('contact.emails.1', 'the_fred@email.com');
 
-    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
+    // debugger;
+    // expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
 
+    debugger
     dummyChangeset.execute();
     expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
   });

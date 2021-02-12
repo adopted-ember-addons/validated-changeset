@@ -1,5 +1,6 @@
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
+import { isArrayObject, objectToArray, arrayToObject } from './array-object';
 
 interface Options {
   safeGet: any;
@@ -151,9 +152,14 @@ export default function mergeDeep(
     };
   let sourceIsArray = Array.isArray(source);
   let targetIsArray = Array.isArray(target);
+  let sourceIsArrayLike = isArrayObject(source);
   let sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
 
   if (!sourceAndTargetTypesMatch) {
+    if (targetIsArray && sourceIsArrayLike) {
+      return objectToArray(mergeTargetAndSource(arrayToObject(target), source, options));
+    }
+
     return source;
   } else if (sourceIsArray) {
     return source;

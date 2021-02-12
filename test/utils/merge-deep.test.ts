@@ -26,6 +26,15 @@ describe('Unit | Utility | merge deep', () => {
     expect(value).toEqual({ company: { employees: ['Jull', 'Olafur'] } });
   });
 
+  it('works with arrays', () => {
+    const objA = { employees: ['Ivan', 'Jan'] };
+    const objB = { employees: { 0: new Change('Jull'), 1: new Change('Olafur') } };
+    debugger;
+    const value = mergeDeep(objA, objB);
+
+    expect(value).toEqual({ employees: ['Jull', 'Olafur'] });
+  });
+
   it('it works with classes', () => {
     class Employee {
       names = [];

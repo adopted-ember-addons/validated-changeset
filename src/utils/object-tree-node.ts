@@ -3,6 +3,7 @@ import isObject from './is-object';
 import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
+import {objectToArray, arrayToObject} from './array-object';
 
 const objectProxyHandler = {
   /**
@@ -18,6 +19,7 @@ const objectProxyHandler = {
 
     if (node.changes.hasOwnProperty && node.changes.hasOwnProperty(key)) {
       childValue = node.safeGet(node.changes, key);
+
       if (typeof childValue === 'undefined') {
         return;
       }
@@ -118,6 +120,10 @@ class ObjectTreeNode implements ProxyHandler {
       if (isObject(content)) {
         changes = normalizeObject(changes, this.isObject);
         return { ...content, ...changes };
+      } else if (Array.isArray(content)) {
+        changes = normalizeObject(changes, this.isObject);
+
+        return objectToArray({ ...arrayToObject(content), ...changes });
       }
     }
 
