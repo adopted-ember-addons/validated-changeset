@@ -45,6 +45,27 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ name: { other: 'foo' } });
   });
 
+  it('handles existing arrays', () => {
+    const objA = { entries: [{ prop: 'foo' }] };
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'bar' }] });
+  });
+
+  it('inserts data into existing arrays', () => {
+    const objA = { entries: [{ prop: 'foo' }] };
+    const value = setDeep(objA, 'entries.1.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'foo' }, { prop: 'bar' }] });
+  });
+
+  it('inserts data into empty arrays', () => {
+    const objA = { entries: [] };
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'bar' }] });
+  });
+
   it('it does not lose sibling keys', () => {
     const objA = {
       name: {
