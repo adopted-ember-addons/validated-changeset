@@ -771,6 +771,47 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('#set nested objects can contain arrays', () => {
+    expect.assertions(5);
+
+    dummyModel.contact = {
+      emails: ['bob@email.com', 'the_bob@email.com']
+    };
+
+    expect(get(dummyModel, 'contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+
+    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+
+    dummyChangeset.set('contact.emails.0', 'fred@email.com');
+
+    expect(dummyChangeset.get('contact.emails.0')).toEqual('fred@email.com');
+
+    dummyChangeset.rollback();
+    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+
+    dummyChangeset.set('contact.emails.0', 'fred@email.com');
+    dummyChangeset.set('contact.emails.1', 'the_fred@email.com');
+
+    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
+
+    dummyChangeset.execute();
+    expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
+  });
+
+  it('#set nested objects can create arrays', () => {
+    dummyModel.contact = {};
+
+    expect(get(dummyModel, 'contact.emails')).toEqual(undefined);
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    expect(dummyChangeset.get('contact.emails')).toEqual(undefined);
+
+    dummyChangeset.set('contact.emails.0', 'fred@email.com');
+    expect(dummyChangeset.get('contact.emails.0')).toEqual('fred@email.com');
+    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com']);
+  });
+
   it('#set works for nested when the root key is "value"', () => {
     dummyModel.value = {};
     dummyModel.org = {};
@@ -1354,7 +1395,9 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset({ obj: {} });
 
     dummyChangeset.get('obj').unwrap();
-    dummyChangeset.prepare(function (changes) { return changes; });
+    dummyChangeset.prepare(function(changes) {
+      return changes;
+    });
 
     expect(dummyChangeset.isPristine).toEqual(true);
   });
