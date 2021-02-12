@@ -29,7 +29,6 @@ describe('Unit | Utility | merge deep', () => {
   it('works with arrays', () => {
     const objA = { employees: ['Ivan', 'Jan'] };
     const objB = { employees: { 0: new Change('Jull'), 1: new Change('Olafur') } };
-    debugger;
     const value = mergeDeep(objA, objB);
 
     expect(value).toEqual({ employees: ['Jull', 'Olafur'] });
