@@ -800,7 +800,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
   });
 
-  it('#set nested objects can create arrays', () => {
+  it('#set nested objects cannot create arrays when we have no hints', () => {
     dummyModel.contact = {};
 
     expect(get(dummyModel, 'contact.emails')).toEqual(undefined);
@@ -809,7 +809,7 @@ describe('Unit | Utility | changeset', () => {
 
     dummyChangeset.set('contact.emails.0', 'fred@email.com');
     expect(dummyChangeset.get('contact.emails.0')).toEqual('fred@email.com');
-    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com']);
+    expect(dummyChangeset.get('contact.emails')).toEqual({ '0': 'fred@email.com' });
   });
 
   it('#set works for nested when the root key is "value"', () => {
