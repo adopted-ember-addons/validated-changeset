@@ -66,6 +66,20 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ entries: [{ prop: 'bar' }] });
   });
 
+  it('inserts primitive types into existing arrays', () => {
+    const objA = { entries: ['foo'] };
+    const value = setDeep(objA, 'entries.1', 'bar');
+
+    expect(value).toEqual({ entries: ['foo', 'bar'] });
+  });
+
+  it('inserts primitive types into empty arrays', () => {
+    const objA = { entries: [] };
+    const value = setDeep(objA, 'entries.0', 'bar');
+
+    expect(value).toEqual({ entries: ['bar'] });
+  });
+
   it('it does not lose sibling keys', () => {
     const objA = {
       name: {
