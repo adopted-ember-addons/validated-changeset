@@ -57,5 +57,5 @@ jobs:
         node-version: 12.x
     - run: npm install
     - name: "Test: ${{ matrix.lib }}"
-      run: npm run test:${{ matrix.lib }}
+      run: npm run test-external:${{ matrix.lib }}
 
