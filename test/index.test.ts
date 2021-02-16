@@ -812,11 +812,13 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
         expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
+        expect(changeset.get('contact.emails')).toEqual(['fred@email.com']);
 
         changeset.rollback();
 
         expect(changeset.get('contact.emails.0')).toEqual('bob@email.com');
         expect(changeset.changes).toEqual([]);
+        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
       });
 
       it('can be saved', () => {
@@ -837,20 +839,26 @@ describe('Unit | Utility | changeset', () => {
         const changeset = Changeset(initialData);
 
         changeset.set('contact.emails.1', 'fred@email.com');
-        changeset.set('contact.emails.3', 'greg@email.com');
 
         expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
-        expect(changeset.get('contact.emails.3')).toEqual('greg@email.com');
-        expect(changeset.changes).toEqual([
-          { key: 'contact.emails.1', value: 'fred@email.com' },
-          { key: 'contact.emails.3', value: 'greg@email.com' }
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com'
         ]);
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.1', value: 'fred@email.com' }]);
 
+        changeset.set('contact.emails.3', 'greg@email.com');
+
+        expect(changeset.get('contact.emails.3')).toEqual('greg@email.com');
         expect(changeset.get('contact.emails').unwrap()).toEqual([
           'bob@email.com',
           'fred@email.com',
           undefined,
           'greg@email.com'
+        ]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.1', value: 'fred@email.com' },
+          { key: 'contact.emails.3', value: 'greg@email.com' }
         ]);
       });
 

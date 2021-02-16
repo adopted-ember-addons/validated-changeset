@@ -81,10 +81,6 @@ const objectProxyHandler = {
     return Reflect.has(node.changes, prop);
   },
 
-  apply(node: ProxyHandler, thisArg: any, args: any[]) {
-    return node.call(thisArg, ...args);
-  },
-
   set(node: ProxyHandler, key: string, value: unknown): any {
     // dont want to set private properties on changes (usually found on outside actors)
     if (key.startsWith('_')) {
