@@ -879,6 +879,62 @@ describe('Unit | Utility | changeset', () => {
     });
   });
 
+  describe('arrays of objects within nested objects', () => {
+    describe('#set', () => {
+      let initialData: { contact: { emails: Record<string, string>[] } } = {
+        contact: { emails: [] }
+      };
+
+      beforeEach(() => {
+        initialData = { contact: { emails: [{ primary: 'bob@email.com' }] } };
+      });
+
+      it('can modify properties on an entry', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0.primary', 'fun@email.com');
+
+        expect(changeset.get('contact.emails.0.primary')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0.primary', value: 'fun@email.com' }
+        ]);
+      });
+
+      it('can add properties to an entry', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0.funEmail', 'fun@email.com');
+
+        expect(changeset.get('contact.emails.0.funEmail')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com', funEmail: 'fun@email.com' }
+        ]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0.funEmail', value: 'fun@email.com' }
+        ]);
+      });
+
+      it('can add new properties to new entries', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1.funEmail', 'fun@email.com');
+        changeset.set('contact.emails.1.primary', 'primary@email.com');
+
+        expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+        ]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.1.funEmail', value: 'fun@email.com' },
+          { key: 'contact.emails.1.primary', value: 'primary@email.com' }
+        ]);
+      });
+    });
+  });
+
   it('#set nested objects cannot create arrays when we have no hints', () => {
     dummyModel.contact = {};
 
