@@ -773,10 +773,21 @@ describe('Unit | Utility | changeset', () => {
 
   describe('arrays within nested objects', () => {
     describe('#set', () => {
-      let initialData: { contact: { emails: string[] } } = { contact: { emails: [] } };
+      let initialData: { contact: { emails?: string[] } } = { contact: { emails: [] } };
 
       beforeEach(() => {
         initialData = { contact: { emails: ['bob@email.com'] } };
+      });
+
+      it('#set nested objects cannot create arrays when we have no hints', () => {
+        initialData.contact = {};
+
+        const changeset = Changeset(initialData);
+        expect(changeset.get('contact.emails')).toEqual(undefined);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails')).toEqual({ '0': 'fred@email.com' });
       });
 
       it('works with validations', () => {
@@ -933,18 +944,6 @@ describe('Unit | Utility | changeset', () => {
         ]);
       });
     });
-  });
-
-  it('#set nested objects cannot create arrays when we have no hints', () => {
-    dummyModel.contact = {};
-
-    expect(get(dummyModel, 'contact.emails')).toEqual(undefined);
-    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
-    expect(dummyChangeset.get('contact.emails')).toEqual(undefined);
-
-    dummyChangeset.set('contact.emails.0', 'fred@email.com');
-    expect(dummyChangeset.get('contact.emails.0')).toEqual('fred@email.com');
-    expect(dummyChangeset.get('contact.emails')).toEqual({ '0': 'fred@email.com' });
   });
 
   it('#set works for nested when the root key is "value"', () => {
