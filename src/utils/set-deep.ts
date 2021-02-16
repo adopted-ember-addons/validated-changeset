@@ -1,6 +1,5 @@
 import Change, { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
-import getDeep from './get-deep';
 
 interface Options {
   safeSet: any;
@@ -60,6 +59,12 @@ export default function setDeep(
   for (let i = 0; i < keys.length; i++) {
     let prop = keys[i];
 
+    if (Array.isArray(target) && parseInt(prop, 10) < 0) {
+      throw new Error(
+        'Negative indices are not allowed as arrays do not serialize values at negative indices'
+      );
+    }
+
     const isObj = isObject(target[prop]);
     const isArray = Array.isArray(target[prop]);
     const isComplex = isObj || isArray;
@@ -72,6 +77,7 @@ export default function setDeep(
       if (isObject(changeValue)) {
         // if an object, we don't want to lose sibling keys
         const siblings = findSiblings(changeValue, keys);
+
         const resolvedValue = isChange(value) ? getChangeValue(value) : value;
         target[prop] = new Change(
           setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue, options)

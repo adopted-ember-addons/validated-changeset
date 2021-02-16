@@ -3,7 +3,7 @@ import isObject from './is-object';
 import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
-import {objectToArray, arrayToObject} from './array-object';
+import { objectToArray, arrayToObject, isArrayObject } from './array-object';
 
 const objectProxyHandler = {
   /**
@@ -12,6 +12,16 @@ const objectProxyHandler = {
    */
   get(node: ProxyHandler, key: string): any {
     if (typeof key === 'symbol') {
+      if (key === Symbol.iterator) {
+        return true;
+      }
+
+      // This convinces Jest/expect that our object is an array.
+      // see: expect/build/jasmineUtils#eq
+      if (key === Symbol.toStringTag && Array.isArray(node.content)) {
+        return 'Array';
+      }
+
       return;
     }
 
@@ -71,6 +81,10 @@ const objectProxyHandler = {
     return Reflect.has(node.changes, prop);
   },
 
+  apply(node: ProxyHandler, thisArg: any, args: any[]) {
+    return node.call(thisArg, ...args);
+  },
+
   set(node: ProxyHandler, key: string, value: unknown): any {
     // dont want to set private properties on changes (usually found on outside actors)
     if (key.startsWith('_')) {
@@ -128,6 +142,10 @@ class ObjectTreeNode implements ProxyHandler {
     }
 
     return changes;
+  }
+
+  toJSON() {
+    return JSON.parse(JSON.stringify(this.unwrap()));
   }
 }
 

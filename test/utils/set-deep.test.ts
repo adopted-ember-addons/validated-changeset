@@ -66,6 +66,16 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ entries: [{ prop: 'bar' }] });
   });
 
+  it('does not allow inserting into arrays at negative values', () => {
+    const objA = { entries: [] };
+
+    expect(() => {
+      setDeep(objA, 'entries.-1.prop', 'bar');
+    }).toThrow(
+      'Negative indices are not allowed as arrays do not serialize values at negative indices'
+    );
+  });
+
   it('inserts primitive types into existing arrays', () => {
     const objA = { entries: ['foo'] };
     const value = setDeep(objA, 'entries.1', 'bar');

@@ -771,34 +771,104 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
-  it('#set nested objects can contain arrays', () => {
-    expect.assertions(5);
+  describe('arrays within nested objects', () => {
+    describe('#set', () => {
+      let initialData: { contact: { emails: string[] } } = { contact: { emails: [] } };
 
-    dummyModel.contact = {
-      emails: ['bob@email.com', 'the_bob@email.com']
-    };
+      beforeEach(() => {
+        initialData = { contact: { emails: ['bob@email.com'] } };
+      });
 
-    expect(get(dummyModel, 'contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+      it('works with validations', () => {
+        const changeset = Changeset(
+          initialData,
+          lookupValidator({
+            contact: {
+              emails: [
+                (_k: string, value: any) => {
+                  if (value.includes('fred')) {
+                    return 'Fred is banned';
+                  }
+                }
+              ]
+            }
+          })
+        );
 
-    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+        expect(changeset.isValid).toEqual(true);
 
-    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+        changeset.set('contact.emails.0', 'fred@email.com');
 
-    dummyChangeset.set('contact.emails.0', 'fred@email.com');
+        expect(changeset.isValid).toEqual(false);
+        expect(changeset.errors).toEqual([
+          { key: 'contact.emails.0', validation: 'Fred is banned', value: 'fred@email.com' }
+        ]);
+      });
 
-    expect(dummyChangeset.get('contact.emails.0')).toEqual('fred@email.com');
+      it('can be rolled back', () => {
+        const changeset = Changeset(initialData);
 
-    dummyChangeset.rollback();
-    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+        changeset.set('contact.emails.0', 'fred@email.com');
 
-    dummyChangeset.set('contact.emails.0', 'fred@email.com');
-    dummyChangeset.set('contact.emails.1', 'the_fred@email.com');
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
 
-    // This is still in object format
-    // expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
+        changeset.rollback();
 
-    dummyChangeset.execute();
-    expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
+        expect(changeset.get('contact.emails.0')).toEqual('bob@email.com');
+        expect(changeset.changes).toEqual([]);
+      });
+
+      it('can be saved', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
+
+        changeset.save();
+
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([]);
+      });
+
+      it('can add items to the array', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', 'fred@email.com');
+        changeset.set('contact.emails.3', 'greg@email.com');
+
+        expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails.3')).toEqual('greg@email.com');
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.1', value: 'fred@email.com' },
+          { key: 'contact.emails.3', value: 'greg@email.com' }
+        ]);
+
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com',
+          undefined,
+          'greg@email.com'
+        ]);
+      });
+
+      xit(`negative values are not allowed`, () => {
+        // This test is currently disabled because setDeep doesn't have a reference to the
+        // original array and setDeep is where we'd throw on invalid key values
+        const changeset = Changeset(initialData);
+
+        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
+
+        expect(() => {
+          debugger;
+          changeset.set('contact.emails.-1', 'fred@email.com');
+        }).toThrow(
+          'Negative indices are not allowed as arrays do not serialize values at negative indices'
+        );
+      });
+    });
   });
 
   it('#set nested objects cannot create arrays when we have no hints', () => {
