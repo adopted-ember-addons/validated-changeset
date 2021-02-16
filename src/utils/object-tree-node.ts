@@ -4,6 +4,7 @@ import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
 import { objectToArray, arrayToObject, isArrayObject } from './array-object';
+import mergeDeep from './merge-deep';
 
 const objectProxyHandler = {
   /**
@@ -133,7 +134,7 @@ class ObjectTreeNode implements ProxyHandler {
       } else if (Array.isArray(content)) {
         changes = normalizeObject(changes, this.isObject);
 
-        return objectToArray({ ...arrayToObject(content), ...changes });
+        return objectToArray(mergeDeep(arrayToObject(content), changes));
       }
     }
 

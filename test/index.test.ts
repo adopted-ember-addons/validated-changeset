@@ -779,7 +779,7 @@ describe('Unit | Utility | changeset', () => {
         initialData = { contact: { emails: ['bob@email.com'] } };
       });
 
-      it('#set nested objects cannot create arrays when we have no hints', () => {
+      it('nested objects cannot create arrays when we have no hints', () => {
         initialData.contact = {};
 
         const changeset = Changeset(initialData);
@@ -915,14 +915,15 @@ describe('Unit | Utility | changeset', () => {
       it('can add properties to an entry', () => {
         const changeset = Changeset(initialData);
 
+        debugger;
         changeset.set('contact.emails.0.funEmail', 'fun@email.com');
 
         expect(changeset.get('contact.emails.0.funEmail')).toEqual('fun@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
-          { primary: 'bob@email.com', funEmail: 'fun@email.com' }
-        ]);
         expect(changeset.changes).toEqual([
           { key: 'contact.emails.0.funEmail', value: 'fun@email.com' }
+        ]);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com', funEmail: 'fun@email.com' }
         ]);
       });
 
