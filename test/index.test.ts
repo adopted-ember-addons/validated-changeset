@@ -881,7 +881,6 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
 
         expect(() => {
-          debugger;
           changeset.set('contact.emails.-1', 'fred@email.com');
         }).toThrow(
           'Negative indices are not allowed as arrays do not serialize values at negative indices'

@@ -152,10 +152,11 @@ export default function mergeDeep(
     };
   let sourceIsArray = Array.isArray(source);
   let targetIsArray = Array.isArray(target);
-  let sourceIsArrayLike = isArrayObject(source);
   let sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
 
   if (!sourceAndTargetTypesMatch) {
+    let sourceIsArrayLike = isArrayObject(source);
+
     if (targetIsArray && sourceIsArrayLike) {
       return objectToArray(mergeTargetAndSource(arrayToObject(target), source, options));
     }
