@@ -873,6 +873,36 @@ describe('Unit | Utility | changeset', () => {
         ]);
       });
 
+      it('can remove items from the array', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com'
+        ]);
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.1', value: 'fred@email.com' }]);
+
+        changeset.set('contact.emails.0', null);
+
+        expect(changeset.get('contact.emails.0')).toEqual(null);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([null, 'fred@email.com']);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0', value: null },
+          { key: 'contact.emails.1', value: 'fred@email.com' }
+        ]);
+
+        changeset.set('contact.emails.1', null);
+
+        expect(changeset.get('contact.emails').unwrap()).toEqual([null, null]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0', value: null },
+          { key: 'contact.emails.1', value: null }
+        ]);
+      });
+
       xit(`negative values are not allowed`, () => {
         // This test is currently disabled because setDeep doesn't have a reference to the
         // original array and setDeep is where we'd throw on invalid key values
