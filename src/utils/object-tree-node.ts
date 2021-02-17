@@ -13,16 +13,6 @@ const objectProxyHandler = {
    */
   get(node: ProxyHandler, key: string): any {
     if (typeof key === 'symbol') {
-      if (key === Symbol.iterator) {
-        return true;
-      }
-
-      // This convinces Jest/expect that our object is an array.
-      // see: expect/build/jasmineUtils#eq
-      if (key === Symbol.toStringTag && Array.isArray(node.content)) {
-        return 'Array';
-      }
-
       return;
     }
 

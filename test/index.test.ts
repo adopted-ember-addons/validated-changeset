@@ -823,7 +823,7 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
         expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
-        expect(changeset.get('contact.emails')).toEqual(['fred@email.com']);
+        expect(changeset.get('contact.emails').unwrap()).toEqual(['fred@email.com']);
 
         changeset.rollback();
 
