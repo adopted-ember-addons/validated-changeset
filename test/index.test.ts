@@ -944,7 +944,6 @@ describe('Unit | Utility | changeset', () => {
       it('can add properties to an entry', () => {
         const changeset = Changeset(initialData);
 
-        debugger;
         changeset.set('contact.emails.0.funEmail', 'fun@email.com');
 
         expect(changeset.get('contact.emails.0.funEmail')).toEqual('fun@email.com');
@@ -972,6 +971,32 @@ describe('Unit | Utility | changeset', () => {
           { key: 'contact.emails.1.funEmail', value: 'fun@email.com' },
           { key: 'contact.emails.1.primary', value: 'primary@email.com' }
         ]);
+      });
+
+      xit('can add a new object at once, and edit it', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', {
+          funEmail: 'fun@email.com',
+          primary: 'primary@email.com'
+        });
+
+        expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+        ]);
+        expect(changeset.changes).toEqual([
+          {
+            key: 'contact.emails.1',
+            value: { funEmail: 'fun@email.com', primary: 'primary@email.com' }
+          }
+        ]);
+
+        changeset.set('contact.emails.1.primary', 'primary2@email.com');
+
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
       });
     });
   });
