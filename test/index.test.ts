@@ -996,7 +996,7 @@ describe('Unit | Utility | changeset', () => {
 
         changeset.set('contact.emails.1.primary', 'primary2@email.com');
 
-        // expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
         expect(changeset.changes).toEqual([
           {
             key: 'contact.emails.1',
