@@ -1,5 +1,6 @@
 import Change, { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
+import { isArrayObject } from './array-object';
 
 interface Options {
   safeSet: any;
@@ -79,9 +80,14 @@ export default function setDeep(
         const siblings = findSiblings(changeValue, keys);
 
         const resolvedValue = isChange(value) ? getChangeValue(value) : value;
-        target[prop] = new Change(
-          setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue, options)
-        );
+        const nestedKeys =
+          Array.isArray(target) || isArrayObject(target)
+            ? keys.slice(i + 1, keys.length).join('.') // remove first key segment as well as the index
+            : keys.slice(1, keys.length).join('.'); // remove first key segment
+
+        const newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
+
+        target[prop] = new Change(newValue);
 
         // since we are done with the `path`, we can terminate the for loop and return control
         break;

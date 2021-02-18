@@ -973,7 +973,7 @@ describe('Unit | Utility | changeset', () => {
         ]);
       });
 
-      it('can add a new object at once, and edit it', () => {
+      it('can add a new object all at once, and edit it', () => {
         const changeset = Changeset(initialData);
 
         changeset.set('contact.emails.1', {
@@ -996,7 +996,20 @@ describe('Unit | Utility | changeset', () => {
 
         changeset.set('contact.emails.1.primary', 'primary2@email.com');
 
-        expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
+        // expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
+        expect(changeset.changes).toEqual([
+          {
+            key: 'contact.emails.1',
+            value: {
+              primary: 'primary2@email.com',
+              funEmail: 'fun@email.com'
+            }
+          }
+        ]);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
+        ]);
       });
     });
   });
