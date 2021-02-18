@@ -973,7 +973,7 @@ describe('Unit | Utility | changeset', () => {
         ]);
       });
 
-      xit('can add a new object at once, and edit it', () => {
+      it('can add a new object at once, and edit it', () => {
         const changeset = Changeset(initialData);
 
         changeset.set('contact.emails.1', {
