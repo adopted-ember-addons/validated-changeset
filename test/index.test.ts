@@ -1099,6 +1099,8 @@ describe('Unit | Utility | changeset', () => {
         }
       ]);
 
+      expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
+      expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
       // does not need to be unwrapped
       expect(changeset.get('emails.0.value')).toEqual('the value');
     });

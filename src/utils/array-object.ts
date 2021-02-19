@@ -1,4 +1,6 @@
 export function isArrayObject(obj: Record<string, any>) {
+  if (!obj) return false;
+
   let maybeIndicies = Object.keys(obj);
 
   return maybeIndicies.every(key => Number.isInteger(parseInt(key, 10)));
