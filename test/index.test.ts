@@ -811,6 +811,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.0', 'fred@email.com');
 
         expect(changeset.isValid).toEqual(false);
+        expect(changeset.isDirty).toEqual(true);
         expect(changeset.errors).toEqual([
           { key: 'contact.emails.0', validation: 'Fred is banned', value: 'fred@email.com' }
         ]);
@@ -871,6 +872,10 @@ describe('Unit | Utility | changeset', () => {
           { key: 'contact.emails.1', value: 'fred@email.com' },
           { key: 'contact.emails.3', value: 'greg@email.com' }
         ]);
+
+        expect(changeset.change).toEqual({
+          contact: { emails: { 1: 'fred@email.com', 3: 'greg@email.com' } }
+        });
       });
 
       it('can remove items from the array', () => {
