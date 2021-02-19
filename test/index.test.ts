@@ -924,6 +924,150 @@ describe('Unit | Utility | changeset', () => {
     });
   });
 
+  describe('arrays as values of top level objects', () => {
+    let initialData: { emails: Record<string, string>[] } = { emails: [] };
+
+    beforeEach(() => {
+      initialData = { emails: [{ primary: 'bob@email.com' }] };
+    });
+
+    it('can modify properties on an entry', () => {
+      const changeset = Changeset(initialData);
+
+      debugger;
+      changeset.set('emails.0.primary', 'fun@email.com');
+
+      expect(changeset.get('emails.0.primary')).toEqual('fun@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+      expect(changeset.changes).toEqual([{ key: 'emails.0.primary', value: 'fun@email.com' }]);
+    });
+
+    it('can add properties to an entry', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.0.funEmail', 'fun@email.com');
+
+      expect(changeset.get('emails.0.funEmail')).toEqual('fun@email.com');
+      expect(changeset.changes).toEqual([{ key: 'emails.0.funEmail', value: 'fun@email.com' }]);
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com', funEmail: 'fun@email.com' }
+      ]);
+    });
+
+    it('can add new properties to new entries', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.1.funEmail', 'fun@email.com');
+      changeset.set('emails.1.primary', 'primary@email.com');
+
+      expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
+      expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+      ]);
+      expect(changeset.changes).toEqual([
+        { key: 'emails.1.funEmail', value: 'fun@email.com' },
+        { key: 'emails.1.primary', value: 'primary@email.com' }
+      ]);
+    });
+
+    it('can add a new object all at once, and edit it', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.1', {
+        funEmail: 'fun@email.com',
+        primary: 'primary@email.com'
+      });
+
+      expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
+      expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: { funEmail: 'fun@email.com', primary: 'primary@email.com' }
+        }
+      ]);
+
+      changeset.set('emails.1.primary', 'primary2@email.com');
+
+      expect(changeset.get('emails.1.primary')).toEqual('primary2@email.com');
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: {
+            primary: 'primary2@email.com',
+            funEmail: 'fun@email.com'
+          }
+        }
+      ]);
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
+      ]);
+    });
+
+    it('can edit a new object that was added after deleting an array entry', () => {
+      const changeset = Changeset({
+        emails: [
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com'
+          },
+          {
+            fun: 'fun1@email.com',
+            primary: 'primary1@email.com'
+          }
+        ]
+      });
+
+      changeset.set('emails.1', null);
+
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com'
+        },
+        null
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: null
+        }
+      ]);
+
+      changeset.set('emails.1', {
+        fun: 'brandNew@email.com',
+        primary: 'brandNewPrimary@email.com'
+      });
+
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com'
+        },
+        {
+          fun: 'brandNew@email.com',
+          primary: 'brandNewPrimary@email.com'
+        }
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: {
+            fun: 'brandNew@email.com',
+            primary: 'brandNewPrimary@email.com'
+          }
+        }
+      ]);
+    });
+  });
+
   describe('arrays of objects within nested objects', () => {
     describe('#set', () => {
       let initialData: { contact: { emails: Record<string, string>[] } } = {
@@ -1014,6 +1158,33 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contact.emails').unwrap()).toEqual([
           { primary: 'bob@email.com' },
           { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
+        ]);
+      });
+
+      it('can edit a new object that was added after deleting an array entry', () => {
+        const changeset = Changeset({
+          contacts: {
+            emails: [
+              {
+                fun: 'fun0@email.com',
+                primary: 'primary0@email.com'
+              },
+              {
+                fun: 'fun1@email.com',
+                primary: 'primary1@email.com'
+              }
+            ]
+          }
+        });
+
+        changeset.set('contacts.emails.1', null);
+
+        expect(changeset.get('contacts.emails').unwrap()).toEqual([
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com'
+          },
+          null
         ]);
       });
     });

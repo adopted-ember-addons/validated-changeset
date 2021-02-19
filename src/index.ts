@@ -39,6 +39,7 @@ import {
   ValidatorAction,
   ValidatorMap
 } from './types';
+import { isArrayObject } from './utils/array-object';
 
 export {
   CHANGESET,
@@ -919,7 +920,9 @@ export class BufferedChangeset implements IChangeset {
     let content: Content = this[CONTENT];
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
       const changesValue = this.getDeep(changes, key);
-      if (!this.isObject(changesValue) && changesValue !== undefined) {
+      const isObject = this.isObject(changesValue);
+
+      if (!isObject && changesValue !== undefined) {
         // if safeGet returns a primitive, then go ahead return
         return changesValue;
       }
@@ -960,6 +963,16 @@ export class BufferedChangeset implements IChangeset {
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
+        }
+        const baseContent = this.safeGet(content, baseKey);
+
+        if (isArrayObject(normalizedBaseChanges) && Array.isArray(baseContent)) {
+          const subChanges = getSubObject(changes, key);
+
+          // give back an object that can further retrieve changes and/or content
+          const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
+
+          return tree.proxy;
         }
       }
 
