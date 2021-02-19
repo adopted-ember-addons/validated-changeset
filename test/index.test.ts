@@ -934,7 +934,6 @@ describe('Unit | Utility | changeset', () => {
     it('can modify properties on an entry', () => {
       const changeset = Changeset(initialData);
 
-      debugger;
       changeset.set('emails.0.primary', 'fun@email.com');
 
       expect(changeset.get('emails.0.primary')).toEqual('fun@email.com');
@@ -1065,6 +1064,43 @@ describe('Unit | Utility | changeset', () => {
           }
         }
       ]);
+    });
+
+    it('can edit an object with a key of value after another array entry has been deleted', () => {
+      const changeset = Changeset({
+        emails: [
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com',
+            value: 'the value'
+          },
+          {
+            fun: 'fun1@email.com',
+            primary: 'primary1@email.com',
+            value: 'some value'
+          }
+        ]
+      });
+
+      changeset.set('emails.1', null);
+
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com',
+          value: 'the value'
+        },
+        null
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: null
+        }
+      ]);
+
+      // does not need to be unwrapped
+      expect(changeset.get('emails.0.value')).toEqual('the value');
     });
   });
 
