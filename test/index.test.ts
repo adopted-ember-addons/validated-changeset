@@ -1026,6 +1026,8 @@ describe('Unit | Utility | changeset', () => {
 
       changeset.set('emails.1', null);
 
+      expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
+      expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
       expect(changeset.get('emails').unwrap()).toEqual([
         {
           fun: 'fun0@email.com',
