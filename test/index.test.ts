@@ -2174,7 +2174,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes[0]).toEqual({ key: 'options', value: { persist: true } });
   });
 
-  it('#validate marks actual valid changes', async () => {
+  it('#validate marks actual valid changes with 2 changes', async () => {
     dummyModel = {
       ...dummyModel,
       ...{ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true }
@@ -2245,7 +2245,7 @@ describe('Unit | Utility | changeset', () => {
     /* expect(dummyChangeset.errors.length).toBe(1); */
   });
 
-  it('#validate marks actual valid changes', async () => {
+  it('#validate marks actual valid changes with 3 changes', async () => {
     dummyModel = {
       ...dummyModel,
       ...{ name: 'Jim Bob', password: true, passwordConfirmation: true }
