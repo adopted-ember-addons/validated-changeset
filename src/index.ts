@@ -37,7 +37,9 @@ import {
   ValidationErr,
   ValidationResult,
   ValidatorAction,
-  ValidatorMap
+  ValidatorMap,
+  VALIDATION_CANCELLED,
+  ValidationCancelled
 } from './types';
 
 export {
@@ -770,7 +772,17 @@ export class BufferedChangeset implements IChangeset {
   _handleValidation<T>(
     validation: ValidationResult,
     { key, value }: NewProperty<T>
-  ): T | IErr<T> | ValidationErr {
+  ): T | IErr<T> | ValidationErr | ValidationCancelled {
+
+    // if validation was async, value might have changed since the validation was kicked off
+    const changes = this[CHANGES];
+    if (changes) {
+      const keyChange = changes[key];
+      if (keyChange && getChangeValue(keyChange) !== value) {
+        return VALIDATION_CANCELLED;
+      }
+    }
+
     const isValid: boolean =
       validation === true ||
       (Array.isArray(validation) && validation.length === 1 && validation[0] === true);

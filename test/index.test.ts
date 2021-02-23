@@ -6,6 +6,12 @@ import lookupValidator from '../src/utils/validator-lookup';
 let dummyModel: any;
 const exampleArray: Array<any> = [];
 
+async function delay(duration: number) {
+  return new Promise(function(resolve: Function){
+    setTimeout(resolve, duration);
+  });
+};
+
 const dummyValidations: Record<string, any> = {
   age(_k: string, value: any) {
     return !!value ? value < 120 || '' : true;
@@ -1253,6 +1259,43 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('async', 'is invalid');
     await dummyChangeset.save();
     expect(dummyChangeset.error).toEqual(expectedError);
+  });
+
+  it('it works with out of order async validations', async () => {
+    var latestDelayedAsyncResolver: Function = () => {};
+
+    dummyValidations.delayedAsync = () => {
+      return new Promise((resolve) => {
+        latestDelayedAsyncResolver = resolve;
+      });
+    };
+  
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    /* const dummyChangeset = Changeset(dummyModel, dummyValidator); */
+    const expectedChanges = [{ key: 'delayedAsync', value: 'second' }];
+    const expectedError = { delayedAsync: { validation: false, value: 'second' } };
+
+    dummyChangeset.set('delayedAsync', 'first');
+    var firstResolver = latestDelayedAsyncResolver;
+    dummyChangeset.set('delayedAsync', 'second');
+    var secondResolver = latestDelayedAsyncResolver;
+
+    // second one resolves first with false
+    secondResolver(false);
+    // then the first resolves first with true
+    firstResolver(true);
+
+    // allow promises to run
+    await delay(1);
+
+    // clean up before running expectations
+    delete dummyValidations.delayedAsync;
+
+    // current value state should be "second"
+    // current error state should be invalid
+    expect(dummyChangeset.changes).toEqual(expectedChanges);
+    expect(dummyChangeset.error).toEqual(expectedError);
+
   });
 
   it('it clears errors when setting to original value', () => {

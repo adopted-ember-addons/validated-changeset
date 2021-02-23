@@ -15,7 +15,11 @@ export type Config = {
 
 export type ValidationOk = boolean | [boolean];
 export type ValidationErr = string | string[];
-export type ValidationResult = ValidationOk | ValidationErr;
+
+export const VALIDATION_CANCELLED: unique symbol = Symbol();
+export type ValidationCancelled = typeof VALIDATION_CANCELLED;
+
+export type ValidationResult = ValidationOk | ValidationErr | ValidationCancelled;
 
 export interface INotifier {
   listeners: Function[];
