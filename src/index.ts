@@ -969,6 +969,10 @@ export class BufferedChangeset implements IChangeset {
         if (Array.isArray(baseContent)) {
           const subChanges = getSubObject(changes, key);
 
+          if (!subChanges) {
+            return this.getDeep(baseContent, remaining.join('.'));
+          }
+
           // give back an object that can further retrieve changes and/or content
           const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
 
