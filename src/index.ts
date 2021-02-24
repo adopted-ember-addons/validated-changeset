@@ -739,6 +739,7 @@ export class BufferedChangeset implements IChangeset {
     this.trigger(BEFORE_VALIDATION_EVENT, key);
 
     // TODO: Address case when Promise is rejected.
+    // TODO: await RunningValidations before checking the next in line
     if (isPromise(validation)) {
       this._setIsValidating(key, true);
 
