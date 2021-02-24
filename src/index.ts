@@ -39,7 +39,6 @@ import {
   ValidatorAction,
   ValidatorMap
 } from './types';
-import { isArrayObject } from './utils/array-object';
 
 export {
   CHANGESET,

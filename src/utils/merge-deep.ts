@@ -1,4 +1,4 @@
-import Change, { getChangeValue, isChange } from '../-private/change';
+import { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
 import { isArrayObject, objectToArray, arrayToObject } from './array-object';
 
