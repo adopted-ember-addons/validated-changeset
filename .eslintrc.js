@@ -26,7 +26,7 @@ module.exports = {
     {
       files: [
         '.eslintrc',
-        'bin/**'
+        'bin/**',
       ],
       parserOptions: {
         sourceType: 'script',
@@ -39,6 +39,14 @@ module.exports = {
       },
       plugins: ['node', 'import'],
       extends: 'plugin:node/recommended',
+    },
+
+    // typescript node files
+    {
+      files: ['rollup.config.ts'],
+      rules: {
+        '@typescript-eslint/no-var-requires' : 'off',
+      }
     },
 
     // bin files
