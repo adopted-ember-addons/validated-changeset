@@ -25,6 +25,16 @@ describe('Unit | Utility | unwrap', () => {
       expect(unwrap(changeset.get('nested.data.value'))).toEqual('bar2');
     });
 
+    it('accesses non-leaf nodes', () => {
+      let changeset = Changeset(data);
+
+      changeset.set('obj.emails.0', 'bar@b.com');
+      changeset.set('nested.data.value', 'bar2');
+
+      expect(unwrap(changeset.get('obj.emails'))).toEqual(['bar@b.com']);
+      expect(unwrap(changeset.get('nested.data'))).toEqual({ value: 'bar2' });
+    });
+
     it('handles deletions', () => {
       let changeset = Changeset(data);
 
