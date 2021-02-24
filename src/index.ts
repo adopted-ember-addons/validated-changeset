@@ -39,6 +39,7 @@ import {
   ValidatorAction,
   ValidatorMap
 } from './types';
+import { isArrayObject } from './utils/array-object';
 
 export {
   CHANGESET,
@@ -919,7 +920,9 @@ export class BufferedChangeset implements IChangeset {
     let content: Content = this[CONTENT];
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
       const changesValue = this.getDeep(changes, key);
-      if (!this.isObject(changesValue) && changesValue !== undefined) {
+      const isObject = this.isObject(changesValue);
+
+      if (!isObject && changesValue !== undefined) {
         // if safeGet returns a primitive, then go ahead return
         return changesValue;
       }
@@ -955,11 +958,25 @@ export class BufferedChangeset implements IChangeset {
           const baseContent = this.safeGet(content, baseKey);
           const subContent = this.getDeep(baseContent, remaining.join('.'));
           const subChanges = getSubObject(changes, key);
-          // give back and object that can further retrieve changes and/or content
+          // give back an object that can further retrieve changes and/or content
           const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
+        }
+        const baseContent = this.safeGet(content, baseKey);
+
+        if (Array.isArray(baseContent)) {
+          const subChanges = getSubObject(changes, key);
+
+          if (!subChanges) {
+            return this.getDeep(baseContent, remaining.join('.'));
+          }
+
+          // give back an object that can further retrieve changes and/or content
+          const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
+
+          return tree;
         }
       }
 

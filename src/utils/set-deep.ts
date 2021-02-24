@@ -1,5 +1,6 @@
 import Change, { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
+import { isArrayObject } from './array-object';
 
 interface Options {
   safeSet: any;
@@ -59,18 +60,34 @@ export default function setDeep(
   for (let i = 0; i < keys.length; i++) {
     let prop = keys[i];
 
+    if (Array.isArray(target) && parseInt(prop, 10) < 0) {
+      throw new Error(
+        'Negative indices are not allowed as arrays do not serialize values at negative indices'
+      );
+    }
+
     const isObj = isObject(target[prop]);
-    if (!isObj) {
+    const isArray = Array.isArray(target[prop]);
+    const isComplex = isObj || isArray;
+
+    if (!isComplex) {
       options.safeSet(target, prop, {});
-    } else if (isObj && isChange(target[prop])) {
+    } else if (isComplex && isChange(target[prop])) {
       let changeValue = getChangeValue(target[prop]);
+
       if (isObject(changeValue)) {
         // if an object, we don't want to lose sibling keys
         const siblings = findSiblings(changeValue, keys);
+
         const resolvedValue = isChange(value) ? getChangeValue(value) : value;
-        target[prop] = new Change(
-          setDeep(siblings, keys.slice(1, keys.length).join('.'), resolvedValue, options)
-        );
+        const nestedKeys =
+          Array.isArray(target) || isArrayObject(target)
+            ? keys.slice(i + 1, keys.length).join('.') // remove first key segment as well as the index
+            : keys.slice(1, keys.length).join('.'); // remove first key segment
+
+        const newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
+
+        target[prop] = new Change(newValue);
 
         // since we are done with the `path`, we can terminate the for loop and return control
         break;

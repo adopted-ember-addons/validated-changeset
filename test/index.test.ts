@@ -771,6 +771,465 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  describe('arrays within nested objects', () => {
+    describe('#set', () => {
+      let initialData: { contact: { emails?: string[] } } = { contact: { emails: [] } };
+
+      beforeEach(() => {
+        initialData = { contact: { emails: ['bob@email.com'] } };
+      });
+
+      it('nested objects cannot create arrays when we have no hints', () => {
+        initialData.contact = {};
+
+        const changeset = Changeset(initialData);
+        expect(changeset.get('contact.emails')).toEqual(undefined);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails')).toEqual({ '0': 'fred@email.com' });
+      });
+
+      it('works with validations', () => {
+        const changeset = Changeset(
+          initialData,
+          lookupValidator({
+            contact: {
+              emails: [
+                (_k: string, value: any) => {
+                  if (value.includes('fred')) {
+                    return 'Fred is banned';
+                  }
+                }
+              ]
+            }
+          })
+        );
+
+        expect(changeset.isValid).toEqual(true);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+
+        expect(changeset.isValid).toEqual(false);
+        expect(changeset.isDirty).toEqual(true);
+        expect(changeset.errors).toEqual([
+          { key: 'contact.emails.0', validation: 'Fred is banned', value: 'fred@email.com' }
+        ]);
+      });
+
+      it('can be rolled back', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
+        expect(changeset.get('contact.emails').unwrap()).toEqual(['fred@email.com']);
+
+        changeset.rollback();
+
+        expect(changeset.get('contact.emails.0')).toEqual('bob@email.com');
+        expect(changeset.changes).toEqual([]);
+        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
+      });
+
+      it('can be saved', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
+
+        changeset.save();
+
+        expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
+        expect(changeset.changes).toEqual([]);
+      });
+
+      it('can add items to the array', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com'
+        ]);
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.1', value: 'fred@email.com' }]);
+
+        changeset.set('contact.emails.3', 'greg@email.com');
+
+        expect(changeset.get('contact.emails.3')).toEqual('greg@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com',
+          undefined,
+          'greg@email.com'
+        ]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.1', value: 'fred@email.com' },
+          { key: 'contact.emails.3', value: 'greg@email.com' }
+        ]);
+
+        expect(changeset.change).toEqual({
+          contact: { emails: { 1: 'fred@email.com', 3: 'greg@email.com' } }
+        });
+      });
+
+      it('can remove items from the array', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', 'fred@email.com');
+
+        expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          'bob@email.com',
+          'fred@email.com'
+        ]);
+        expect(changeset.changes).toEqual([{ key: 'contact.emails.1', value: 'fred@email.com' }]);
+
+        changeset.set('contact.emails.0', null);
+
+        expect(changeset.get('contact.emails.0')).toEqual(null);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([null, 'fred@email.com']);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0', value: null },
+          { key: 'contact.emails.1', value: 'fred@email.com' }
+        ]);
+
+        changeset.set('contact.emails.1', null);
+
+        expect(changeset.get('contact.emails').unwrap()).toEqual([null, null]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0', value: null },
+          { key: 'contact.emails.1', value: null }
+        ]);
+      });
+
+      xit(`negative values are not allowed`, () => {
+        // This test is currently disabled because setDeep doesn't have a reference to the
+        // original array and setDeep is where we'd throw on invalid key values
+        const changeset = Changeset(initialData);
+
+        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
+
+        expect(() => {
+          changeset.set('contact.emails.-1', 'fred@email.com');
+        }).toThrow(
+          'Negative indices are not allowed as arrays do not serialize values at negative indices'
+        );
+      });
+    });
+  });
+
+  describe('arrays as values of top level objects', () => {
+    let initialData: { emails: Record<string, string>[] } = { emails: [] };
+
+    beforeEach(() => {
+      initialData = { emails: [{ primary: 'bob@email.com' }] };
+    });
+
+    it('can modify properties on an entry', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.0.primary', 'fun@email.com');
+
+      expect(changeset.get('emails.0.primary')).toEqual('fun@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+      expect(changeset.changes).toEqual([{ key: 'emails.0.primary', value: 'fun@email.com' }]);
+    });
+
+    it('can add properties to an entry', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.0.funEmail', 'fun@email.com');
+
+      expect(changeset.get('emails.0.funEmail')).toEqual('fun@email.com');
+      expect(changeset.changes).toEqual([{ key: 'emails.0.funEmail', value: 'fun@email.com' }]);
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com', funEmail: 'fun@email.com' }
+      ]);
+    });
+
+    it('can add new properties to new entries', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.1.funEmail', 'fun@email.com');
+      changeset.set('emails.1.primary', 'primary@email.com');
+
+      expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
+      expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+      ]);
+      expect(changeset.changes).toEqual([
+        { key: 'emails.1.funEmail', value: 'fun@email.com' },
+        { key: 'emails.1.primary', value: 'primary@email.com' }
+      ]);
+    });
+
+    it('can add a new object all at once, and edit it', () => {
+      const changeset = Changeset(initialData);
+
+      changeset.set('emails.1', {
+        funEmail: 'fun@email.com',
+        primary: 'primary@email.com'
+      });
+
+      expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
+      expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: { funEmail: 'fun@email.com', primary: 'primary@email.com' }
+        }
+      ]);
+
+      changeset.set('emails.1.primary', 'primary2@email.com');
+
+      expect(changeset.get('emails.1.primary')).toEqual('primary2@email.com');
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: {
+            primary: 'primary2@email.com',
+            funEmail: 'fun@email.com'
+          }
+        }
+      ]);
+      expect(changeset.get('emails').unwrap()).toEqual([
+        { primary: 'bob@email.com' },
+        { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
+      ]);
+    });
+
+    it('can edit a new object that was added after deleting an array entry', () => {
+      const changeset = Changeset({
+        emails: [
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com'
+          },
+          {
+            fun: 'fun1@email.com',
+            primary: 'primary1@email.com'
+          }
+        ]
+      });
+
+      changeset.set('emails.1', null);
+
+      expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
+      expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com'
+        },
+        null
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: null
+        }
+      ]);
+
+      changeset.set('emails.1', {
+        fun: 'brandNew@email.com',
+        primary: 'brandNewPrimary@email.com'
+      });
+
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com'
+        },
+        {
+          fun: 'brandNew@email.com',
+          primary: 'brandNewPrimary@email.com'
+        }
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: {
+            fun: 'brandNew@email.com',
+            primary: 'brandNewPrimary@email.com'
+          }
+        }
+      ]);
+    });
+
+    it('can edit an object with a key of value after another array entry has been deleted', () => {
+      const changeset = Changeset({
+        emails: [
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com',
+            value: 'the value'
+          },
+          {
+            fun: 'fun1@email.com',
+            primary: 'primary1@email.com',
+            value: 'some value'
+          }
+        ]
+      });
+
+      changeset.set('emails.1', null);
+
+      expect(changeset.get('emails').unwrap()).toEqual([
+        {
+          fun: 'fun0@email.com',
+          primary: 'primary0@email.com',
+          value: 'the value'
+        },
+        null
+      ]);
+      expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: null
+        }
+      ]);
+
+      expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
+      expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
+      // does not need to be unwrapped
+      expect(changeset.get('emails.0.value')).toEqual('the value');
+    });
+  });
+
+  describe('arrays of objects within nested objects', () => {
+    describe('#set', () => {
+      let initialData: { contact: { emails: Record<string, string>[] } } = {
+        contact: { emails: [] }
+      };
+
+      beforeEach(() => {
+        initialData = { contact: { emails: [{ primary: 'bob@email.com' }] } };
+      });
+
+      it('can modify properties on an entry', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0.primary', 'fun@email.com');
+
+        expect(changeset.get('contact.emails.0.primary')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0.primary', value: 'fun@email.com' }
+        ]);
+      });
+
+      it('can add properties to an entry', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.0.funEmail', 'fun@email.com');
+
+        expect(changeset.get('contact.emails.0.funEmail')).toEqual('fun@email.com');
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.0.funEmail', value: 'fun@email.com' }
+        ]);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com', funEmail: 'fun@email.com' }
+        ]);
+      });
+
+      it('can add new properties to new entries', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1.funEmail', 'fun@email.com');
+        changeset.set('contact.emails.1.primary', 'primary@email.com');
+
+        expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+        ]);
+        expect(changeset.changes).toEqual([
+          { key: 'contact.emails.1.funEmail', value: 'fun@email.com' },
+          { key: 'contact.emails.1.primary', value: 'primary@email.com' }
+        ]);
+      });
+
+      it('can add a new object all at once, and edit it', () => {
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.1', {
+          funEmail: 'fun@email.com',
+          primary: 'primary@email.com'
+        });
+
+        expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary@email.com', funEmail: 'fun@email.com' }
+        ]);
+        expect(changeset.changes).toEqual([
+          {
+            key: 'contact.emails.1',
+            value: { funEmail: 'fun@email.com', primary: 'primary@email.com' }
+          }
+        ]);
+
+        changeset.set('contact.emails.1.primary', 'primary2@email.com');
+
+        expect(changeset.get('contact.emails.1.primary')).toEqual('primary2@email.com');
+        expect(changeset.changes).toEqual([
+          {
+            key: 'contact.emails.1',
+            value: {
+              primary: 'primary2@email.com',
+              funEmail: 'fun@email.com'
+            }
+          }
+        ]);
+        expect(changeset.get('contact.emails').unwrap()).toEqual([
+          { primary: 'bob@email.com' },
+          { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
+        ]);
+      });
+
+      it('can edit a new object that was added after deleting an array entry', () => {
+        const changeset = Changeset({
+          contacts: {
+            emails: [
+              {
+                fun: 'fun0@email.com',
+                primary: 'primary0@email.com'
+              },
+              {
+                fun: 'fun1@email.com',
+                primary: 'primary1@email.com'
+              }
+            ]
+          }
+        });
+
+        changeset.set('contacts.emails.1', null);
+
+        expect(changeset.get('contacts.emails').unwrap()).toEqual([
+          {
+            fun: 'fun0@email.com',
+            primary: 'primary0@email.com'
+          },
+          null
+        ]);
+      });
+    });
+  });
+
   it('#set works for nested when the root key is "value"', () => {
     dummyModel.value = {};
     dummyModel.org = {};
@@ -1354,7 +1813,9 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset({ obj: {} });
 
     dummyChangeset.get('obj').unwrap();
-    dummyChangeset.prepare(function (changes) { return changes; });
+    dummyChangeset.prepare(function(changes) {
+      return changes;
+    });
 
     expect(dummyChangeset.isPristine).toEqual(true);
   });

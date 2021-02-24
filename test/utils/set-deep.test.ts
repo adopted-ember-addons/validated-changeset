@@ -45,6 +45,51 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ name: { other: 'foo' } });
   });
 
+  it('handles existing arrays', () => {
+    const objA = { entries: [{ prop: 'foo' }] };
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'bar' }] });
+  });
+
+  it('inserts data into existing arrays', () => {
+    const objA = { entries: [{ prop: 'foo' }] };
+    const value = setDeep(objA, 'entries.1.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'foo' }, { prop: 'bar' }] });
+  });
+
+  it('inserts data into empty arrays', () => {
+    const objA = { entries: [] };
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
+
+    expect(value).toEqual({ entries: [{ prop: 'bar' }] });
+  });
+
+  it('does not allow inserting into arrays at negative values', () => {
+    const objA = { entries: [] };
+
+    expect(() => {
+      setDeep(objA, 'entries.-1.prop', 'bar');
+    }).toThrow(
+      'Negative indices are not allowed as arrays do not serialize values at negative indices'
+    );
+  });
+
+  it('inserts primitive types into existing arrays', () => {
+    const objA = { entries: ['foo'] };
+    const value = setDeep(objA, 'entries.1', 'bar');
+
+    expect(value).toEqual({ entries: ['foo', 'bar'] });
+  });
+
+  it('inserts primitive types into empty arrays', () => {
+    const objA = { entries: [] };
+    const value = setDeep(objA, 'entries.0', 'bar');
+
+    expect(value).toEqual({ entries: ['bar'] });
+  });
+
   it('it does not lose sibling keys', () => {
     const objA = {
       name: {
@@ -180,6 +225,112 @@ describe('Unit | Utility | set deep', () => {
         foo: { other: 'baz' },
         name: 'zoo'
       })
+    });
+  });
+
+  it('set on nested properties within an empty object', () => {
+    const objA = {
+      top: {}
+    };
+    let value = setDeep(objA, 'top.name', new Change('zoo'));
+
+    expect(value).toEqual({
+      top: {
+        name: new Change('zoo')
+      }
+    });
+
+    value = setDeep(value, 'top.foo.other', new Change('baz'));
+
+    expect(value).toEqual({
+      top: {
+        name: new Change('zoo'),
+        foo: {
+          other: new Change('baz')
+        }
+      }
+    });
+  });
+
+  describe('arrays at various nestings within an object', () => {
+    describe('array nested one level deep', () => {
+      it('sets when teh array is initially empty', () => {
+        const objA = {
+          top: []
+        };
+        let value = setDeep(objA, 'top.0.name', new Change('zoo'));
+
+        expect(value).toEqual({
+          top: [{ name: new Change('zoo') }]
+        });
+
+        value = setDeep(value, 'top.0.foo.other', new Change('baz'));
+
+        expect(value).toEqual({
+          top: [
+            {
+              name: new Change('zoo'),
+              foo: {
+                other: new Change('baz')
+              }
+            }
+          ]
+        });
+      });
+
+      it('sets with existing changes', () => {
+        const objA = {
+          top: [new Change({ foo: { other: 'bar' }, name: 'jimmy' })]
+        };
+        let value = setDeep(objA, 'top.0.name', new Change('zoo'));
+
+        expect(value).toEqual({
+          top: [
+            new Change({
+              foo: { other: 'bar' },
+              name: 'zoo' // value is not a Change instance
+            })
+          ]
+        });
+
+        value = setDeep(value, 'top.0.foo.other', new Change('baz'));
+
+        expect(value).toEqual({
+          top: [
+            new Change({
+              foo: { other: 'baz' },
+              name: 'zoo'
+            })
+          ]
+        });
+      });
+    });
+  });
+
+  describe('faux arrays at various nestings within an object', () => {
+    describe('faux array deeply nested', () => {
+      it('works with existing changes', () => {
+        const objA = {
+          contact: {
+            emails: {
+              1: new Change({ funEmail: 'fun@email.com', primary: 'primary@email.com' })
+            }
+          }
+        };
+
+        let value = setDeep(objA, 'contact.emails.1.primary', new Change('primary2@email.com'));
+
+        expect(value).toEqual({
+          contact: {
+            emails: {
+              1: new Change({
+                funEmail: 'fun@email.com',
+                primary: 'primary2@email.com'
+              })
+            }
+          }
+        });
+      });
     });
   });
 

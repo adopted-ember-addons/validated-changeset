@@ -37,3 +37,25 @@ jobs:
       run: npm run lint
     - name: test
       run: npm run test
+
+  compat:
+    name: Compatibility
+    env:
+      CI: true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lib:
+          - ember-changeset
+          - ember-changeset-validations
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install node
+      uses: actions/setup-node@v2-beta
+      with:
+        node-version: 12.x
+    - run: npm install
+    - name: "Test: ${{ matrix.lib }}"
+      run: npm run test-external:${{ matrix.lib }}
+

@@ -26,6 +26,31 @@ describe('Unit | Utility | merge deep', () => {
     expect(value).toEqual({ company: { employees: ['Jull', 'Olafur'] } });
   });
 
+  it('works with arrays', () => {
+    const objA = { employees: ['Ivan', 'Jan'] };
+    const objB = { employees: { 0: new Change('Jull'), 1: new Change('Olafur') } };
+    const value = mergeDeep(objA, objB);
+
+    expect(value).toEqual({ employees: ['Jull', 'Olafur'] });
+  });
+
+  it('adds to arrays', () => {
+    const objA = { employees: ['Ivan'] };
+    const objB = { employees: { 1: new Change('Olafur') } };
+    const value = mergeDeep(objA, objB);
+
+    expect(value).toEqual({ employees: ['Ivan', 'Olafur'] });
+  });
+
+  it('removes from arrays', () => {
+    const objA = { employees: ['Ivan'] };
+    const objB = { employees: { 0: new Change(null) } };
+    const value = mergeDeep(objA, objB);
+
+    // this isn't really the same as removing, but it might be the best we can do?
+    expect(value).toEqual({ employees: [null] });
+  });
+
   it('it works with classes', () => {
     class Employee {
       names = [];
