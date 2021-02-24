@@ -11,7 +11,7 @@
     "test:all": "npm run test && npm run test-external:ember-changeset && npm run test-external:ember-changeset-validations",
     "test.watch": "jest --watch",
     "test:debug:named": "node --inspect-brk node_modules/.bin/jest --runInBand --watch --testNamePattern",
-    "lint": "eslint .",
+    "lint": "eslint . --ext=js,ts",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run lint",
     "preversion": "npm run lint",
