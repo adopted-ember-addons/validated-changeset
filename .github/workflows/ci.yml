@@ -34,7 +34,7 @@ jobs:
     - name: npm install
       run: npm install
     - name: lint js
-      run: npm run lint
+      run: node_modules/.bin/eslint . --ext=js,ts
     - name: test
       run: npm run test
 

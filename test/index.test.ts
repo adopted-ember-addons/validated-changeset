@@ -2784,7 +2784,7 @@ describe('Unit | Utility | changeset', () => {
       _validate() {
         return 'oh no';
       }
-      async validate(key: string, newValue: unknown) {
+      async validate(_key: string, _newValue: unknown) {
         return this._validate();
       }
     }
@@ -2815,7 +2815,7 @@ describe('Unit | Utility | changeset', () => {
       _validate() {
         return 'oh no';
       }
-      async validate(key: string, newValue: unknown) {
+      async validate(_key: string, _newValue: unknown) {
         return this._validate();
       }
     }

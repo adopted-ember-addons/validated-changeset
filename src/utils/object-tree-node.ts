@@ -3,7 +3,7 @@ import isObject from './is-object';
 import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
-import { objectToArray, arrayToObject, isArrayObject } from './array-object';
+import { objectToArray, arrayToObject } from './array-object';
 import mergeDeep from './merge-deep';
 
 const objectProxyHandler = {
