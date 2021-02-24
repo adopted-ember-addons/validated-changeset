@@ -130,10 +130,6 @@ class ObjectTreeNode implements ProxyHandler {
 
     return changes;
   }
-
-  toJSON() {
-    return JSON.parse(JSON.stringify(this.unwrap()));
-  }
 }
 
 export { ObjectTreeNode };

@@ -20,6 +20,7 @@ import take from './utils/take';
 import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
+import { unwrap } from './utils/unwrap';
 
 import {
   Changes,
@@ -61,7 +62,8 @@ export {
   take,
   mergeDeep,
   setDeep,
-  getDeep
+  getDeep,
+  unwrap
 };
 
 const { keys } = Object;
