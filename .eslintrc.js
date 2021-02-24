@@ -10,6 +10,11 @@ module.exports = {
     sourceType:  'module',  // Allows for the use of imports
   },
   rules: {
+    // keep imports / functions, clean, etc,
+    // but allow a fallback when it provides contextual help
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+
+    // disabled rules
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/no-empty-function': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
