@@ -802,7 +802,7 @@ export class BufferedChangeset implements IChangeset {
     let content: Content = this[CONTENT];
 
     if (typeof validator === 'function') {
-      let isValid = validator({
+      let validationResult = validator({
         key,
         newValue,
         oldValue,
@@ -810,7 +810,12 @@ export class BufferedChangeset implements IChangeset {
         content
       });
 
-      return typeof isValid === 'boolean' || Boolean(isValid) || isValid === '' ? isValid : true;
+      if (validationResult === undefined) {
+        // no validator function found for key
+        return true;
+      }
+
+      return validationResult;
     }
 
     return true;
@@ -963,8 +968,9 @@ export class BufferedChangeset implements IChangeset {
         } else if (typeof result !== 'undefined') {
           return result;
         }
-        const baseContent = this.safeGet(content, baseKey);
 
+        // TODO: make more obvious we are dealing with arrays with branches above
+        const baseContent = this.safeGet(content, baseKey);
         if (Array.isArray(baseContent)) {
           const subChanges = getSubObject(changes, key);
 
@@ -973,6 +979,7 @@ export class BufferedChangeset implements IChangeset {
           }
 
           // give back an object that can further retrieve changes and/or content
+          // TODO: consider different construct to handle arrays.  Arrays don't fit right with ObjectTreeNode
           const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
 
           return tree;

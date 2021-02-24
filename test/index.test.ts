@@ -23,7 +23,7 @@ const dummyValidations: Record<string, any> = {
     }
 
     if (errors.length < 1) {
-      return;
+      return true;
     }
     return errors.length > 1 ? errors : errors[0];
   },
@@ -43,7 +43,7 @@ const dummyValidations: Record<string, any> = {
     );
   },
   async(_k: string, value: unknown) {
-    return Promise.resolve(value);
+    return Promise.resolve(value || '');
   },
   options(_k: string, value: unknown) {
     return !!value;
@@ -2664,6 +2664,7 @@ describe('Unit | Utility | changeset', () => {
       ...dummyModel,
       ...{
         name: 'Jim Bob',
+        email: 'jimmy@bob.com',
         password: true,
         passwordConfirmation: true,
         async: true,
