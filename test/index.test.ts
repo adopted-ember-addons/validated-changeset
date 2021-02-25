@@ -3241,18 +3241,17 @@ describe('Unit | Utility | changeset', () => {
       .finally(done());
   });
 
-
   async function delay(duration: number) {
-    return new Promise(function(resolve: Function){
+    return new Promise(function(resolve: Function) {
       setTimeout(resolve, duration);
     });
-  };
+  }
 
   it('it works with out of order async validations', async () => {
-    var latestDelayedAsyncResolver: Function = () => {};
+    let latestDelayedAsyncResolver: Function = () => {};
 
     dummyValidations.delayedAsync = () => {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         latestDelayedAsyncResolver = resolve;
       });
     };
@@ -3260,9 +3259,9 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
 
     dummyChangeset.set('delayedAsync', 'first');
-    var firstResolver = latestDelayedAsyncResolver;
+    let firstResolver = latestDelayedAsyncResolver;
     dummyChangeset.set('delayedAsync', 'second');
-    var secondResolver = latestDelayedAsyncResolver;
+    let secondResolver = latestDelayedAsyncResolver;
 
     // second one resolves first with false
     secondResolver(false);
