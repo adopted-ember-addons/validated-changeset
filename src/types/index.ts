@@ -162,7 +162,7 @@ export interface ChangesetDef {
     oldValue: any
   ) => ValidationResult | Promise<ValidationResult>;
   _setProperty: <T>(obj: NewProperty<T>) => void;
-  _setIsValidating: (key: string, value: boolean) => void;
+  _setIsValidating: (key: string, value: Promise<ValidationResult>) => void;
   _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
   _rollbackKeys: () => Array<string>;
   _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;

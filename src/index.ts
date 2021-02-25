@@ -741,18 +741,23 @@ export class BufferedChangeset implements IChangeset {
     // TODO: Address case when Promise is rejected.
     // TODO: await RunningValidations before checking the next in line
     if (isPromise(validation)) {
-      this._setIsValidating(key, true);
+      this._setIsValidating(key, validation as Promise<ValidationResult>);
 
-      return (validation as Promise<ValidationResult>)
-        .then((resolvedValidation: ValidationResult) => {
-          this._setIsValidating(key, false);
+      let running: RunningValidations = this[RUNNING_VALIDATIONS];
+      let promises = Object.entries(running);
 
-          return this._handleValidation(resolvedValidation, { key, value });
-        })
-        .then(result => {
-          this.trigger(AFTER_VALIDATION_EVENT, key);
-          return result;
-        });
+      return Promise.all(promises).then(() => {
+        return (validation as Promise<ValidationResult>)
+          .then((resolvedValidation: ValidationResult) => {
+            delete running[key];
+
+            return this._handleValidation(resolvedValidation, { key, value });
+          })
+          .then(result => {
+            this.trigger(AFTER_VALIDATION_EVENT, key);
+            return result;
+          });
+      });
     }
 
     let result = this._handleValidation(validation as ValidationResult, { key, value });
@@ -847,16 +852,9 @@ export class BufferedChangeset implements IChangeset {
    * Increment or decrement the number of running validations for a
    * given key.
    */
-  _setIsValidating(key: string, value: boolean): void {
+  _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
     let running: RunningValidations = this[RUNNING_VALIDATIONS];
-    let count: number = running[key] || 0;
-
-    if (!value && count === 1) {
-      delete running[key];
-      return;
-    }
-
-    this.setDeep(running, key, value ? count + 1 : count - 1);
+    this.setDeep(running, key, promise);
   }
 
   /**

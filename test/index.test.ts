@@ -1702,7 +1702,6 @@ describe('Unit | Utility | changeset', () => {
 
   it('it accepts async validations', async () => {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
-    /* const dummyChangeset = Changeset(dummyModel, dummyValidator); */
     const expectedChanges = [{ key: 'async', value: true }];
     const expectedError = { async: { validation: 'is invalid', value: 'is invalid' } };
 
@@ -1710,8 +1709,14 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes).toEqual(expectedChanges);
 
     dummyChangeset.set('async', 'is invalid');
-    await dummyChangeset.save();
+    expect(dummyChangeset.error).toEqual({});
+
+    await dummyChangeset.validate();
     expect(dummyChangeset.error).toEqual(expectedError);
+
+    await dummyChangeset.save();
+    // save clears errors
+    expect(dummyChangeset.error).toEqual({});
   });
 
   it('it clears errors when setting to original value', () => {
@@ -3234,5 +3239,47 @@ describe('Unit | Utility | changeset', () => {
     c.validate('org.usa.ny')
       .then(() => c.set('org.usa.ny', 'should not fail'))
       .finally(done());
+  });
+
+
+  async function delay(duration: number) {
+    return new Promise(function(resolve: Function){
+      setTimeout(resolve, duration);
+    });
+  };
+
+  it('it works with out of order async validations', async () => {
+    var latestDelayedAsyncResolver: Function = () => {};
+
+    dummyValidations.delayedAsync = () => {
+      return new Promise((resolve) => {
+        latestDelayedAsyncResolver = resolve;
+      });
+    };
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+
+    dummyChangeset.set('delayedAsync', 'first');
+    var firstResolver = latestDelayedAsyncResolver;
+    dummyChangeset.set('delayedAsync', 'second');
+    var secondResolver = latestDelayedAsyncResolver;
+
+    // second one resolves first with false
+    secondResolver(false);
+    // then the first resolves first with true
+    firstResolver(true);
+
+    // allow promises to run
+    await delay(1);
+
+    // clean up before running expectations
+    delete dummyValidations.delayedAsync;
+
+    // current value state should be "second"
+    // current error state should be invalid
+    const expectedChanges = [{ key: 'delayedAsync', value: 'second' }];
+    const expectedError = { delayedAsync: { validation: false, value: 'second' } };
+    expect(dummyChangeset.changes).toEqual(expectedChanges);
+    expect(dummyChangeset.error).toEqual(expectedError);
   });
 });
