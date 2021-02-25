@@ -740,18 +740,23 @@ export class BufferedChangeset implements IChangeset {
 
     // TODO: Address case when Promise is rejected.
     if (isPromise(validation)) {
-      this._setIsValidating(key, true);
+      this._setIsValidating(key, validation as Promise<ValidationResult>);
 
-      return (validation as Promise<ValidationResult>)
-        .then((resolvedValidation: ValidationResult) => {
-          this._setIsValidating(key, false);
+      let running: RunningValidations = this[RUNNING_VALIDATIONS];
+      let promises = Object.entries(running);
 
-          return this._handleValidation(resolvedValidation, { key, value });
-        })
-        .then(result => {
-          this.trigger(AFTER_VALIDATION_EVENT, key);
-          return result;
-        });
+      return Promise.all(promises).then(() => {
+        return (validation as Promise<ValidationResult>)
+          .then((resolvedValidation: ValidationResult) => {
+            delete running[key];
+
+            return this._handleValidation(resolvedValidation, { key, value });
+          })
+          .then(result => {
+            this.trigger(AFTER_VALIDATION_EVENT, key);
+            return result;
+          });
+      });
     }
 
     let result = this._handleValidation(validation as ValidationResult, { key, value });
@@ -802,7 +807,7 @@ export class BufferedChangeset implements IChangeset {
     let content: Content = this[CONTENT];
 
     if (typeof validator === 'function') {
-      let isValid = validator({
+      let validationResult = validator({
         key,
         newValue,
         oldValue,
@@ -810,7 +815,12 @@ export class BufferedChangeset implements IChangeset {
         content
       });
 
-      return typeof isValid === 'boolean' || Boolean(isValid) || isValid === '' ? isValid : true;
+      if (validationResult === undefined) {
+        // no validator function found for key
+        return true;
+      }
+
+      return validationResult;
     }
 
     return true;
@@ -841,16 +851,9 @@ export class BufferedChangeset implements IChangeset {
    * Increment or decrement the number of running validations for a
    * given key.
    */
-  _setIsValidating(key: string, value: boolean): void {
+  _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
     let running: RunningValidations = this[RUNNING_VALIDATIONS];
-    let count: number = running[key] || 0;
-
-    if (!value && count === 1) {
-      delete running[key];
-      return;
-    }
-
-    this.setDeep(running, key, value ? count + 1 : count - 1);
+    this.setDeep(running, key, promise);
   }
 
   /**
@@ -963,8 +966,9 @@ export class BufferedChangeset implements IChangeset {
         } else if (typeof result !== 'undefined') {
           return result;
         }
-        const baseContent = this.safeGet(content, baseKey);
 
+        // TODO: make more obvious we are dealing with arrays with branches above
+        const baseContent = this.safeGet(content, baseKey);
         if (Array.isArray(baseContent)) {
           const subChanges = getSubObject(changes, key);
 
@@ -973,6 +977,7 @@ export class BufferedChangeset implements IChangeset {
           }
 
           // give back an object that can further retrieve changes and/or content
+          // TODO: consider different construct to handle arrays.  Arrays don't fit right with ObjectTreeNode
           const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
 
           return tree;
