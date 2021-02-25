@@ -20,6 +20,7 @@ import take from './utils/take';
 import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
+import { objectToArray, arrayToObject } from './utils/array-object';
 
 import {
   Changes,
@@ -966,22 +967,6 @@ export class BufferedChangeset implements IChangeset {
         } else if (typeof result !== 'undefined') {
           return result;
         }
-
-        // TODO: make more obvious we are dealing with arrays with branches above
-        const baseContent = this.safeGet(content, baseKey);
-        if (Array.isArray(baseContent)) {
-          const subChanges = getSubObject(changes, key);
-
-          if (!subChanges) {
-            return this.getDeep(baseContent, remaining.join('.'));
-          }
-
-          // give back an object that can further retrieve changes and/or content
-          // TODO: consider different construct to handle arrays.  Arrays don't fit right with ObjectTreeNode
-          const tree = new ObjectTreeNode(subChanges, baseContent, this.getDeep, this.isObject);
-
-          return tree;
-        }
       }
 
       // this comes after the isObject check to ensure we don't lose remaining keys
@@ -1007,6 +992,25 @@ export class BufferedChangeset implements IChangeset {
       // may still access a value on the changes or content objects
       const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
       return tree.proxy;
+    } else if (Array.isArray(subContent)) {
+      let subChanges = this.getDeep(changes, key);
+      if (!subChanges) {
+        // return array of contents. Dont need to worry about further access sibling keys in array case
+        return subContent;
+      }
+
+      if (isObject(subChanges)) {
+        if (isObject(subContent)) {
+          subChanges = normalizeObject(subChanges, this.isObject);
+          return { ...subContent, ...subChanges };
+        } else if (Array.isArray(subContent)) {
+          subChanges = normalizeObject(subChanges, this.isObject);
+
+          return objectToArray(mergeDeep(arrayToObject(subContent), subChanges));
+        }
+      }
+
+      return subChanges;
     }
 
     return subContent;
