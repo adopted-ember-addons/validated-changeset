@@ -937,7 +937,7 @@ describe('Unit | Utility | changeset', () => {
       changeset.set('emails.0.primary', 'fun@email.com');
 
       expect(changeset.get('emails.0.primary')).toEqual('fun@email.com');
-      expect(changeset.get('emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+      expect(changeset.get('emails')).toEqual([{ primary: 'fun@email.com' }]);
       expect(changeset.changes).toEqual([{ key: 'emails.0.primary', value: 'fun@email.com' }]);
     });
 
@@ -948,7 +948,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.0.funEmail')).toEqual('fun@email.com');
       expect(changeset.changes).toEqual([{ key: 'emails.0.funEmail', value: 'fun@email.com' }]);
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         { primary: 'bob@email.com', funEmail: 'fun@email.com' }
       ]);
     });
@@ -961,7 +961,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
       expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary@email.com', funEmail: 'fun@email.com' }
       ]);
@@ -981,7 +981,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
       expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary@email.com', funEmail: 'fun@email.com' }
       ]);
@@ -1004,7 +1004,7 @@ describe('Unit | Utility | changeset', () => {
           }
         }
       ]);
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
       ]);
@@ -1028,7 +1028,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
       expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com'
@@ -1047,7 +1047,7 @@ describe('Unit | Utility | changeset', () => {
         primary: 'brandNewPrimary@email.com'
       });
 
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com'
@@ -1086,7 +1086,7 @@ describe('Unit | Utility | changeset', () => {
 
       changeset.set('emails.1', null);
 
-      expect(changeset.get('emails').unwrap()).toEqual([
+      expect(changeset.get('emails')).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com',
