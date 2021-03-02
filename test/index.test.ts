@@ -908,6 +908,33 @@ describe('Unit | Utility | changeset', () => {
         ]);
       });
 
+      it('can add an item to an index in an array where that item was previously removed', () => {
+        const deepObj = (email: string) => ({
+          emails: {
+            primary: email
+          }
+        });
+        const bob = deepObj('bob@email.com');
+        const fred = deepObj('fred@email.com');
+        const sanHolo = deepObj('sanholo@email.com');
+
+        const changeset = Changeset({
+          contacts: [bob, fred]
+        });
+
+        changeset.set('contacts.0', null);
+
+        expect(changeset.get('contacts.0')).toEqual(null);
+        expect(changeset.get('contacts')).toEqual([null, fred]);
+        expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
+
+        changeset.set('contacts.0', sanHolo);
+
+        expect(changeset.get('contacts')).toEqual([sanHolo, fred]);
+        expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
+        expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
+      });
+
       xit(`negative values are not allowed`, () => {
         // This test is currently disabled because setDeep doesn't have a reference to the
         // original array and setDeep is where we'd throw on invalid key values

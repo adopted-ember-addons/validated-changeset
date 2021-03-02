@@ -51,6 +51,14 @@ describe('Unit | Utility | merge deep', () => {
     expect(value).toEqual({ employees: [null] });
   });
 
+  it('overrides null', () => {
+    const objB = { employees: ['Ivan'] };
+
+    const value = mergeDeep(null, objB);
+
+    expect(value).toEqual({ employees: ['Ivan'] });
+  })
+
   it('it works with classes', () => {
     class Employee {
       names = [];
