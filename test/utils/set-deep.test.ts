@@ -179,12 +179,20 @@ describe('Unit | Utility | set deep', () => {
 
   it('sets changes to undefined values', () => {
     const objA = {
-      contacts: { 0: new Change({ emails: { primary: 'sanholo@email.com' } }) }
+      contacts: {
+        0: new Change({ emails: { primary: 'sanholo@email.com' } }),
+        1: { emails: { primary: 'fred@email.com' } }
+      }
     };
     let value = setDeep(objA, 'contacts.0', new Change(null));
 
     expect(value).toEqual({
-      contacts: { 0: new Change(null) }
+      contacts: {
+        0: new Change(null),
+        1: {
+          emails: { primary: 'fred@email.com' }
+        }
+      }
     });
   });
 
