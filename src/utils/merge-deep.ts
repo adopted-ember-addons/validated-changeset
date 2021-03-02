@@ -164,8 +164,9 @@ export default function mergeDeep(
     return source;
   } else if (sourceIsArray) {
     return source;
-  } else if (target === null) {
+  } else if (target === null || target === undefined) {
     // typeof null === 'object'
+    // typeof undefined === 'undefined'
     return source;
   } else {
     return mergeTargetAndSource(target, source, options);
