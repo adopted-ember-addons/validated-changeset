@@ -938,7 +938,6 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
 
-        debugger;
         // "Delete" array element again
         changeset.set('contacts.0', null);
 

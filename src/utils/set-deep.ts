@@ -80,12 +80,19 @@ export default function setDeep(
         const siblings = findSiblings(changeValue, keys);
 
         const resolvedValue = isChange(value) ? getChangeValue(value) : value;
-        const nestedKeys =
-          Array.isArray(target) || isArrayObject(target)
-            ? keys.slice(i + 1, keys.length).join('.') // remove first key segment as well as the index
-            : keys.slice(1, keys.length).join('.'); // remove first key segment
 
-        const newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
+        const isArrayLike = Array.isArray(target) || isArrayObject(target);
+        const nestedKeys = isArrayLike
+          ? keys.slice(i + 1, keys.length).join('.') // remove first key segment as well as the index
+          : keys.slice(1, keys.length).join('.'); // remove first key segment
+
+        let newValue;
+
+        if (isArrayLike && !resolvedValue) {
+          newValue = resolvedValue;
+        } else {
+          newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
+        }
 
         target[prop] = new Change(newValue);
 
