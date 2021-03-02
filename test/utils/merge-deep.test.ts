@@ -57,7 +57,7 @@ describe('Unit | Utility | merge deep', () => {
     const value = mergeDeep(null, objB);
 
     expect(value).toEqual({ employees: ['Ivan'] });
-  })
+  });
 
   it('it works with classes', () => {
     class Employee {
