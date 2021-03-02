@@ -933,6 +933,12 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contacts')).toEqual([sanHolo, fred]);
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
+
+        changeset.set('contacts.0', null);
+
+        expect(changeset.get('contacts.0')).toEqual(null);
+        expect(changeset.get('contacts')).toEqual([null, fred]);
+        expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
       });
 
       xit(`negative values are not allowed`, () => {
