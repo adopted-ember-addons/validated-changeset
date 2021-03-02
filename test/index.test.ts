@@ -924,12 +924,14 @@ describe('Unit | Utility | changeset', () => {
 
         changeset.set('contacts.0', null);
 
+        expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts.0')).toEqual(null);
         expect(changeset.get('contacts')).toEqual([null, fred]);
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
 
         changeset.set('contacts.0', sanHolo);
 
+        expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts')).toEqual([sanHolo, fred]);
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
