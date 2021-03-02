@@ -922,6 +922,7 @@ describe('Unit | Utility | changeset', () => {
           contacts: [bob, fred]
         });
 
+        // "Delete" array element
         changeset.set('contacts.0', null);
 
         expect(changeset.isDirty).toBeTruthy();
@@ -929,6 +930,7 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contacts')).toEqual([null, fred]);
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
 
+        // Set array element to entirely new object
         changeset.set('contacts.0', sanHolo);
 
         expect(changeset.isDirty).toBeTruthy();
@@ -936,6 +938,7 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
 
+        // "Delete" array element again
         changeset.set('contacts.0', null);
 
         expect(changeset.get('contacts.0')).toEqual(null);
