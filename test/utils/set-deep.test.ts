@@ -177,6 +177,25 @@ describe('Unit | Utility | set deep', () => {
     });
   });
 
+  it('sets changes to undefined values', () => {
+    const objA = {
+      contacts: {
+        0: new Change({ emails: { primary: 'sanholo@email.com' } }),
+        1: { emails: { primary: 'fred@email.com' } }
+      }
+    };
+    let value = setDeep(objA, 'contacts.0', new Change(null));
+
+    expect(value).toEqual({
+      contacts: {
+        0: new Change(null),
+        1: {
+          emails: { primary: 'fred@email.com' }
+        }
+      }
+    });
+  });
+
   it('it works with nested Changes with different order', () => {
     const objA = {
       top: new Change({ foo: { other: 'bar' }, name: 'jimmy' })

@@ -51,6 +51,34 @@ describe('Unit | Utility | merge deep', () => {
     expect(value).toEqual({ employees: [null] });
   });
 
+  it('removes from deep array data', () => {
+    const objA = {
+      employees: [{ email: 'a@email.com' }, { email: 'b@email.com' }, { email: 'c@email.com' }]
+    };
+    const objB = { employees: { 2: new Change(undefined) } };
+    const value = mergeDeep(objA, objB);
+
+    expect(value).toEqual({
+      employees: [{ email: 'a@email.com' }, { email: 'b@email.com' }, undefined]
+    });
+  });
+
+  it('overrides null', () => {
+    const objB = { employees: ['Ivan'] };
+
+    const value = mergeDeep(null, objB);
+
+    expect(value).toEqual({ employees: ['Ivan'] });
+  });
+
+  it('overrides undefined', () => {
+    const objB = { employees: ['Ivan'] };
+
+    const value = mergeDeep(undefined, objB);
+
+    expect(value).toEqual({ employees: ['Ivan'] });
+  });
+
   it('it works with classes', () => {
     class Employee {
       names = [];
