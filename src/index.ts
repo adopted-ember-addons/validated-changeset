@@ -17,7 +17,7 @@ import { buildOldValues } from './utils/build-old-values';
 import { ObjectTreeNode } from './utils/object-tree-node';
 import objectWithout from './utils/object-without';
 import take from './utils/take';
-import mergeDeep from './utils/merge-deep';
+import mergeDeep, { propertyIsUnsafe } from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
@@ -61,7 +61,8 @@ export {
   take,
   mergeDeep,
   setDeep,
-  getDeep
+  getDeep,
+  propertyIsUnsafe
 };
 
 const { keys } = Object;

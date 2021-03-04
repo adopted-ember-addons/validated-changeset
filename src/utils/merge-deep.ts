@@ -5,6 +5,8 @@ import { isArrayObject, objectToArray, arrayToObject } from './array-object';
 interface Options {
   safeGet: any;
   safeSet: any;
+  propertyIsUnsafe?: any;
+  getKeys?: (record: Record<string, unknown>) => string[];
 }
 
 function isNonNullObject(value: any): boolean {
@@ -42,7 +44,7 @@ function propertyIsOnObject(object: any, property: any) {
 }
 
 // Protects from prototype poisoning and unexpected merging up the prototype chain.
-function propertyIsUnsafe(target: any, key: string): boolean {
+export function propertyIsUnsafe(target: any, key: string): boolean {
   return (
     propertyIsOnObject(target, key) && // Properties are safe to merge if they don't exist in the target yet,
     // unsafe if they exist up the prototype chain and also unsafe if they're nonenumerable.
@@ -82,10 +84,10 @@ function buildPathToValue(
  *
  * @method mergeTargetAndSource
  */
-function mergeTargetAndSource(target: any, source: any, options: Options): any {
-  getKeys(source).forEach(key => {
+function mergeTargetAndSource(target: any, source: any, options: Required<Options>): any {
+  options.getKeys(source).forEach(key => {
     // proto poisoning.  So can set by nested key path 'person.name'
-    if (propertyIsUnsafe(target, key)) {
+    if (options.propertyIsUnsafe(target, key)) {
       // if safeSet, we will find keys leading up to value and set
       if (options.safeSet) {
         const kv: Record<string, any> = buildPathToValue(source, options, {}, []);
@@ -138,8 +140,16 @@ function mergeTargetAndSource(target: any, source: any, options: Options): any {
 export default function mergeDeep(
   target: any,
   source: any,
-  options: Options = { safeGet: undefined, safeSet: undefined }
+  options: Options = {
+    safeGet: undefined,
+    safeSet: undefined,
+    propertyIsUnsafe: undefined,
+    getKeys: undefined
+  }
 ): object | [any] {
+  options.getKeys = options.getKeys || getKeys;
+  options.propertyIsUnsafe = options.propertyIsUnsafe || propertyIsUnsafe;
+
   options.safeGet =
     options.safeGet ||
     function(obj: Record<string, any>, key: string): Record<string, any> {
@@ -158,17 +168,24 @@ export default function mergeDeep(
     let sourceIsArrayLike = isArrayObject(source);
 
     if (targetIsArray && sourceIsArrayLike) {
-      return objectToArray(mergeTargetAndSource(arrayToObject(target), source, options));
+      return objectToArray(
+        mergeTargetAndSource(arrayToObject(target), source, options as Required<Options>)
+      );
     }
 
     return source;
   } else if (sourceIsArray) {
     return source;
   } else if (target === null || target === undefined) {
-    // typeof null === 'object'
-    // typeof undefined === 'undefined'
+    /**
+     * If the target was set to null or undefined, we always want to return the source.
+     * There is nothing to merge.
+     *
+     * Without this explicit check, typeof null === typeof {any object-like thing}
+     * which means that mergeTargetAndSource will be called, and you can't merge with null
+     */
     return source;
   } else {
-    return mergeTargetAndSource(target, source, options);
+    return mergeTargetAndSource(target, source, options as Required<Options>);
   }
 }
