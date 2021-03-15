@@ -101,7 +101,7 @@ export class BufferedChangeset implements IChangeset {
     options: Config = {}
   ) {
     this[CONTENT] = obj;
-    this[PREVIOUS_CONTENT] = obj;
+    this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
     this[ERRORS] = {};
     this[VALIDATOR] = validateFn;

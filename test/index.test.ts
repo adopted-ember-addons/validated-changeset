@@ -771,6 +771,23 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('#set overrides', () => {
+    const expectedChanges = [{ key: 'age', value: '90' }];
+    let dummyChangeset = Changeset({ age: '10' });
+    dummyChangeset.set('age', '80');
+    dummyChangeset.set('age', '10');
+    dummyChangeset.set('age', '90');
+
+    const changes = dummyChangeset.changes;
+
+    expect(dummyModel.age).toBeUndefined();
+    expect(dummyChangeset.get('age')).toEqual('90');
+
+    expect(changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isDirty).toBe(true);
+    expect(dummyChangeset.change).toEqual({ age: '90' });
+  });
+
   describe('arrays within nested objects', () => {
     describe('#set', () => {
       let initialData: { contact: { emails?: string[] } } = { contact: { emails: [] } };
@@ -3325,5 +3342,18 @@ describe('Unit | Utility | changeset', () => {
     const expectedError = { delayedAsync: { validation: false, value: 'second' } };
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     expect(dummyChangeset.error).toEqual(expectedError);
+  });
+
+  /**
+   * #unexecute
+   */
+  it('#unexecute after #save on new ember-data model', async () => {
+    const changeset = Changeset(dummyModel);
+    try {
+      changeset.unexecute();
+      expect(true);
+    } catch {
+      expect(false);
+    }
   });
 });
