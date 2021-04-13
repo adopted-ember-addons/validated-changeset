@@ -3,7 +3,8 @@ import isObject from './is-object';
 import { isArrayObject } from './array-object';
 
 interface Options {
-  safeSet: any;
+  safeSet?: any;
+  safeGet?: any;
 }
 
 function split(path: string): string[] {
@@ -40,7 +41,7 @@ export default function setDeep(
   target: any,
   path: string,
   value: unknown,
-  options: Options = { safeSet: undefined }
+  options: Options = { safeSet: undefined, safeGet: undefined }
 ): any {
   const keys = split(path).filter(isValidKey);
   // We will mutate target and through complex reference, we will mutate the orig
@@ -50,6 +51,11 @@ export default function setDeep(
     options.safeSet ||
     function(obj: any, key: string, value: unknown): any {
       return (obj[key] = value);
+    };
+  options.safeGet =
+    options.safeGet ||
+    function(obj: any, key: string): any {
+      return obj ? obj[key] : obj;
     };
 
   if (keys.length === 1) {
@@ -66,14 +72,14 @@ export default function setDeep(
       );
     }
 
-    const isObj = isObject(target[prop]);
-    const isArray = Array.isArray(target[prop]);
+    const isObj = isObject(options.safeGet(target, prop));
+    const isArray = Array.isArray(options.safeGet(target, prop));
     const isComplex = isObj || isArray;
 
     if (!isComplex) {
       options.safeSet(target, prop, {});
-    } else if (isComplex && isChange(target[prop])) {
-      let changeValue = getChangeValue(target[prop]);
+    } else if (isComplex && isChange(options.safeGet(target, prop))) {
+      let changeValue = getChangeValue(options.safeGet(target, prop));
 
       if (isObject(changeValue)) {
         // if an object, we don't want to lose sibling keys
@@ -97,7 +103,7 @@ export default function setDeep(
           newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
         }
 
-        target[prop] = new Change(newValue);
+        options.safeSet(target, prop, new Change(newValue));
 
         // since we are done with the `path`, we can terminate the for loop and return control
         break;
@@ -116,7 +122,7 @@ export default function setDeep(
     }
 
     // assign next level of object for next loop
-    target = target[prop];
+    target = options.safeGet(target, prop);
   }
 
   return orig;
