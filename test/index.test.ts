@@ -661,6 +661,17 @@ describe('Unit | Utility | changeset', () => {
     expect((dummyChangeset.users as Array<string>).length).toBe(2);
   });
 
+  it('#get works if content is undefined for nested key', () => {
+    const model: Record<string, any> = {};
+
+    const c = Changeset(model);
+    c.set('foo.bar.cat', {
+      color: 'red'
+    });
+    const cat = c.get('foo.bar.cat');
+    expect(cat.color).toEqual('red');
+  });
+
   /**
    * #set
    */
