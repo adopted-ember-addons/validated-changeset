@@ -99,6 +99,9 @@ export default function setDeep(
         // newValue directly because of the shallow value
         if (isArrayLike && !resolvedValue) {
           newValue = resolvedValue;
+        } else if (i === keys.length - 1) {
+          // If last key, this is the final value
+          newValue = resolvedValue;
         } else {
           newValue = setDeep(siblings, nestedKeys, resolvedValue, options);
         }
