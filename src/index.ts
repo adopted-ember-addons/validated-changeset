@@ -835,7 +835,7 @@ export class BufferedChangeset implements IChangeset {
     let changes: Changes = this[CHANGES];
 
     // Happy path: update change map.
-    if (oldValue !== value) {
+    if (oldValue !== value || oldValue === undefined) {
       // @tracked
       let result: Changes = this.setDeep(changes, key, new Change(value), {
         safeSet: this.safeSet

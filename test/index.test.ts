@@ -799,6 +799,62 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.change).toEqual({ age: '90' });
   });
 
+  test('#set Ember.set with Object actually does work TWICE for nested', () => {
+    set(dummyModel, 'name', {});
+    let title1 = { id: 'Mr', description: 'Mister' };
+    let title2 = { id: 'Mrs', description: 'Missus' };
+    let dummyChangeset: any = Changeset(dummyModel);
+    set(dummyChangeset, 'name.title', title1);
+
+    expect(get(dummyModel, 'name.title.id')).toBeUndefined();
+    expect(dummyChangeset.name.title.id).toEqual('Mr');
+    expect(dummyChangeset.get('name.title.id')).toEqual('Mr');
+
+    let changes = get(dummyChangeset, 'changes');
+    expect(changes).toEqual([{ key: 'name.title', value: title1 }]);
+
+    set(dummyChangeset, 'name.title', title2);
+
+    expect(get(dummyModel, 'name.title.id')).toBeUndefined();
+    expect(dummyChangeset.name.title.id).toEqual('Mrs');
+    expect(dummyChangeset.get('name.title.id')).toEqual('Mrs');
+
+    changes = get(dummyChangeset, 'changes');
+    expect(changes).toEqual([{ key: 'name.title', value: title2 }]);
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.name.title.id).toEqual('Mrs');
+  });
+
+  test('#set with Object should work TWICE for nested', () => {
+    set(dummyModel, 'name', {});
+    let title1 = { id: 'Mr', description: 'Mister' };
+    let title2 = { id: 'Mrs', description: 'Missus' };
+    let dummyChangeset: any = Changeset(dummyModel);
+    dummyChangeset.set('name.title', title1);
+
+    expect(get(dummyModel, 'name.title.id')).toBeUndefined();
+    expect(dummyChangeset.name.title.id).toEqual('Mr');
+    expect(dummyChangeset.get('name.title.id')).toEqual('Mr');
+
+    let changes = dummyChangeset.changes;
+    expect(changes).toEqual([{ key: 'name.title', value: title1 }]);
+
+    dummyChangeset.set('name.title', title2);
+
+    expect(get(dummyModel, 'name.title.id')).toBeUndefined();
+    expect(dummyChangeset.name.title.id).toEqual('Mrs');
+    expect(dummyChangeset.get('name.title.id')).toEqual('Mrs');
+
+    changes = dummyChangeset.changes;
+    expect(changes).toEqual([{ key: 'name.title', value: title2 }]);
+
+    dummyChangeset.execute();
+
+    expect(dummyModel.name.title.id).toEqual('Mrs');
+  });
+
   describe('arrays within nested objects', () => {
     describe('#set', () => {
       let initialData: { contact: { emails?: string[] } } = { contact: { emails: [] } };
