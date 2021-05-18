@@ -18,16 +18,13 @@ const objectProxyHandler = {
 
     let childValue;
 
-    if (node.changes.hasOwnProperty && node.changes.hasOwnProperty(key)) {
-      childValue = node.safeGet(node.changes, key);
-
-      if (typeof childValue === 'undefined') {
-        return;
+    let changeValue = node.safeGet(node.changes, key);
+    if (changeValue) {
+      if (isChange(changeValue)) {
+        return getChangeValue(changeValue);
       }
-    }
 
-    if (isChange(childValue)) {
-      return getChangeValue(childValue);
+      childValue = changeValue;
     }
 
     if (isObject(childValue)) {
