@@ -59,4 +59,14 @@ describe('Unit | Utility | object tree node', () => {
 
     expect(result.unwrap()).toEqual({ name: 'z', email: '@email' });
   });
+
+  it('it returns value from changes even if on prototype', () => {
+    let x = Object.create(null);
+    x.foo = 'foo';
+    let extendedObject = Object.create(x);
+    const result = new ObjectTreeNode(extendedObject, {});
+
+    expect(result.changes).toEqual({});
+    expect(result.proxy.foo).toBe('foo');
+  });
 });
