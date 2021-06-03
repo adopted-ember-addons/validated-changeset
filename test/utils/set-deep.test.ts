@@ -30,6 +30,17 @@ describe('Unit | Utility | set deep', () => {
     expect(value).toEqual({ name: { other: null, nick: null } });
   });
 
+  it('handles booleans', () => {
+    const objA = { name: [{ nick: false }] };
+    const value = setDeep(objA, 'name.0.nick', true);
+
+    expect(value).toEqual({ name: [{ nick: true }] });
+
+    const value2 = setDeep(value, 'name.0.nick', false);
+
+    expect(value2).toEqual({ name: [{ nick: false }] });
+  });
+
   it('handles function case', () => {
     const objA = { name: { other: 'Ivan' } };
     const anon = () => {};

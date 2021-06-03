@@ -863,6 +863,21 @@ describe('Unit | Utility | changeset', () => {
         initialData = { contact: { emails: ['bob@email.com'] } };
       });
 
+      it('works with boolean values', () => {
+        let initialData = { contact: { emails: [{}, {}] } };
+
+        const changeset = Changeset(initialData);
+
+        changeset.set('contact.emails.2', { nested: false });
+        expect(changeset.get('contact.emails.2')).toEqual({ nested: false });
+
+        changeset.set('contact.emails.2.nested', true);
+        expect(changeset.get('contact.emails.2')).toEqual({ nested: true });
+
+        changeset.set('contact.emails.2.nested', false);
+        expect(changeset.get('contact.emails.2')).toEqual({ nested: false });
+      });
+
       it('nested objects cannot create arrays when we have no hints', () => {
         initialData.contact = {};
 
