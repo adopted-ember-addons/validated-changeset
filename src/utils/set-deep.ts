@@ -97,7 +97,7 @@ export default function setDeep(
         // if the resolved value was deleted (via setting to null or undefined),
         // there is no need to setDeep. We can short-circuit that and set
         // newValue directly because of the shallow value
-        if (isArrayLike && !resolvedValue) {
+        if (isArrayLike && undefined === resolvedValue) {
           newValue = resolvedValue;
         } else if (i === keys.length - 1) {
           // If last key, this is the final value

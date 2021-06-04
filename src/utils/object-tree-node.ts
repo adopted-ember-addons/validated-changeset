@@ -16,15 +16,10 @@ const objectProxyHandler = {
       return;
     }
 
-    let childValue;
+    let childValue = node.safeGet(node.changes, key);
 
-    let changeValue = node.safeGet(node.changes, key);
-    if (changeValue) {
-      if (isChange(changeValue)) {
-        return getChangeValue(changeValue);
-      }
-
-      childValue = changeValue;
+    if (isChange(childValue)) {
+      return getChangeValue(childValue);
     }
 
     if (isObject(childValue)) {
