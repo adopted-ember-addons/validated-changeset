@@ -835,7 +835,7 @@ export class BufferedChangeset implements IChangeset {
     let changes: Changes = this[CHANGES];
 
     // Happy path: update change map.
-    if (oldValue !== value || oldValue === undefined) {
+    if (!isEqual(value, oldValue) || oldValue === undefined) {
       // @tracked
       let result: Changes = this.setDeep(changes, key, new Change(value), {
         safeSet: this.safeSet
@@ -1088,4 +1088,13 @@ export function Changeset(
       return true;
     }
   });
+}
+
+// determine if two values are equal
+function isEqual(v1: unknown, v2: unknown) {
+  if (v1 instanceof Date && v2 instanceof Date) {
+    return v1.getTime() === v2.getTime();
+  }
+
+  return v1 === v2;
 }
