@@ -427,6 +427,14 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.change).toEqual({ details: { name: dogKlass } });
   });
 
+  it('#set does not dirty changeset with same date', () => {
+    dummyModel.createTime = new Date('2013-05-01');
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('createTime', new Date('2013-05-01'));
+
+    expect(dummyChangeset.isDirty).toBe(false);
+  });
+
   /**
    * #get
    */
