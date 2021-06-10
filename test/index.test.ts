@@ -2234,7 +2234,7 @@ describe('Unit | Utility | changeset', () => {
   it('#save proxies to content', done => {
     let result;
     let options;
-    dummyModel['save'] = (dummyOptions: Record<string, any>) => {
+    dummyModel.save = (dummyOptions: Record<string, any>) => {
       result = 'ok';
       options = dummyOptions;
       return Promise.resolve('saveResult');
@@ -2245,7 +2245,7 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBeUndefined();
     const promise = dummyChangeset.save({ foo: 'test options' });
     expect(result).toEqual('ok');
-    expect(dummyChangeset.change).toEqual({ name: 'foo' });
+    expect(dummyChangeset.change).toEqual({});
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
     promise
