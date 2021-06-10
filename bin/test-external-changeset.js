@@ -68,7 +68,7 @@ try {
   );
 }
 
-// const packageJsonLocation = path.join(projectTempDir, 'package.json');
+const packageJsonLocation = path.join(projectTempDir, 'package.json');
 
 let smokeTestPassed = true;
 let commitTestPassed = true;

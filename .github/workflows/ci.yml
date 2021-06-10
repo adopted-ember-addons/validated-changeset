@@ -47,6 +47,7 @@ jobs:
       matrix:
         lib:
           - ember-changeset
+          - ember-changeset-validations
 
     steps:
     - uses: actions/checkout@v2
