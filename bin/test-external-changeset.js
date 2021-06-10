@@ -152,5 +152,5 @@ try {
 if (commitTestPassed && smokeTestPassed) {
   console.log(`${externalProjectName} tests passed`);
 } else {
-  console.log(`${externalProjectName} tests FAILED`);
+  throw new Error('This commit will result in a regression');
 }
