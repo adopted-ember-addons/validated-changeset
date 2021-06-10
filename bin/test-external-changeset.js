@@ -71,7 +71,7 @@ try {
 // const packageJsonLocation = path.join(projectTempDir, 'package.json');
 
 let smokeTestPassed = true;
-// let commitTestPassed = true;
+let commitTestPassed = true;
 
 /**
  * -----------------
@@ -92,69 +92,69 @@ try {
   smokeTestPassed = false;
 }
 
-// /**
-//  * -----------------
-//  * INSTALL latest validated-changeset in external package
-//  * -----------------
-//  */
-// const currentSha = execWithLog(`git rev-parse HEAD`);
-// const cacheDir = path.join(root, `../__tarball-cache`);
-// const tarballDir = path.join(cacheDir, currentSha);
+/**
+ * -----------------
+ * INSTALL latest validated-changeset in external package
+ * -----------------
+ */
+const currentSha = execWithLog(`git rev-parse HEAD`);
+const cacheDir = path.join(root, `../__tarball-cache`);
+const tarballDir = path.join(cacheDir, currentSha);
 
-// if (!fs.existsSync(cacheDir)) {
-//   debug(`Ensuring Cache Root at: ${cacheDir}`);
-//   fs.mkdirSync(cacheDir);
-// } else {
-//   debug(`Cache Root Exists at: ${cacheDir}`);
-// }
+if (!fs.existsSync(cacheDir)) {
+  debug(`Ensuring Cache Root at: ${cacheDir}`);
+  fs.mkdirSync(cacheDir);
+} else {
+  debug(`Cache Root Exists at: ${cacheDir}`);
+}
 
-// if (!fs.existsSync(tarballDir)) {
-//   debug(`Ensuring Tarball Cache for SHA ${currentSha} at: ${tarballDir}`);
-//   fs.mkdirSync(tarballDir);
-// } else {
-//   debug(`Tarball Cache Exists for SHA ${currentSha} at: ${tarballDir}`);
-// }
+if (!fs.existsSync(tarballDir)) {
+  debug(`Ensuring Tarball Cache for SHA ${currentSha} at: ${tarballDir}`);
+  fs.mkdirSync(tarballDir);
+} else {
+  debug(`Tarball Cache Exists for SHA ${currentSha} at: ${tarballDir}`);
+}
 
-// function generateTarball() {
-//   execWithLog(`cd ${tarballDir}; npm pack ${root};`);
+function generateTarball() {
+  execWithLog(`cd ${tarballDir}; npm pack ${root};`);
 
-//   debug(`npm pack successful at: ${tarballDir}`);
-//   const pkgPath = path.join(root, 'package.json');
-//   const pkg = require(pkgPath);
+  debug(`npm pack successful at: ${tarballDir}`);
+  const pkgPath = path.join(root, 'package.json');
+  const pkg = require(pkgPath);
 
-//   return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
-// }
+  return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
+}
 
-// function insertTarballsToPackageJson() {
-//   const thisPkgTarballPath = generateTarball();
+function insertTarballsToPackageJson() {
+  const thisPkgTarballPath = generateTarball();
 
-//   execCommand(`yarn add ${thisPkgTarballPath} --save`);
-// }
+  execCommand(`yarn add ${thisPkgTarballPath} --save`);
+}
 
-// try {
-//   debug('Preparing Package To Run Tests Against Latest validated-changeset Commit');
-//   insertTarballsToPackageJson(packageJsonLocation);
+try {
+  debug('Preparing Package To Run Tests Against Latest validated-changeset Commit');
+  insertTarballsToPackageJson(packageJsonLocation);
 
-//   // clear node_modules installed for the smoke-test
-//   execCommand(`rm -rf node_modules`);
+  // clear node_modules installed for the smoke-test
+  execCommand(`rm -rf node_modules`);
 
-//   execCommand('yarn install');
-// } catch (e) {
-//   console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
+  execCommand('yarn install');
+} catch (e) {
+  console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
 
-//   throw e;
-// }
+  throw e;
+}
 
-// try {
-//   debug('Running tests against validated-changeset commit');
-//   execCommand(`ember build`);
-//   execCommand(`ember test --path="./dist"`);
-// } catch (e) {
-//   commitTestPassed = false;
-// }
+try {
+  debug('Running tests against validated-changeset commit');
+  execCommand(`ember build`);
+  execCommand(`ember test --path="./dist"`);
+} catch (e) {
+  commitTestPassed = false;
+}
 
-if (smokeTestPassed) {
+if (commitTestPassed && smokeTestPassed) {
   console.log(`${externalProjectName} tests passed`);
 } else {
-  throw new Error(`Tests failed. smoke: ${smokeTestPassed}`);
+  throw new Error(`Tests failed. smoke: ${smokeTestPassed}, commit: ${commitTestPassed}`);
 }
