@@ -29,19 +29,15 @@ console.log(
   `Preparing to test external project ${externalProjectName} located at ${gitUrl} against this validated-changeset commit.`
 );
 
-function execWithLog(command, force) {
+function execWithLog(command) {
   debug(chalk.cyan('Executing: ') + chalk.yellow(command));
 
-  if (force) {
-    return execa.sync(command, { stdio: [0, 1, 2], shell: true });
-  }
-
-  return execa.sync(command, { shell: true }).stdout;
+  return execa.sync(command).stdout;
 }
 
-function execCommand(command, force) {
+function execCommand(command) {
   command = `cd ${projectTempDir} && ${command}`;
-  return execWithLog(command, force);
+  return execWithLog(command);
 }
 
 if (!fs.existsSync(tempDir)) {
@@ -87,7 +83,7 @@ try {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
   }
-  execCommand('ember test', true);
+  execCommand('ember test');
 } catch (e) {
   console.log(e);
   smokeTestPassed = false;
