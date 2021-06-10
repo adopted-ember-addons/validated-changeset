@@ -146,6 +146,7 @@ try {
   execCommand(`ember build`);
   execCommand(`ember test --path="./dist"`);
 } catch (e) {
+  console.log(e);
   commitTestPassed = false;
 }
 
