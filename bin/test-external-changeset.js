@@ -61,7 +61,6 @@ if (fs.existsSync(projectTempDir)) {
 // install the project
 try {
   execWithLog(`git clone --depth=1 ${gitUrl} ${projectTempDir}`);
-  // execWithLog(`git checkout **branc**`);
 } catch (e) {
   debug(e);
   throw new Error(
@@ -87,7 +86,7 @@ try {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
   }
-  execCommand('ember test', true);
+  execCommand('./node_modules/.bin/ember test', true);
 } catch (e) {
   console.log(e);
   smokeTestPassed = false;
