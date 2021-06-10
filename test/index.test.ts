@@ -680,6 +680,26 @@ describe('Unit | Utility | changeset', () => {
     expect(cat.color).toEqual('red');
   });
 
+  it('#get works with toString override', () => {
+    dummyModel.toString = function() {
+      return 'mine';
+    };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['name'] = undefined;
+    const result = dummyChangeset.toString();
+
+    expect(result).toEqual('changeset:mine');
+  });
+
+  it('#get prioritizes own methods/getters', () => {
+    dummyModel.trigger = function(arg: any) {
+      expect(arg).toEqual('mine');
+    };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['name'] = undefined;
+    dummyChangeset.trigger('mine');
+  });
+
   /**
    * #set
    */
@@ -1737,6 +1757,8 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#set works after save', () => {
+    delete dummyModel.save;
+
     dummyModel['org'] = {
       usa: {
         mn: 'mn',
@@ -1853,11 +1875,12 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('it accepts async validations', async () => {
+    delete dummyModel.save;
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedChanges = [{ key: 'async', value: true }];
     const expectedError = { async: { validation: 'is invalid', value: 'is invalid' } };
 
-    await dummyChangeset.set('async', true);
+    dummyChangeset.set('async', true);
     expect(dummyChangeset.changes).toEqual(expectedChanges);
 
     dummyChangeset.set('async', 'is invalid');
@@ -2222,7 +2245,7 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBeUndefined();
     const promise = dummyChangeset.save({ foo: 'test options' });
     expect(result).toEqual('ok');
-    expect(dummyChangeset.change).toEqual({});
+    expect(dummyChangeset.change).toEqual({ name: 'foo' });
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
     promise
@@ -2384,6 +2407,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#merge preserves content and validator of origin changeset', async () => {
+    delete dummyModel.save;
     let dummyChangesetA = Changeset(dummyModel, lookupValidator(dummyValidations));
     let dummyChangesetB = Changeset(dummyModel);
     let dummyChangesetC = dummyChangesetA.merge(dummyChangesetB);
