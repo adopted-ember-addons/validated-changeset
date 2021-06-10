@@ -148,7 +148,7 @@ try {
 try {
   debug('Running tests against validated-changeset commit');
   execCommand(`ember build`);
-  execCommand(`ember test --path="./dist"`);
+  execCommand(`ember test --path="./dist"`, true);
 } catch (e) {
   commitTestPassed = false;
 }
