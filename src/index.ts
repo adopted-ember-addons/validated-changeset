@@ -984,6 +984,11 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
+    // return getters/setters/methods on BufferedProxy instance
+    if (baseKey in this || key in this) {
+      return this.getDeep(this, key);
+    }
+
     const subContent = this.maybeUnwrapProxy(this.getDeep(content, key));
     if (this.isObject(subContent)) {
       let subChanges = this.getDeep(changes, key);
@@ -1015,20 +1020,6 @@ export class BufferedChangeset implements IChangeset {
       }
 
       return subChanges;
-    }
-
-    // avoid toString on any generic object
-    if (key === 'toString') {
-      return this.toString;
-    }
-
-    if (subContent === undefined) {
-      // return getters/setters/methods on BufferedProxy instance
-      if (baseKey in this || key in this) {
-        let thisVal = this.getDeep(this, key);
-
-        return thisVal;
-      }
     }
 
     return subContent;
