@@ -128,7 +128,7 @@ function generateTarball() {
 function insertTarballsToPackageJson() {
   const thisPkgTarballPath = generateTarball();
 
-  execCommand(`yarn add ${thisPkgTarballPath} --save`);
+  execCommand(`npm install ${thisPkgTarballPath} --save`);
 }
 
 try {
@@ -138,7 +138,7 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('yarn install');
+  execCommand('npm install');
 } catch (e) {
   console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
 
