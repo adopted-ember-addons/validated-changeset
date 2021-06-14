@@ -18,7 +18,7 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v2-beta
       with:
-        node-version: 12.x
+        node-version: 14.x
 
     - name: Cache node modules
       uses: actions/cache@v2
@@ -51,11 +51,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install node
-      uses: actions/setup-node@v2-beta
+    - uses: actions/setup-node@v2-beta
       with:
-        node-version: 12.x
-    - run: npm install
+        node-version: 14.x
+    - name: Install deps
+      run: npm install
     - name: "Test: ${{ matrix.lib }}"
       run: npm run test-external:${{ matrix.lib }}
 

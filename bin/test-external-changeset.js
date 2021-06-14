@@ -29,15 +29,19 @@ console.log(
   `Preparing to test external project ${externalProjectName} located at ${gitUrl} against this validated-changeset commit.`
 );
 
-function execWithLog(command) {
+function execWithLog(command, force) {
   debug(chalk.cyan('Executing: ') + chalk.yellow(command));
+
+  if (force) {
+    return execa.sync(command, { stdio: [0, 1, 2], shell: true });
+  }
 
   return execa.sync(command, { shell: true }).stdout;
 }
 
-function execCommand(command) {
+function execCommand(command, force) {
   command = `cd ${projectTempDir} && ${command}`;
-  return execWithLog(command);
+  return execWithLog(command, force);
 }
 
 if (!fs.existsSync(tempDir)) {
@@ -57,7 +61,6 @@ if (fs.existsSync(projectTempDir)) {
 // install the project
 try {
   execWithLog(`git clone --depth=1 ${gitUrl} ${projectTempDir}`);
-  // execWithLog(`git checkout **branc**`);
 } catch (e) {
   debug(e);
   throw new Error(
@@ -78,13 +81,14 @@ let commitTestPassed = true;
 try {
   debug('Running Smoke Test');
   try {
-    execCommand('yarn install');
+    execCommand('npm install');
   } catch (e) {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
   }
-  execCommand('ember test');
+  execCommand('./node_modules/.bin/ember test', true);
 } catch (e) {
+  console.log(e);
   smokeTestPassed = false;
 }
 
@@ -124,7 +128,7 @@ function generateTarball() {
 function insertTarballsToPackageJson() {
   const thisPkgTarballPath = generateTarball();
 
-  execCommand(`yarn add ${thisPkgTarballPath} --save`);
+  execCommand(`npm install ${thisPkgTarballPath} --save`);
 }
 
 try {
@@ -134,7 +138,7 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('yarn install');
+  execCommand('npm install');
 } catch (e) {
   console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
 
@@ -143,14 +147,15 @@ try {
 
 try {
   debug('Running tests against validated-changeset commit');
-  execCommand(`ember build`);
-  execCommand(`ember test --path="./dist"`);
+  execCommand(`./node_modules/.bin/ember build`);
+  execCommand(`./node_modules/.bin/ember test --path="./dist"`, true);
 } catch (e) {
+  console.error(e);
   commitTestPassed = false;
 }
 
 if (commitTestPassed && smokeTestPassed) {
   console.log(`${externalProjectName} tests passed`);
 } else {
-  console.log(`${externalProjectName} tests FAILED`);
+  throw new Error(`Tests failed. smoke: ${smokeTestPassed}, commit: ${commitTestPassed}`);
 }
