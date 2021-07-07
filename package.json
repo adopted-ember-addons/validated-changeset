@@ -65,5 +65,8 @@
     "ts-jest": "^24.2.0",
     "typescript": "^3.8.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "volta": {
+    "node": "14.17.3"
+  }
 }

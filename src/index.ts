@@ -69,7 +69,9 @@ const { keys } = Object;
 const CONTENT = '_content';
 const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
+const CHANGES_CACHE = '_changesCache';
 const ERRORS = '_errors';
+const ERRORS_CACHE = '_errorsCache';
 const VALIDATOR = '_validator';
 const OPTIONS = '_options';
 const RUNNING_VALIDATIONS = '_runningValidations';
@@ -104,6 +106,8 @@ export class BufferedChangeset implements IChangeset {
     this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
     this[ERRORS] = {};
+    this[CHANGES_CACHE] = {};
+    this[ERRORS_CACHE] = {};
     this[VALIDATOR] = validateFn;
     this[OPTIONS] = pureAssign(defaultOptions, options);
     this[RUNNING_VALIDATIONS] = {};
@@ -123,6 +127,8 @@ export class BufferedChangeset implements IChangeset {
   [PREVIOUS_CONTENT]: object | undefined;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
+  [CHANGES_CACHE]: object;
+  [ERRORS_CACHE]: object;
   [VALIDATOR]: ValidatorAction;
   [OPTIONS]: Config;
   [RUNNING_VALIDATIONS]: {};
@@ -519,14 +525,14 @@ export class BufferedChangeset implements IChangeset {
    * @return {Changeset}
    */
   rollbackInvalid(key: string | void): this {
-    let errorKeys = keys(this[ERRORS]);
+    let errorKeys = keys(this[ERRORS_CACHE]);
 
     if (key) {
       this._notifyVirtualProperties([key]);
       // @tracked
-      this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+      this[ERRORS] = this._deleteKey(ERRORS_CACHE, key) as Errors<any>;
       if (errorKeys.indexOf(key) > -1) {
-        this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
+        this[CHANGES] = this._deleteKey(CHANGES_CACHE, key) as Changes;
       }
     } else {
       this._notifyVirtualProperties();
@@ -534,7 +540,7 @@ export class BufferedChangeset implements IChangeset {
 
       // if on CHANGES hash, rollback those as well
       errorKeys.forEach(errKey => {
-        this[CHANGES] = this._deleteKey(CHANGES, errKey) as Changes;
+        this[CHANGES] = this._deleteKey(CHANGES_CACHE, errKey) as Changes;
       });
     }
 
@@ -552,9 +558,9 @@ export class BufferedChangeset implements IChangeset {
    */
   rollbackProperty(key: string): this {
     // @tracked
-    this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
+    this[CHANGES] = this._deleteKey(CHANGES_CACHE, key) as Changes;
     // @tracked
-    this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+    this[ERRORS] = this._deleteKey(ERRORS_CACHE, key) as Errors<any>;
 
     return this;
   }
@@ -608,7 +614,7 @@ export class BufferedChangeset implements IChangeset {
     }
 
     // Add `key` to errors map.
-    let errors: Errors<any> = this[ERRORS];
+    let errors = this[ERRORS_CACHE];
     // @tracked
     this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSet });
 
@@ -623,7 +629,7 @@ export class BufferedChangeset implements IChangeset {
    * @method pushErrors
    */
   pushErrors(key: string, ...newErrors: string[] | ValidationErr[]): IErr<any> {
-    let errors: Errors<any> = this[ERRORS];
+    let errors = this[ERRORS_CACHE];
     let existingError: IErr<any> | Err = this.getDeep(errors, key) || new Err(null, []);
     let validation: ValidationErr | ValidationErr[] = existingError.validation;
     let value: any = this[key];
@@ -699,7 +705,7 @@ export class BufferedChangeset implements IChangeset {
    * @method cast
    */
   cast(allowed: string[] = []): this {
-    let changes: Changes = this[CHANGES];
+    let changes: Changes = this[CHANGES_CACHE];
 
     if (Array.isArray(allowed) && allowed.length === 0) {
       return this;
@@ -792,7 +798,7 @@ export class BufferedChangeset implements IChangeset {
 
     // Happy path: remove `key` from error map.
     // @tracked
-    this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+    this[ERRORS] = this._deleteKey(ERRORS_CACHE, key) as Errors<any>;
 
     // Error case.
     if (!isValid) {
@@ -840,7 +846,9 @@ export class BufferedChangeset implements IChangeset {
    * Sets property on the changeset.
    */
   _setProperty<T>({ key, value, oldValue }: NewProperty<T>): void {
-    let changes: Changes = this[CHANGES];
+    // use cache to avoid data cyle issues.
+    // https://github.com/poteto/ember-changeset/issues/602
+    let changes = this[CHANGES_CACHE];
 
     // Happy path: update change map.
     if (!isEqual(value, oldValue) || oldValue === undefined) {
@@ -850,10 +858,12 @@ export class BufferedChangeset implements IChangeset {
       });
 
       this[CHANGES] = result;
+      this[CHANGES_CACHE] = result;
     } else if (keyInObject(changes, key)) {
       // @tracked
       // remove key if setting back to original
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
+      this[CHANGES_CACHE] = this._deleteKey(CHANGES_CACHE, key) as Changes;
     }
   }
 
@@ -886,8 +896,8 @@ export class BufferedChangeset implements IChangeset {
    * Gets the changes and error keys.
    */
   _rollbackKeys(): string[] {
-    let changes: Changes = this[CHANGES];
-    let errors: Errors<any> = this[ERRORS];
+    let changes = this[CHANGES_CACHE];
+    let errors = this[ERRORS_CACHE];
     return [...new Set([...keys(changes), ...keys(errors)])];
   }
 
@@ -928,6 +938,7 @@ export class BufferedChangeset implements IChangeset {
     // 'person'
     // 'person.username'
     let [baseKey, ...remaining] = key.split('.');
+    // not the cache because no setter
     let changes: Changes = this[CHANGES];
     let content: Content = this[CONTENT];
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
