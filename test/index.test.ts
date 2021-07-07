@@ -373,10 +373,12 @@ describe('Unit | Utility | changeset', () => {
     };
 
     expect(dummyChangeset.get('isDirty')).toBe(true);
+    expect(dummyChangeset.isDirty).toBe(true);
 
     dummyChangeset.execute();
 
     expect(dummyChangeset.get('isDirty')).toBe(false);
+    expect(dummyChangeset.isDirty).toBe(false);
   });
 
   it('#isDirty reset after rollback', () => {
@@ -832,7 +834,7 @@ describe('Unit | Utility | changeset', () => {
     let title1 = { id: 'Mr', description: 'Mister' };
     let title2 = { id: 'Mrs', description: 'Missus' };
     let dummyChangeset: any = Changeset(dummyModel);
-    set(dummyChangeset, 'name.title', title1);
+    dummyChangeset.set('name.title', title1);
 
     expect(get(dummyModel, 'name.title.id')).toBeUndefined();
     expect(dummyChangeset.name.title.id).toEqual('Mr');

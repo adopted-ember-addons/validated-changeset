@@ -371,6 +371,7 @@ export class BufferedChangeset implements IChangeset {
 
       // @tracked
       this[CHANGES] = newChanges;
+      this[CHANGES_CACHE] = newChanges;
     }
 
     return this;
@@ -385,7 +386,7 @@ export class BufferedChangeset implements IChangeset {
     let oldContent;
     if (this.isValid && this.isDirty) {
       let content: Content = this[CONTENT];
-      let changes: Changes = this[CHANGES];
+      let changes: Changes = this[CHANGES_CACHE];
 
       // keep old values in case of error and we want to rollback
       oldContent = buildOldValues(content, this.changes, this.getDeep);
@@ -399,6 +400,7 @@ export class BufferedChangeset implements IChangeset {
     this.trigger('execute');
 
     this[CHANGES] = {};
+    this[CHANGES_CACHE] = {};
     this[PREVIOUS_CONTENT] = oldContent;
 
     return this;
@@ -508,7 +510,9 @@ export class BufferedChangeset implements IChangeset {
 
     // Reset.
     this[CHANGES] = {};
+    this[CHANGES_CACHE] = {};
     this[ERRORS] = {};
+    this[ERRORS_CACHE] = {};
     this._notifyVirtualProperties(keys);
 
     this.trigger(AFTER_ROLLBACK_EVENT);
@@ -852,17 +856,19 @@ export class BufferedChangeset implements IChangeset {
 
     // Happy path: update change map.
     if (!isEqual(value, oldValue) || oldValue === undefined) {
-      // @tracked
       let result: Changes = this.setDeep(changes, key, new Change(value), {
         safeSet: this.safeSet
       });
 
+      // @tracked
       this[CHANGES] = result;
+      // not @tracked
       this[CHANGES_CACHE] = result;
     } else if (keyInObject(changes, key)) {
-      // @tracked
       // remove key if setting back to original
+      // @tracked
       this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
+      // not @tracked
       this[CHANGES_CACHE] = this._deleteKey(CHANGES_CACHE, key) as Changes;
     }
   }
