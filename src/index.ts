@@ -860,6 +860,8 @@ export class BufferedChangeset implements IChangeset {
         safeSet: this.safeSet
       });
 
+      // We set both b/c public getters consuming CHANGES may need to reconmpute.  
+      // We cannot control when the user may take advantage of this property during render in Ember.  This will lead to a read-write issue on render in Ember
       // @tracked
       this[CHANGES] = result;
       // not @tracked
