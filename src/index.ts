@@ -260,7 +260,7 @@ export class BufferedChangeset implements IChangeset {
    * @type {Boolean}
    */
   get isPristine() {
-    let validationKeys = Object.keys(this[CHANGES]);
+    let validationKeys = Object.keys(this[CHANGES_CACHE]);
     const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
     if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
       validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
@@ -270,7 +270,7 @@ export class BufferedChangeset implements IChangeset {
       return true;
     }
 
-    return !hasChanges(this[CHANGES]);
+    return !hasChanges(this[CHANGES_CACHE]);
   }
   /**
    * @property isInvalid
@@ -659,8 +659,8 @@ export class BufferedChangeset implements IChangeset {
    * @method snapshot
    */
   snapshot(): Snapshot {
-    let changes: Changes = this[CHANGES];
-    let errors: Errors<any> = this[ERRORS];
+    let changes: Changes = this[CHANGES_CACHE];
+    let errors: Errors<any> = this[ERRORS_CACHE];
 
     return {
       changes: keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
@@ -873,10 +873,11 @@ export class BufferedChangeset implements IChangeset {
       this[CHANGES_CACHE] = result;
     } else if (keyInObject(changes, key)) {
       // remove key if setting back to original
+      let result = this._deleteKey(CHANGES_CACHE, key) as Changes;
       // @tracked
-      this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
+      this[CHANGES] = result 
       // not @tracked
-      this[CHANGES_CACHE] = this._deleteKey(CHANGES_CACHE, key) as Changes;
+      this[CHANGES_CACHE] = result;
     }
   }
 
@@ -994,9 +995,8 @@ export class BufferedChangeset implements IChangeset {
           const baseContent = this.safeGet(content, baseKey) || {};
           const subContent = this.getDeep(baseContent, remaining.join('.'));
           const subChanges = getSubObject(changes, key);
-          const subChangesCache = getSubObject(this[CHANGES_CACHE], key);
           // give back an object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject, subChangesCache);
+          const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
@@ -1023,15 +1023,8 @@ export class BufferedChangeset implements IChangeset {
         subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
       }
 
-      let subChangesCache = this.getDeep(this[CHANGES_CACHE], key);
-      if (!subChangesCache) {
-        // if no changes, we need to add the path to the existing changes (mutate)
-        // so further access to nested keys works
-        subChangesCache = this.getDeep(this.setDeep(this[CHANGES_CACHE], key, {}), key);
-      }
-
       // may still access a value on the changes or content objects
-      const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject, subChangesCache);
+      const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
       return tree.proxy;
     } else if (Array.isArray(subContent)) {
       let subChanges = this.getDeep(changes, key);
