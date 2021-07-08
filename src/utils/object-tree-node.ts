@@ -16,7 +16,7 @@ const objectProxyHandler = {
       return;
     }
 
-    let childValue = node.safeGet(node.changes, key);
+    let childValue = node.safeGet(node.changesCache, key);
 
     if (isChange(childValue)) {
       return getChangeValue(childValue);
@@ -53,15 +53,15 @@ const objectProxyHandler = {
   },
 
   ownKeys(node: ProxyHandler): any {
-    return Reflect.ownKeys(node.changes);
+    return Reflect.ownKeys(node.changesCache);
   },
 
   getOwnPropertyDescriptor(node: ProxyHandler, prop: string): any {
-    return Reflect.getOwnPropertyDescriptor(node.changes, prop);
+    return Reflect.getOwnPropertyDescriptor(node.changesCache, prop);
   },
 
   has(node: ProxyHandler, prop: string): any {
-    return Reflect.has(node.changes, prop);
+    return Reflect.has(node.changesCache, prop);
   },
 
   set(node: ProxyHandler, key: string, value: unknown): any {
@@ -69,7 +69,7 @@ const objectProxyHandler = {
     if (key.startsWith('_')) {
       return Reflect.set(node, key, value);
     }
-    return Reflect.set(node.changes, key, new Change(value));
+    return Reflect.set(node.changesCache, key, new Change(value));
   }
 };
 
@@ -79,6 +79,7 @@ function defaultSafeGet(obj: Record<string, any>, key: string) {
 
 class ObjectTreeNode implements ProxyHandler {
   changes: Record<string, any>;
+  changesCache: Record<string, any>;
   content: Content;
   proxy: any;
   children: Record<string, any>;
@@ -87,24 +88,26 @@ class ObjectTreeNode implements ProxyHandler {
     changes: Record<string, any> = {},
     content: Content = {},
     public safeGet: Function = defaultSafeGet,
-    public isObject: Function = isObject
+    public isObject: Function = isObject,
+    changesCache: Record<string, any> = changes
   ) {
     this.changes = changes;
     this.content = content;
     this.proxy = new Proxy(this, objectProxyHandler);
     this.children = Object.create(null);
+    this.changesCache = changesCache
   }
 
   get(key: string) {
-    return this.safeGet(this.changes, key);
+    return this.safeGet(this.changesCache, key);
   }
 
   set(key: string, value: unknown) {
-    return setDeep(this.changes, key, value);
+    return setDeep(this.changesCache, key, value);
   }
 
   unwrap(): Record<string, any> {
-    let changes = this.changes;
+    let changes = this.changesCache;
 
     if (isObject(changes)) {
       changes = normalizeObject(changes, this.isObject);

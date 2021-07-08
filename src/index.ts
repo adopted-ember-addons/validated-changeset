@@ -127,8 +127,8 @@ export class BufferedChangeset implements IChangeset {
   [PREVIOUS_CONTENT]: object | undefined;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
-  [CHANGES_CACHE]: object;
-  [ERRORS_CACHE]: object;
+  [CHANGES_CACHE]: Changes;
+  [ERRORS_CACHE]: Errors<any>;;
   [VALIDATOR]: ValidatorAction;
   [OPTIONS]: Config;
   [RUNNING_VALIDATIONS]: {};
@@ -201,7 +201,7 @@ export class BufferedChangeset implements IChangeset {
   }
 
   get _bareChanges() {
-    let obj = this[CHANGES];
+    let obj = this[CHANGES_CACHE];
 
     return getKeyValues(obj).reduce((newObj: { [key: string]: any }, { key, value }) => {
       newObj[key] = value;
@@ -214,7 +214,7 @@ export class BufferedChangeset implements IChangeset {
    * @type {Array}
    */
   get changes() {
-    let obj = this[CHANGES];
+    let obj = this[CHANGES_CACHE];
 
     // [{ key, value }, ...]
     return getKeyValues(obj);
@@ -232,8 +232,8 @@ export class BufferedChangeset implements IChangeset {
   }
 
   get change() {
-    let obj: Changes = this[CHANGES];
-    if (hasChanges(this[CHANGES])) {
+    let obj: Changes = this[CHANGES_CACHE];
+    if (hasChanges(this[CHANGES_CACHE])) {
       return normalizeObject(obj);
     }
 
@@ -480,10 +480,10 @@ export class BufferedChangeset implements IChangeset {
       return this;
     }
 
-    let c1: Changes = this[CHANGES];
-    let c2: Changes = changeset[CHANGES];
-    let e1: Errors<any> = this[ERRORS];
-    let e2: Errors<any> = changeset[ERRORS];
+    let c1: Changes = this[CHANGES_CACHE];
+    let c2: Changes = changeset[CHANGES_CACHE];
+    let e1: Errors<any> = this[ERRORS_CACHE];
+    let e2: Errors<any> = changeset[ERRORS_CACHE];
 
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     let newChangeset: any = new ValidatedChangeset(content, this[VALIDATOR]); // ChangesetDef
@@ -493,7 +493,9 @@ export class BufferedChangeset implements IChangeset {
     let mergedChanges: Changes = mergeNested(newChanges, c2);
 
     newChangeset[ERRORS] = mergedErrors;
+    newChangeset[ERRORS_CACHE] = mergedErrors;
     newChangeset[CHANGES] = mergedChanges;
+    newChangeset[CHANGES_CACHE] = mergedChanges;
     newChangeset._notifyVirtualProperties();
     return newChangeset;
   }
@@ -694,8 +696,10 @@ export class BufferedChangeset implements IChangeset {
 
     // @tracked
     this[CHANGES] = newChanges;
+    this[CHANGES_CACHE] = newChanges;
     // @tracked
     this[ERRORS] = newErrors;
+    this[ERRORS_CACHE] = newErrors;
 
     this._notifyVirtualProperties();
     return this;
@@ -720,6 +724,7 @@ export class BufferedChangeset implements IChangeset {
     let casted = take(changes, validKeys);
     // @tracked
     this[CHANGES] = casted;
+    this[CHANGES_CACHE] = casted;
     return this;
   }
 
@@ -947,7 +952,7 @@ export class BufferedChangeset implements IChangeset {
     // 'person.username'
     let [baseKey, ...remaining] = key.split('.');
     // not the cache because no setter
-    let changes: Changes = this[CHANGES];
+    let changes: Changes = this[CHANGES_CACHE];
     let content: Content = this[CONTENT];
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
       const changesValue = this.getDeep(changes, key);
@@ -989,8 +994,9 @@ export class BufferedChangeset implements IChangeset {
           const baseContent = this.safeGet(content, baseKey) || {};
           const subContent = this.getDeep(baseContent, remaining.join('.'));
           const subChanges = getSubObject(changes, key);
+          const subChangesCache = getSubObject(this[CHANGES_CACHE], key);
           // give back an object that can further retrieve changes and/or content
-          const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
+          const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject, subChangesCache);
           return tree.proxy;
         } else if (typeof result !== 'undefined') {
           return result;
@@ -1017,8 +1023,15 @@ export class BufferedChangeset implements IChangeset {
         subChanges = this.getDeep(this.setDeep(changes, key, {}), key);
       }
 
+      let subChangesCache = this.getDeep(this[CHANGES_CACHE], key);
+      if (!subChangesCache) {
+        // if no changes, we need to add the path to the existing changes (mutate)
+        // so further access to nested keys works
+        subChangesCache = this.getDeep(this.setDeep(this[CHANGES_CACHE], key, {}), key);
+      }
+
       // may still access a value on the changes or content objects
-      const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject);
+      const tree = new ObjectTreeNode(subChanges, subContent, this.getDeep, this.isObject, subChangesCache);
       return tree.proxy;
     } else if (Array.isArray(subContent)) {
       let subChanges = this.getDeep(changes, key);
