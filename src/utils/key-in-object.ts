@@ -6,7 +6,7 @@ export default function keyInObject(obj: any, key: string): boolean {
   }
 
   if (!keys.length) {
-    return !!obj[baseKey];
+    return baseKey in obj;
   }
 
   let value = obj[baseKey];
