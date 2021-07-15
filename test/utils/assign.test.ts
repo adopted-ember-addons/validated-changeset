@@ -40,4 +40,17 @@ describe('Unit | Utility | assign', function() {
 
     expect(result.nick).toBe('dood');
   });
+
+  it('it works with proxy objects', () => {
+    const foo = { name: 'foo' };
+    const obj = { name: 'bar' };
+    const bar = new Proxy(obj, {
+      get(target: any, prop: any) {
+        return target[prop];
+      }
+    });
+    const result = pureAssign(foo, bar);
+
+    expect(result).toEqual({ name: 'bar' });
+  });
 });

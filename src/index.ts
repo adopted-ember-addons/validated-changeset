@@ -107,8 +107,7 @@ export class BufferedChangeset implements IChangeset {
     this[ERRORS] = {};
     this[ERRORS_CACHE] = {};
     this[VALIDATOR] = validateFn;
-    // separate assign due Proxy object for options
-    this[OPTIONS] = pureAssign(defaultOptions, { changesetKeys: options.changesetKeys }, options);
+    this[OPTIONS] = pureAssign(defaultOptions, JSON.parse(JSON.stringify(options)));
     this[RUNNING_VALIDATIONS] = {};
   }
 
