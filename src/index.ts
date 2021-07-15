@@ -70,6 +70,7 @@ const CONTENT = '_content';
 const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
 const ERRORS = '_errors';
+const ERRORS_CACHE = '_errorsCache';
 const VALIDATOR = '_validator';
 const OPTIONS = '_options';
 const RUNNING_VALIDATIONS = '_runningValidations';
@@ -104,6 +105,7 @@ export class BufferedChangeset implements IChangeset {
     this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
     this[ERRORS] = {};
+    this[ERRORS_CACHE] = {};
     this[VALIDATOR] = validateFn;
     this[OPTIONS] = pureAssign(defaultOptions, options);
     this[RUNNING_VALIDATIONS] = {};
@@ -123,6 +125,7 @@ export class BufferedChangeset implements IChangeset {
   [PREVIOUS_CONTENT]: object | undefined;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
+  [ERRORS_CACHE]: Errors<any>;
   [VALIDATOR]: ValidatorAction;
   [OPTIONS]: Config;
   [RUNNING_VALIDATIONS]: {};
@@ -503,6 +506,7 @@ export class BufferedChangeset implements IChangeset {
     // Reset.
     this[CHANGES] = {};
     this[ERRORS] = {};
+    this[ERRORS_CACHE] = {};
     this._notifyVirtualProperties(keys);
 
     this.trigger(AFTER_ROLLBACK_EVENT);
@@ -525,12 +529,14 @@ export class BufferedChangeset implements IChangeset {
       this._notifyVirtualProperties([key]);
       // @tracked
       this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+      this[ERRORS_CACHE] = this[ERRORS];
       if (errorKeys.indexOf(key) > -1) {
         this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
       }
     } else {
       this._notifyVirtualProperties();
       this[ERRORS] = {};
+      this[ERRORS_CACHE] = this[ERRORS];
 
       // if on CHANGES hash, rollback those as well
       errorKeys.forEach(errKey => {
@@ -555,6 +561,7 @@ export class BufferedChangeset implements IChangeset {
     this[CHANGES] = this._deleteKey(CHANGES, key) as Changes;
     // @tracked
     this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+    this[ERRORS_CACHE] = this[ERRORS];
 
     return this;
   }
@@ -611,6 +618,7 @@ export class BufferedChangeset implements IChangeset {
     let errors: Errors<any> = this[ERRORS];
     // @tracked
     this[ERRORS] = this.setDeep(errors, key, newError, { safeSet: this.safeSet });
+    this[ERRORS_CACHE] = this[ERRORS];
 
     // Return passed-in `error`.
     return error;
@@ -637,6 +645,7 @@ export class BufferedChangeset implements IChangeset {
     let newError = new Err(value, validation);
     // @tracked
     this[ERRORS] = this.setDeep(errors, key as string, newError, { safeSet: this.safeSet });
+    this[ERRORS_CACHE] = this[ERRORS];
 
     return { value, validation };
   }
@@ -686,6 +695,7 @@ export class BufferedChangeset implements IChangeset {
     this[CHANGES] = newChanges;
     // @tracked
     this[ERRORS] = newErrors;
+    this[ERRORS_CACHE] = this[ERRORS];
 
     this._notifyVirtualProperties();
     return this;
@@ -792,7 +802,8 @@ export class BufferedChangeset implements IChangeset {
 
     // Happy path: remove `key` from error map.
     // @tracked
-    this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+    // ERRORS_CACHE to avoid backtracking Ember assertion.
+    this[ERRORS] = this._deleteKey(ERRORS_CACHE, key) as Errors<any>;
 
     // Error case.
     if (!isValid) {
