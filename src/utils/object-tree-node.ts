@@ -1,5 +1,5 @@
 import { ProxyHandler, Content } from '../types';
-import isObject from './is-object';
+import isObjectFn from './is-object';
 import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
@@ -22,7 +22,7 @@ const objectProxyHandler = {
       return getChangeValue(childValue);
     }
 
-    if (isObject(childValue)) {
+    if (isObjectFn(childValue)) {
       let childNode: ProxyHandler | undefined = node.children[key];
 
       if (childNode === undefined && node.content) {
@@ -87,7 +87,7 @@ class ObjectTreeNode implements ProxyHandler {
     changes: Record<string, any> = {},
     content: Content = {},
     public safeGet: Function = defaultSafeGet,
-    public isObject: Function = isObject
+    public isObject: Function = isObjectFn
   ) {
     this.changes = changes;
     this.content = content;
@@ -106,11 +106,11 @@ class ObjectTreeNode implements ProxyHandler {
   unwrap(): Record<string, any> {
     let changes = this.changes;
 
-    if (isObject(changes)) {
+    if (isObjectFn(changes)) {
       changes = normalizeObject(changes, this.isObject);
 
       const content = this.content;
-      if (isObject(content)) {
+      if (isObjectFn(content)) {
         changes = normalizeObject(changes, this.isObject);
         return { ...content, ...changes };
       } else if (Array.isArray(content)) {
