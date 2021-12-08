@@ -1,0 +1,11 @@
+export const CONTENT = '_content';
+export const PREVIOUS_CONTENT = '_previousContent';
+export const CHANGES = '_changes';
+export const ERRORS = '_errors';
+export const ERRORS_CACHE = '_errorsCache';
+export const VALIDATOR = '_validator';
+export const OPTIONS = '_options';
+export const RUNNING_VALIDATIONS = '_runningValidations';
+export const BEFORE_VALIDATION_EVENT = 'beforeValidation';
+export const AFTER_VALIDATION_EVENT = 'afterValidation';
+export const AFTER_ROLLBACK_EVENT = 'afterRollback';
