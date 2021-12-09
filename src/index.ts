@@ -16,13 +16,15 @@ import mergeDeep, { propertyIsUnsafe } from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep from './utils/get-deep';
 
-import { Config, ValidatorAction, ValidatorMap } from './types';
 import { BufferedChangeset } from './-private/changesets/buffered-changeset';
 import { ValidatedChangeset } from './-private/changesets/validated-changeset';
+import proxiedChangeset from './-private/changesets/proxied-changeset';
+import { Config, IPublicChangeset, ValidatorAction, ValidatorMap } from './types';
 
 export {
   BufferedChangeset,
   ValidatedChangeset,
+  proxiedChangeset,
   CHANGESET,
   Change,
   Err,
@@ -54,27 +56,27 @@ export function changeset(
   validateFn?: ValidatorAction,
   validationMap?: ValidatorMap | null | undefined,
   options?: Config
-): BufferedChangeset {
-  return new BufferedChangeset(obj, validateFn, validationMap, options);
+): IPublicChangeset {
+  return proxiedChangeset(obj, validateFn, validationMap, options);
 }
 
 export function Changeset(
-  obj: object,
-  validateFn?: ValidatorAction,
-  validationMap?: ValidatorMap | null | undefined,
-  options?: Config
-): BufferedChangeset {
-  const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
+  obj: object //,
+  // validateFn?: ValidatorAction,
+  // validationMap?: ValidatorMap | null | undefined,
+  // options?: Config
+): IPublicChangeset {
+  return proxiedChangeset(obj /*, validateFn, validationMap, options */);
 
-  return new Proxy(c, {
-    get(targetBuffer, key /*, receiver*/) {
-      const res = targetBuffer.get(key.toString());
-      return res;
-    },
+  // return new Proxy(c, {
+  //   get(targetBuffer, key /*, receiver*/) {
+  //     const res = targetBuffer.get(key.toString());
+  //     return res;
+  //   },
 
-    set(targetBuffer, key, value /*, receiver*/) {
-      targetBuffer.set(key.toString(), value);
-      return true;
-    }
-  });
+  //   set(targetBuffer, key, value /*, receiver*/) {
+  //     targetBuffer.set(key.toString(), value);
+  //     return true;
+  //   }
+  //});
 }

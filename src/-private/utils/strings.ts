@@ -9,3 +9,4 @@ export const RUNNING_VALIDATIONS = '_runningValidations';
 export const BEFORE_VALIDATION_EVENT = 'beforeValidation';
 export const AFTER_VALIDATION_EVENT = 'afterValidation';
 export const AFTER_ROLLBACK_EVENT = 'afterRollback';
+export const EXECUTE_EVENT = 'execute';

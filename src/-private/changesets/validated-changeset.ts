@@ -1,6 +1,5 @@
-import { BufferedChangeset, changeset } from '../..';
-import { T20 } from './buffered-changeset';
-import { ValidatorAction, ValidatorMap, Config } from '../../types';
+import { changeset } from '../..';
+import { ValidatorAction, ValidatorMap, Config, IPublicChangeset } from '../../types';
 
 export class ValidatedChangeset {
   /**
@@ -15,7 +14,7 @@ export class ValidatedChangeset {
     validationMap?: ValidatorMap | null | undefined,
     options?: Config
   ) {
-    const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
+    const c: IPublicChangeset = changeset(obj, validateFn, validationMap, options);
 
     return new Proxy(c, {
       get(targetBuffer, key /*, receiver*/) {
@@ -27,6 +26,6 @@ export class ValidatedChangeset {
         targetBuffer.set(key.toString(), value);
         return true;
       }
-    }) as T20;
+    }) as IPublicChangeset;
   }
 }

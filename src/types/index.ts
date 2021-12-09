@@ -109,17 +109,7 @@ export type Snapshot = {
 
 export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any } | null;
 
-export interface ChangesetDef {
-  __changeset__: string;
-
-  _content: object;
-  _changes: Changes;
-  _errors: Errors<any>;
-  _validator: ValidatorAction;
-  _options: Config;
-  _runningValidations: RunningValidations;
-  _bareChanges: { [s: string]: any };
-
+export interface PublicChangesetDef {
   changes: Record<string, any>[];
   errors: PublicErrors;
   error: object;
@@ -142,7 +132,8 @@ export interface ChangesetDef {
   safeGet: (obj: any, key: string) => any;
   prepare(preparedChangedFn: PrepareChangesFn): this;
   execute: () => this;
-  save: (options: object) => Promise<ChangesetDef | any>;
+  unexecute: () => this;
+  save: (options?: object) => Promise<ChangesetDef | any>;
   merge: (changeset: this) => this;
   rollback: () => this;
   rollbackInvalid: (key: string | void) => this;
@@ -156,6 +147,19 @@ export interface ChangesetDef {
   restore: (obj: Snapshot) => this;
   cast: (allowed: Array<string>) => this;
   isValidating: (key: string | void) => boolean;
+}
+
+export interface ChangesetDef extends PublicChangesetDef {
+  __changeset__: string;
+
+  _content: object;
+  _changes: Changes;
+  _errors: Errors<any>;
+  _validator: ValidatorAction;
+  _options: Config;
+  _runningValidations: RunningValidations;
+  _bareChanges: { [s: string]: any };
+
   _validate: (
     key: string,
     newValue: any,
@@ -169,3 +173,4 @@ export interface ChangesetDef {
 }
 
 export interface IChangeset extends ChangesetDef, IEvented {}
+export interface IPublicChangeset extends PublicChangesetDef, IEvented {}

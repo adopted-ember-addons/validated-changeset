@@ -35,7 +35,8 @@ import {
   AFTER_ROLLBACK_EVENT,
   BEFORE_VALIDATION_EVENT,
   AFTER_VALIDATION_EVENT,
-  ERRORS_CACHE
+  ERRORS_CACHE,
+  EXECUTE_EVENT
 } from '../utils/strings';
 import {
   IChangeset,
@@ -363,7 +364,7 @@ export class BufferedChangeset implements IChangeset {
     }
 
     // trigger any registered callbacks by same keyword as method name
-    this.trigger('execute');
+    this.trigger(EXECUTE_EVENT);
 
     this[CHANGES] = {};
     this[PREVIOUS_CONTENT] = oldContent;
