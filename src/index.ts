@@ -104,11 +104,21 @@ export class BufferedChangeset implements IChangeset {
     this[CONTENT] = obj;
     this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
-    this[ERRORS] = {};
-    this[ERRORS_CACHE] = {};
     this[VALIDATOR] = validateFn;
     this[OPTIONS] = pureAssign(defaultOptions, JSON.parse(JSON.stringify(options)));
     this[RUNNING_VALIDATIONS] = {};
+
+    let validatorMapKeys = this.validationMap ? keys(this.validationMap as object) : [];
+
+    if (this[OPTIONS].initValidate && validatorMapKeys.length > 0) {
+      let errors = this._collectErrors();
+
+      this[ERRORS] = errors;
+      this[ERRORS_CACHE] = errors;
+    } else {
+      this[ERRORS] = {};
+      this[ERRORS_CACHE] = {};
+    }
   }
 
   /**
@@ -817,17 +827,13 @@ export class BufferedChangeset implements IChangeset {
     validation: ValidationResult,
     { key, value }: NewProperty<T>
   ): T | IErr<T> | ValidationErr {
-    const isValid: boolean =
-      validation === true ||
-      (Array.isArray(validation) && validation.length === 1 && validation[0] === true);
-
     // Happy path: remove `key` from error map.
     // @tracked
     // ERRORS_CACHE to avoid backtracking Ember assertion.
     this[ERRORS] = this._deleteKey(ERRORS_CACHE, key) as Errors<any>;
 
     // Error case.
-    if (!isValid) {
+    if (!this._isValidResult(validation)) {
       return this.addError(key, { value, validation } as IErr<T>);
     }
 
@@ -954,6 +960,31 @@ export class BufferedChangeset implements IChangeset {
     }
 
     return obj;
+  }
+
+  _collectErrors(): Errors<any> {
+    let validationKeys = keys(flattenValidations(this.validationMap as object));
+
+    return validationKeys.reduce((acc: Errors<any>, key: string) => {
+      let content: Content = this[CONTENT];
+      let value: any = this.getDeep(content, key);
+      let resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
+
+      let result: ValidationResult = this._validate(key, resolvedValue, null) as ValidationResult;
+
+      if (!this._isValidResult(result)) {
+        let errorResult = result as ValidationErr;
+        let validationError = new Err(value, errorResult);
+
+        this.setDeep(acc, key, validationError, { safeSet: this.safeSet });
+      }
+
+      return acc;
+    }, {});
+  }
+
+  _isValidResult(result: ValidationResult): boolean {
+    return result === true || (Array.isArray(result) && result.length === 1 && result[0] === true);
   }
 
   get(key: string): any {
