@@ -7,8 +7,8 @@ export interface Change {
 
 export default interface IChangesetProxyHandler {
   changes: Record<string, any>[];
-  // errors: PublicErrors;
-  // error: object;
+  errors: PublicErrors;
+  error: object;
   change: object;
   data: object;
 
@@ -18,11 +18,14 @@ export default interface IChangesetProxyHandler {
   isValid: boolean;
   pendingData: { [index: string]: any };
   execute(): this;
-  unexecute(): this;
-  unwrap(): this; // deprecated
+  isValidating: (key: string | void) => boolean;
   prepare(preparedChangedFn: PrepareChangesFn): this;
   save: (options?: object) => Promise<this | any>;
   rollback(): void;
+  rollbackInvalid: (key: string | void) => this;
+  rollbackProperty: (key: string) => this;
+  unexecute(): this;
+  unwrap(): this; // deprecated
   validate(): Promise<void>;
   // backwards compatible with old ember-changeset
   get(target: Content, key: string, proxy?: {}): any;

@@ -1,11 +1,12 @@
 import { bind } from 'bind-decorator';
-import { Err, getDeep, isObject, isPromise, setDeep } from '../../..';
+import { Err, getDeep, isObject, isPromise, pureAssign, setDeep } from '../../..';
 import {
   Content,
   Errors,
   IErr,
   NewProperty,
   PrepareChangesFn,
+  PublicErrors,
   RunningValidations,
   ValidationErr,
   ValidationResult,
@@ -39,19 +40,34 @@ interface EventedCallback {
 
 export default class ChangesetObjectProxyHandler implements IChangesetProxyHandler {
   constructor(source: Content, options: ProxyOptions) {
-    this.options = options;
+    this.__options = options || {};
     this.__data = source;
-    this.__changesetKeyFilters = options?.changesetKeys ?? [];
+    let keyFilters = options?.changesetKeys;
+    if (keyFilters) {
+      let localKeyFilters = []; // only the ones where our property is the leaf
+      for (let filter of keyFilters) {
+        let [localKey, subkey] = splitKey(filter);
+        if (!subkey) {
+          // it's a leaf
+          localKeyFilters.push(localKey);
+        }
+      }
+      this.__localChangesetKeyFilters = localKeyFilters;
+    }
   }
 
-  private publicApiMethods = new Map<string, Function>([
+  private publicApiMethods: Map<string, Function> = new Map<string, Function>([
+    ['addError', this.addError],
     ['cast', this.cast],
     ['execute', this.execute],
     ['get', this.getValue],
+    ['isValidating', this.isValidating],
     ['on', this.on],
     ['off', this.off],
     ['prepare', this.prepare],
     ['rollback', this.rollback],
+    ['rollbackInvalid', this.rollbackInvalid],
+    ['rollbackProperty', this.rollbackProperty],
     ['save', this.save],
     ['set', this.setValue],
     ['unexecute', this.unexecute],
@@ -59,11 +75,14 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     ['validate', this.validate]
   ]);
 
-  private publicApiProperties = new Map<string, Function>([
+  private publicApiProperties = new Map<string | symbol, Function>([
+    [Symbol.toStringTag, () => this[Symbol.toStringTag]],
     ['__changeset__', () => CHANGESET],
     ['change', () => this.change],
     ['changes', () => this.changes],
     ['data', () => this.data],
+    ['error', () => this.error],
+    ['errors', () => this.errors],
     ['isChangeset', () => true],
     ['isDirty', () => this.isDirty],
     ['isInvalid', () => !this.isValid],
@@ -73,13 +92,21 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   ]);
 
   public get(_target: {}, key: string, proxy?: {}): any {
-    this.__outerProxy = proxy;
-    if (this.publicApiMethods.has(key)) {
-      return this.publicApiMethods.get(key);
+    this.__outerProxy = proxy; // only needed for deprecated _content key
+
+    //key may be dotted
+    let [localkey, subkey] = splitKey(key);
+
+    if (this.publicApiMethods.has(localkey)) {
+      return this.publicApiMethods.get(localkey);
     }
-    if (this.publicApiProperties.has(key)) {
-      let getter = this.publicApiProperties.get(key) as Function;
-      return getter();
+    if (this.publicApiProperties.has(localkey)) {
+      let getter = this.publicApiProperties.get(localkey) as Function;
+      let result = getter();
+      if (subkey) {
+        result = getDeep(result, subkey);
+      }
+      return result;
     }
     // otherwise it's to be found on the wrapped object
     return this.getValue(key);
@@ -93,6 +120,21 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
   public get data(): Content {
     return this.__data;
+  }
+
+  public get error(): object {
+    return this.__errors;
+  }
+
+  public get errors(): PublicErrors {
+    return Object.keys(this.__errors).map(key => {
+      let entry = this.__errors[key];
+      return {
+        key,
+        value: entry.value,
+        validation: entry.validation
+      };
+    });
   }
 
   public get isDirty(): boolean {
@@ -130,8 +172,10 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   public get isValid(): boolean {
-    // TODO: validate this level
-
+    // validate this level
+    if (Object.keys(this.__errors).length > 0) {
+      return false;
+    }
     // now look at all the nested proxies
     for (let proxy of this.__nestedProxies.values()) {
       if (!proxy.isValid) {
@@ -148,10 +192,17 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
   @bind
   public getValue(key: string): any {
+    // nested keys are separated by dots
+    let [localKey, subkey] = splitKey(key as string);
+
     // to be backwards compatible we support getting properties by the get function
-    if (this.publicApiProperties.has(key)) {
-      let getter = this.publicApiProperties.get(key) as Function;
-      return getter();
+    if (this.publicApiProperties.has(localKey)) {
+      let getter = this.publicApiProperties.get(localKey) as Function;
+      let value = getter();
+      if (subkey) {
+        return getDeep(value, subkey);
+      }
+      return value;
     }
     // it wasn't in there so look in our contents
 
@@ -159,9 +210,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       // backwards compatibility only
       return this.__outerProxy;
     }
-    // nested keys are separated by dots
-    let [localKey, subkey] = splitKey(key as string);
-
     // is it an existing proxy?
     if (this.__nestedProxies.has(localKey)) {
       let proxy = this.__nestedProxies.get(localKey);
@@ -177,6 +225,9 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
         // we know it's not undefined so we can safely cast it
         let value = changes.get(localKey);
         if (value !== ObjectReplaced) {
+          if (subkey) {
+            return getDeep(value, subkey);
+          }
           return value;
         }
       }
@@ -184,7 +235,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     // drop back to the internal object property
     // or a proxy of it if it's an object
 
-    let value = this.__data[localKey];
+    let value = Reflect.get(this.__data, localKey);
     if (requiresProxying(value)) {
       // we know that this key has not already been proxied
       let proxy = this.addProxy(localKey);
@@ -196,22 +247,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return value;
   }
 
-  private addProxy(key: string, value?: {}): any {
-    // get sends just the key
-    // set sends the key and the new value
-    if (value === undefined) {
-      // use the original
-      value = this.__data[key];
-    }
-    if (value === undefined) {
-      // missing on original but added in the changeset
-      value = {};
-    }
-    let proxy = new Proxy(value, handlerFor(value, this.options));
-    this.__nestedProxies.set(key, proxy);
-    return proxy;
-  }
-
   @bind
   public setValue(key: string, value: any, _validate = true): boolean {
     if (DEBUG) {
@@ -219,6 +254,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
         throw `changeset.${key} is a readonly property of the changeset`;
       }
     }
+
     // nested keys are separated by dots
     let [localKey, subkey] = splitKey(key as string);
 
@@ -281,46 +317,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return this;
   }
 
-  private markChange(localKey: string, value: any) {
-    const oldValue = this.__data[localKey];
-    const unchanged = isUnchanged(value, oldValue);
-    let changes = this.__changes;
-    if (changes.has(localKey)) {
-      // we have a pending change
-      // modify it or delete
-      if (unchanged) {
-        // we're back to the original value
-        // so delete the change
-        changes.delete(localKey);
-      } else {
-        // we know the key exists so the cast is safe
-        changes.set(localKey, value);
-      }
-    } else if (!unchanged) {
-      // create a new pending change
-      changes.set(localKey, value);
-    }
-  }
-
-  private isKeyFilteredOut(key: string) {
-    return this.__changesetKeyFilters.length > 0 && !this.__changesetKeyFilters.includes(key);
-  }
-
-  private notifierForEvent(eventName: string): Notifier<any> {
-    let notifiers = this.__eventedNotifiers;
-    if (notifiers === undefined) {
-      notifiers = this.__eventedNotifiers = new Map<string, Notifier<any>>();
-    }
-
-    if (!notifiers.has(eventName)) {
-      notifiers.set(eventName, new Notifier());
-    }
-
-    let notifier = notifiers.get(eventName) as Notifier<any>;
-
-    return notifier;
-  }
-
   @bind
   on(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
@@ -331,13 +327,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   off(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.removeListener(callback);
-  }
-
-  private trigger(eventName: string, ...args: any[]): void {
-    const notifier = this.notifierForEvent(eventName);
-    if (notifier) {
-      notifier.trigger(...args);
-    }
   }
 
   @bind
@@ -405,7 +394,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       let changes = [...this.__changes.entries()];
       for (let [key, newValue] of changes) {
         // grab the old value for undo
-        let oldValue = this.__data[key];
+        let oldValue = Reflect.get(this.__data, key);
         if (oldValue === undefined) {
           oldValue = DeleteOnUndo;
         }
@@ -414,16 +403,16 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
         if (newValue === ObjectReplaced) {
           // apply the entire proxy now
           // and changes in the next phase below
-          this.__data[key] = this.__nestedProxies.get(key).data;
+          Reflect.set(this.__data, key, this.__nestedProxies.get(key).data);
         } else {
-          this.__data[key] = newValue;
+          Reflect.set(this.__data, key, newValue);
         }
       }
     }
     // now apply the data from the nested proxies
     for (let [key, proxy] of this.__nestedProxies.entries()) {
-      if (this.__data[key] == undefined) {
-        this.__data[key] = proxy.data;
+      if (!Reflect.has(this.__data, key)) {
+        Reflect.set(this.__data, key, proxy.data);
         this.__undoState.set(key, DeleteOnUndo);
       }
       proxy.execute();
@@ -433,6 +422,71 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     // trigger any registered callbacks by same keyword as method name
     this.trigger(EXECUTE_EVENT);
 
+    return this;
+  }
+
+  @bind
+  public isValidating(key: string | void): boolean {
+    let runningValidations: RunningValidations = this._runningValidations;
+    let ks: string[] = Object.keys(runningValidations);
+    if (key) {
+      return ks.includes(key);
+    }
+    return ks.length > 0;
+  }
+
+  @bind
+  public rollback(): void {
+    // rollback from the bottom up to the previous execute
+
+    // roll back the proxies
+    for (let proxy of this.__nestedProxies.values()) {
+      proxy.rollback();
+    }
+
+    this.clearPending();
+    this.trigger(AFTER_ROLLBACK_EVENT);
+  }
+
+  @bind
+  rollbackInvalid(key: string | void): this {
+    if (!key) {
+      // clone the array so we can edit the object
+      // while iterating the keys
+      let keys = [...Object.keys(this.__errors)];
+      for (let key of keys) {
+        this.rollbackProperty(key);
+      }
+    } else if (this.__errors[key]) {
+      this.rollbackProperty(key);
+    }
+    return this;
+  }
+
+  @bind
+  public rollbackProperty(key: string): this {
+    // nested keys are separated by dots
+    let [localKey, subkey] = splitKey(key as string);
+
+    if (subkey) {
+      // it's meant for a child node
+      this.__nestedProxies.get(localKey)?.rollbackProperty(subkey);
+    } else {
+      this.__changes.delete(localKey);
+    }
+    delete this.__errors[key];
+    delete this.__errorsCache[key];
+    this.trigger(AFTER_ROLLBACK_EVENT);
+    return this;
+  }
+
+  @bind
+  public async save(options?: object): Promise<this | any> {
+    this.execute();
+    if (typeof this.__data.save === 'function') {
+      await this.__data.save(options);
+    }
+    this.clearPending();
     return this;
   }
 
@@ -457,9 +511,9 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       let oldStates = [...this.__undoState.entries()];
       for (let [key, value] of oldStates) {
         if (value === DeleteOnUndo) {
-          delete this.__data[key];
+          Reflect.deleteProperty(this.__data, key);
         } else {
-          this.__data[key] = value;
+          Reflect.set(this.__data, key, value);
         }
       }
     }
@@ -468,35 +522,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return this;
   }
 
-  @bind
-  public async save(options?: object): Promise<this | any> {
-    this.execute();
-    if (typeof this.__data.save === 'function') {
-      await this.__data.save(options);
-    }
-    this.clearPending();
-    return this;
-  }
-
-  private clearPending() {
-    this.__nestedProxies.clear();
-    this.__changes.clear();
-  }
-
-  @bind
-  public rollback(): void {
-    // rollback from the bottom up to the previous execute
-
-    // roll back the proxies
-    for (let proxy of this.__nestedProxies.values()) {
-      proxy.rollback();
-    }
-
-    this.clearPending();
-    this.trigger(AFTER_ROLLBACK_EVENT);
-  }
-
-  @bind
   /**
    * Validates the changeset immediately against the validationMap passed in.
    * If no key is passed into this method, it will validate all fields on the
@@ -505,9 +530,11 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
    *
    * @method validate
    */
-  async validate(...validationKeys: string[]): Promise<any> {
+  @bind
+  public async validate(...validationKeys: string[]): Promise<any> {
+    return;
     // only called on the top level node
-    let validationMap = this.options.validationMap;
+    let validationMap = this.__options.validationMap;
     if (Object.keys(validationMap as object).length === 0 && !validationKeys.length) {
       return Promise.resolve(null);
     }
@@ -524,6 +551,118 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     });
 
     return Promise.all(maybePromise);
+  }
+
+  public get change(): { [index: string]: any } {
+    // property changes first
+    let result: { [index: string]: any } = {};
+    let changes = [...this.__changes.entries()];
+    for (let [key, value] of changes) {
+      if (value === ObjectReplaced) {
+        result[key] = Object.assign({}, this.__nestedProxies.get(key).data);
+      } else {
+        result[key as string] = value;
+      }
+    }
+    // now apply the __nestedProxies
+    for (let [key, proxy] of this.__nestedProxies.entries()) {
+      let thisChange = proxy.change;
+      if (Object.keys(thisChange).length > 0) {
+        result[key] = Object.assign(result[key] || {}, thisChange);
+      }
+    }
+    return result;
+  }
+
+  public get changes(): Change[] {
+    let replacements: string[] = [];
+    let allChanges = [...this.__changes.entries()].map(([key, value]) => {
+      if (value === ObjectReplaced) {
+        replacements.push(key);
+        value = this.__nestedProxies.get(key).pendingData;
+      }
+      return {
+        key,
+        value
+      };
+    });
+    // now add the proxy changes with the nested key
+    // except for the ones that were replaced
+    for (let [key, proxy] of this.__nestedProxies.entries()) {
+      if (replacements.includes(key)) {
+        continue;
+      }
+      let proxyChanges = proxy.changes;
+      for (let change of proxyChanges) {
+        allChanges.push({
+          key: `${key}.${change.key}`,
+          value: change.value
+        });
+      }
+    }
+    return allChanges;
+  }
+
+  /**
+   * Takes resolved validation and adds an error or simply returns the value
+   *
+   * @method _handleValidation
+   * @private
+   */
+  private _handleValidation<T>(
+    validation: ValidationResult,
+    { key, value }: NewProperty<T>
+  ): T | IErr<T> | ValidationErr {
+    const isValid: boolean =
+      validation === true ||
+      (Array.isArray(validation) && validation.length === 1 && validation[0] === true);
+
+    // Happy path: remove `key` from error map.
+    // @tracked
+    // ERRORS_CACHE to avoid backtracking Ember assertion.
+
+    //    this.__errors = this._deleteKey(this.__errorsCache, key) as Map<string, IErr<any>>;
+
+    // Error case.
+    if (!isValid) {
+      return this.addError(key, { value, validation } as IErr<T>);
+    }
+
+    return value;
+  }
+
+  /**
+   * runs the validator with the key and value
+   *
+   * @method _validate
+   * @private
+   */
+  private _validate(
+    key: string,
+    newValue: unknown,
+    oldValue: unknown
+  ): ValidationResult | Promise<ValidationResult> {
+    let validator: ValidatorAction = this.__options.validateFn;
+    let content: Content = this.__data;
+
+    if (typeof validator === 'function') {
+      let validationResult = validator({
+        key,
+        newValue,
+        oldValue,
+        changes: this.change,
+        content
+      });
+
+      if (validationResult === undefined) {
+        // no validator function found for key
+        return true;
+      }
+
+      return validationResult;
+    }
+
+    return true;
   }
 
   /**
@@ -575,104 +714,12 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   /**
-   * runs the validator with the key and value
-   *
-   * @method _validate
-   * @private
-   */
-  _validate(
-    key: string,
-    newValue: unknown,
-    oldValue: unknown
-  ): ValidationResult | Promise<ValidationResult> {
-    let validator: ValidatorAction = this.options.validateFn;
-    let content: Content = this.__data;
-
-    if (typeof validator === 'function') {
-      let validationResult = validator({
-        key,
-        newValue,
-        oldValue,
-        changes: this.change,
-        content
-      });
-
-      if (validationResult === undefined) {
-        // no validator function found for key
-        return true;
-      }
-
-      return validationResult;
-    }
-
-    return true;
-  }
-
-  /**
-   * Increment or decrement the number of running validations for a
-   * given key.
-   */
-  _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
-    let running: RunningValidations = this._runningValidations;
-    setDeep(running, key, promise);
-  }
-
-  public get change(): { [index: string]: any } {
-    // property changes first
-    let result: { [index: string]: any } = {};
-    let changes = [...this.__changes.entries()];
-    for (let [key, value] of changes) {
-      if (value === ObjectReplaced) {
-        result[key] = Object.assign({}, this.__nestedProxies.get(key));
-      } else {
-        result[key as string] = value;
-      }
-    }
-    // now apply the __nestedProxies
-    for (let [key, proxy] of this.__nestedProxies.entries()) {
-      let thisChange = proxy.change;
-      if (Object.keys(thisChange).length > 0) {
-        result[key] = Object.assign(result[key] || {}, thisChange);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Takes resolved validation and adds an error or simply returns the value
-   *
-   * @method _handleValidation
-   * @private
-   */
-  _handleValidation<T>(
-    validation: ValidationResult,
-    { key, value }: NewProperty<T>
-  ): T | IErr<T> | ValidationErr {
-    const isValid: boolean =
-      validation === true ||
-      (Array.isArray(validation) && validation.length === 1 && validation[0] === true);
-
-    // Happy path: remove `key` from error map.
-    // @tracked
-    // ERRORS_CACHE to avoid backtracking Ember assertion.
-
-    //    this.__errors = this._deleteKey(this.__errorsCache, key) as Map<string, IErr<any>>;
-
-    // Error case.
-    if (!isValid) {
-      return this.addError(key, { value, validation } as IErr<T>);
-    }
-
-    return value;
-  }
-
-  /**
    * Manually add an error to the changeset. If there is an existing
    * error or change for `key`, it will be overwritten.
    *
    * @method addError
    */
-  addError<T>(key: string, error: IErr<T> | ValidationErr) {
+  private addError<T>(key: string, error: IErr<T> | ValidationErr) {
     // Construct new `Err` instance.
     let newError;
 
@@ -697,6 +744,51 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return error;
   }
 
+  /**
+   * Increment or decrement the number of running validations for a
+   * given key.
+   */
+  private _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
+    let running: RunningValidations = this._runningValidations;
+    setDeep(running, key, promise);
+  }
+
+  private clearPending() {
+    this.__nestedProxies.clear();
+    this.__changes.clear();
+    this.__errors = {};
+    this.__errorsCache = {};
+  }
+
+  private markChange(localKey: string, value: any) {
+    const oldValue = Reflect.get(this.__data, localKey);
+    const unchanged = isUnchanged(value, oldValue);
+    let changes = this.__changes;
+    if (changes.has(localKey)) {
+      // we have a pending change
+      // modify it or delete
+      if (unchanged) {
+        // we're back to the original value
+        // so delete the change
+        changes.delete(localKey);
+      } else {
+        // we know the key exists so the cast is safe
+        changes.set(localKey, value);
+      }
+    } else if (!unchanged) {
+      // create a new pending change
+      changes.set(localKey, value);
+    }
+  }
+
+  /**
+   * String representation for the changeset.
+   */
+  get [Symbol.toStringTag](): string {
+    let normalisedContent: object = pureAssign(this.__data, {});
+    return `changeset:${normalisedContent.toString()}`;
+  }
+
   private get localChange(): { [index: string]: any } {
     // only the changes at this level and not the nested content
     let changes = [...this.__changes.entries()];
@@ -712,41 +804,81 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return result;
   }
 
-  public get changes(): Change[] {
-    let replacements: string[] = [];
-    let allChanges = [...this.__changes.entries()].map(([key, value]) => {
-      if (value === ObjectReplaced) {
-        replacements.push(key);
-        value = this.__nestedProxies.get(key).pendingData;
-      }
-      return {
-        key,
-        value
-      };
-    });
-    // now add the proxy changes with the nested key
-    // except for the ones that were replaced
-    for (let [key, proxy] of this.__nestedProxies.entries()) {
-      if (replacements.includes(key)) {
-        continue;
-      }
-      let proxyChanges = proxy.changes;
-      for (let change of proxyChanges) {
-        allChanges.push({
-          key: `${key}.${change.key}`,
-          value: change.value
-        });
-      }
+  private addProxy(key: string, value?: {}): any {
+    // get sends just the key
+    // set sends the key and the new value
+    if (value === undefined) {
+      // use the original
+      value = Reflect.get(this.__data, key);
     }
-    return allChanges;
+    if (value === undefined) {
+      // missing on original but added in the changeset
+      value = {};
+    }
+    let options = this.__options;
+    if (options.changesetKeys) {
+      // filter the changeset keys for the child
+      let filteredKeys: any[] | undefined = [];
+      let foundLeafNode = false;
+      for (let changesetKey of options.changesetKeys) {
+        let [localKey, subkey] = splitKey(changesetKey);
+        if (localKey === key) {
+          if (subkey) {
+            filteredKeys.push(subkey);
+          } else {
+            // this is the leaf node of the changeset key
+            // so allow all changes below here
+            foundLeafNode = true;
+          }
+        }
+      }
+      if (foundLeafNode && filteredKeys.length == 0) {
+        filteredKeys = undefined;
+      }
+      // make a copy
+      options = Object.assign({}, options);
+      options.changesetKeys = filteredKeys;
+    }
+    let proxy = new Proxy(value, handlerFor(value, options));
+    this.__nestedProxies.set(key, proxy);
+    return proxy;
   }
 
-  private options: ProxyOptions;
+  private isKeyFilteredOut(key: string) {
+    return (
+      this.__localChangesetKeyFilters !== undefined &&
+      !this.__localChangesetKeyFilters.includes(key)
+    );
+  }
+
+  private trigger(eventName: string, ...args: any[]): void {
+    const notifier = this.notifierForEvent(eventName);
+    if (notifier) {
+      notifier.trigger(...args);
+    }
+  }
+
+  private notifierForEvent(eventName: string): Notifier<any> {
+    let notifiers = this.__eventedNotifiers;
+    if (notifiers === undefined) {
+      notifiers = this.__eventedNotifiers = new Map<string, Notifier<any>>();
+    }
+
+    if (!notifiers.has(eventName)) {
+      notifiers.set(eventName, new Notifier());
+    }
+
+    let notifier = notifiers.get(eventName) as Notifier<any>;
+
+    return notifier;
+  }
+
+  private __options: ProxyOptions;
   private _runningValidations: RunningValidations = {};
-  private __changesetKeyFilters: string[];
+  private __localChangesetKeyFilters?: string[]; // only where our property is the leaf
   private __data: Content;
-  private __errors!: Errors<any>;
-  private __errorsCache!: Errors<any>;
+  private __errors: Errors<any> = {};
+  private __errorsCache: Errors<any> = {};
   private __undoState: Map<string, any> | undefined;
   private __undoStateProxies: Map<string, any> | undefined;
   private __nestedProxies: Map<string, any> = new Map<string, any>();

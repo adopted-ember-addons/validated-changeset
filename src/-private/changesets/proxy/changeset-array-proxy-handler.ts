@@ -1,10 +1,18 @@
 import { bind } from 'bind-decorator';
-import { IChangeset, PrepareChangesFn } from '../../../types';
+import { Notifier } from '../..';
+import {
+  Errors,
+  IChangeset,
+  PrepareChangesFn,
+  PublicErrors,
+  RunningValidations
+} from '../../../types';
 import { CHANGESET } from '../../../utils/is-changeset';
 import { DEBUG } from '../../utils/consts';
 import handlerFor from '../../utils/handler-for';
 import isUnchanged from '../../utils/is-unchanged';
 import requiresProxying from '../../utils/requires-proxying';
+import { AFTER_ROLLBACK_EVENT } from '../../utils/strings';
 import IChangesetProxyHandler from './changeset-proxy-handler-interface';
 import ProxyOptions from './proxy-options';
 import { DeleteOnUndo, ObjectReplaced, ProxyArrayValueKey } from './proxy-symbols';
@@ -12,6 +20,10 @@ import { DeleteOnUndo, ObjectReplaced, ProxyArrayValueKey } from './proxy-symbol
 type Input = any[];
 
 const NoValidation = false;
+
+interface EventedCallback {
+  (args: any[]): void;
+}
 
 export default class ChangesetArrayProxyHandler implements IChangesetProxyHandler {
   constructor(source: any[], options: ProxyOptions) {
@@ -118,6 +130,46 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       ProxyArrayValueKey: this.readArray
     };
     return result;
+  }
+
+  public get error(): object {
+    return this.__errors;
+  }
+
+  public get errors(): PublicErrors {
+    return Object.keys(this.__errors).map(key => {
+      let entry = this.__errors[key];
+      return {
+        key,
+        value: entry.value,
+        validation: entry.validation
+      };
+    });
+  }
+
+  @bind
+  public isValidating(key: string | void): boolean {
+    let runningValidations: RunningValidations = this._runningValidations;
+    let ks: string[] = Object.keys(runningValidations);
+    if (key) {
+      return ks.includes(key);
+    }
+    return ks.length > 0;
+  }
+
+  @bind
+  rollbackInvalid(key: string | void): this {
+    if (!key) {
+      // clone the array so we can edit the object
+      // while iterating the keys
+      let keys = [...Object.keys(this.__errors)];
+      for (let key of keys) {
+        this.rollbackProperty(key);
+      }
+    } else if (this.__errors[key]) {
+      this.rollbackProperty(key);
+    }
+    return this;
   }
 
   @bind
@@ -257,6 +309,18 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   }
 
   @bind
+  on(eventName: string, callback: EventedCallback) {
+    const notifier = this.notifierForEvent(eventName);
+    return notifier.addListener(callback);
+  }
+
+  @bind
+  off(eventName: string, callback: EventedCallback) {
+    const notifier = this.notifierForEvent(eventName);
+    return notifier.removeListener(callback);
+  }
+
+  @bind
   public unwrap(): this {
     // deprecated
     return this;
@@ -305,6 +369,13 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   }
 
   @bind
+  public rollbackProperty(_key: string): this {
+    // doesn't mean anything for arrays
+    this.trigger(AFTER_ROLLBACK_EVENT);
+    return this;
+  }
+
+  @bind
   public rollback(): void {
     // apply the undo state
     if (this.__undoState) {
@@ -318,7 +389,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   }
 
   @bind
-  public async validate(): Promise<void> {}
+  public async validate(..._validationKeys: string[]): Promise<void> {}
 
   public get change(): { [index: string]: any } | any[] {
     if (this.__proxyArray !== undefined) {
@@ -347,10 +418,36 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     return [];
   }
 
+  private trigger(eventName: string, ...args: any[]): void {
+    const notifier = this.notifierForEvent(eventName);
+    if (notifier) {
+      notifier.trigger(...args);
+    }
+  }
+
+  private notifierForEvent(eventName: string): Notifier<any> {
+    let notifiers = this.__eventedNotifiers;
+    if (notifiers === undefined) {
+      notifiers = this.__eventedNotifiers = new Map<string, Notifier<any>>();
+    }
+
+    if (!notifiers.has(eventName)) {
+      notifiers.set(eventName, new Notifier());
+    }
+
+    let notifier = notifiers.get(eventName) as Notifier<any>;
+
+    return notifier;
+  }
+
   private options: ProxyOptions;
   private __data: any[];
+  private __errors: Errors<any> = {};
+  private __errorsCache: Errors<any> = {};
   private __proxyArray?: any[];
+  private _runningValidations: RunningValidations = {};
   private __undoState?: any[];
   private __changes!: Map<number, any>;
   private __nestedProxies: Map<string | number, IChangeset>;
+  private __eventedNotifiers?: Map<string, Notifier<any>>;
 }

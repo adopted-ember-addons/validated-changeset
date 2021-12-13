@@ -112,8 +112,8 @@ export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any
 export interface PublicChangesetDef {
   changes: Record<string, any>[];
   errors: PublicErrors;
-  error: object;
-  change: object;
+  error: Record<string, any>;
+  change: Record<string, any>;
   data: object;
 
   isValid: boolean;
@@ -138,15 +138,14 @@ export interface PublicChangesetDef {
   rollback: () => this;
   rollbackInvalid: (key: string | void) => this;
   rollbackProperty: (key: string) => this;
-  validate: (
-    key: string
-  ) => Promise<null> | Promise<any | IErr<any>> | Promise<Array<any | IErr<any>>>;
+  validate: (...keys: string[]) => Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
   addError: <T>(key: string, error: IErr<T> | ValidationErr) => IErr<T> | ValidationErr;
-  pushErrors: (key: string, newErrors: string[]) => IErr<any>;
+  pushErrors: (key: string, ...newErrors: string[]) => IErr<any>;
   snapshot: () => Snapshot;
   restore: (obj: Snapshot) => this;
-  cast: (allowed: Array<string>) => this;
+  cast: (allowed?: Array<string>) => this;
   isValidating: (key: string | void) => boolean;
+  [index: string]: any;
 }
 
 export interface ChangesetDef extends PublicChangesetDef {

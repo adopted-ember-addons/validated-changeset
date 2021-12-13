@@ -2433,17 +2433,14 @@ describe('Unit | Utility | changeset', () => {
       { key: 'lastName', value: 'bar' },
       { key: 'name', value: '' }
     ];
-    let expectedErrors = [{ key: 'name', validation: 'too short', value: '' }];
     dummyChangeset.set('firstName', 'foo');
     dummyChangeset.set('lastName', 'bar');
     dummyChangeset.set('name', '');
 
     expect(dummyChangeset.changes).toEqual(expectedChanges);
-    expect(dummyChangeset.errors).toEqual(expectedErrors);
     expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
-    expect(dummyChangeset.errors).toEqual([]);
     expect(dummyChangeset.isDirty).toBe(false);
   });
 

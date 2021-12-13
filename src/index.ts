@@ -61,12 +61,12 @@ export function changeset(
 }
 
 export function Changeset(
-  obj: object //,
-  // validateFn?: ValidatorAction,
-  // validationMap?: ValidatorMap | null | undefined,
-  // options?: Config
+  obj: object,
+  validateFn?: ValidatorAction,
+  validationMap?: ValidatorMap | null | undefined,
+  options?: Config
 ): IPublicChangeset {
-  return proxiedChangeset(obj /*, validateFn, validationMap, options */);
+  return proxiedChangeset(obj, validateFn, validationMap, options);
 
   // return new Proxy(c, {
   //   get(targetBuffer, key /*, receiver*/) {
