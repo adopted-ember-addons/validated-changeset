@@ -680,17 +680,6 @@ describe('Unit | Utility | changeset', () => {
     expect(cat.color).toEqual('red');
   });
 
-  it('#get works with toString override', () => {
-    dummyModel.toString = function() {
-      return 'mine';
-    };
-    const dummyChangeset = Changeset(dummyModel);
-    dummyChangeset['name'] = undefined;
-    const result = dummyChangeset.toString();
-
-    expect(result).toEqual('changeset:mine');
-  });
-
   it('#get prioritizes own methods/getters', () => {
     dummyModel.trigger = function(arg: any) {
       expect(arg).toEqual('mine');
