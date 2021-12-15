@@ -109,8 +109,6 @@ describe('Unit | Utility | changeset', () => {
    */
 
   it('content can be an empty hash', () => {
-    expect.assertions(1);
-
     const emptyObject = {};
     const dummyChangeset = Changeset(emptyObject, lookupValidator(dummyValidations));
 
