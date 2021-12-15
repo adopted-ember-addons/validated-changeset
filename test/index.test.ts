@@ -147,7 +147,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('change.name')).toEqual('a');
   });
 
-  it('can get nested values in the error object', function () {
+  it('can get nested values in the error object', function() {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedResult = { validation: 'too short', value: 'a' };
     dummyChangeset.set('name', 'a');
@@ -155,7 +155,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('error.name')).toEqual(expectedResult);
   });
 
-  it('can can work with an array of nested validations', function () {
+  it('can can work with an array of nested validations', function() {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedResult = { validation: ['too short', 'not an email'], value: 'a' };
     dummyChangeset.set('email', 'a');
@@ -808,6 +808,20 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.execute();
 
     expect(dummyModel.name.short).toBe('foo');
+  });
+
+  it('added properties are iterable', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['extraProperty'] = 'hello';
+    let keys = Object.keys(dummyChangeset);
+    expect(keys.includes('extraProperty')).toBeTruthy();
+  });
+
+  it('added objects are iterable', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['extraProperty'] = { greeting: 'hello' };
+    let keys = Object.keys(dummyChangeset);
+    expect(keys.includes('extraProperty')).toBeTruthy();
   });
 
   it('#set overrides', () => {
@@ -3408,7 +3422,7 @@ describe('Unit | Utility | changeset', () => {
    * Behavior.
    */
 
-  it('can set nested keys after validate', async function (done) {
+  it('can set nested keys after validate', async function(done) {
     expect.assertions(0);
 
     dummyModel.org = {
@@ -3422,7 +3436,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   async function delay(duration: number) {
-    return new Promise(function (resolve: Function) {
+    return new Promise(function(resolve: Function) {
       setTimeout(resolve, duration);
     });
   }

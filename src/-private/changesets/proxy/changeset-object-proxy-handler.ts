@@ -1,5 +1,5 @@
 import { bind } from 'bind-decorator';
-import { Err, getDeep, isObject, isPromise, pureAssign, setDeep } from '../../..';
+import { Err, getDeep, isObject, isPromise, setDeep } from '../../..';
 import {
   Changes,
   Content,
@@ -83,7 +83,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   ]);
 
   private publicApiProperties = new Map<string | symbol, Function>([
-    [Symbol.toStringTag, () => this[Symbol.toStringTag]],
+    // [Symbol.toStringTag, () => this[Symbol.toStringTag]],
     ['__changeset__', () => CHANGESET],
     ['change', () => this.change],
     ['changes', () => this.changes],
@@ -124,6 +124,47 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
   public set(_target: {}, key: string, value: any): any {
     return this.setValue(key, value);
+  }
+
+  public ownKeys(target: Record<string, any>) {
+    let keys = Object.keys(target);
+    for (let k of this.__nestedProxies.keys()) {
+      if (!keys.includes(k)) {
+        keys.push(k);
+      }
+    }
+    for (let k of this.__changes.keys()) {
+      if (!keys.includes(k)) {
+        keys.push(k);
+      }
+    }
+    return keys;
+  }
+
+  public getOwnPropertyDescriptor(
+    target: Record<string, any>,
+    key: string
+  ): PropertyDescriptor | undefined {
+    let result = Reflect.getOwnPropertyDescriptor(target, key);
+    if (!result) {
+      if (this.__nestedProxies.has(key)) {
+        return {
+          value: this.__nestedProxies.get(key),
+          writable: true,
+          configurable: true,
+          enumerable: true
+        };
+      }
+      if (this.__changes.has(key)) {
+        return {
+          value: this.__changes.get(key),
+          writable: true,
+          configurable: true,
+          enumerable: true
+        };
+      }
+    }
+    return result;
   }
 
   public readonly isChangeset = true;
@@ -887,13 +928,13 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     }
   }
 
-  /**
-   * String representation for the changeset.
-   */
-  get [Symbol.toStringTag](): string {
-    let normalisedContent: object = pureAssign(this.__data, {});
-    return `changeset:${normalisedContent.toString()}`;
-  }
+  // /**
+  //  * String representation for the changeset.
+  //  */
+  // get [Symbol.toStringTag](): string {
+  //   let normalisedContent: object = pureAssign(this.__data, {});
+  //   return `changeset:${normalisedContent.toString()}`;
+  // }
 
   private get localChange(): { [index: string]: any } {
     // only the changes at this level and not the nested content
