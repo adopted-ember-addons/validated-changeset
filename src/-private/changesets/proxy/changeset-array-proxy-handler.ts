@@ -12,6 +12,7 @@ import { DEBUG } from '../../utils/consts';
 import handlerFor from '../../utils/handler-for';
 import isUnchanged from '../../utils/is-unchanged';
 import requiresProxying from '../../utils/requires-proxying';
+import splitKey from '../../utils/split-key';
 import { AFTER_ROLLBACK_EVENT } from '../../utils/strings';
 import IChangesetProxyHandler from './changeset-proxy-handler-interface';
 import ProxyOptions from './proxy-options';
@@ -106,7 +107,16 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   public get isDirty(): boolean {
     // we're dirty if either we have top level changes
     // or if a nested proxy is dirty
-    return this.__proxyArray !== undefined;
+    let locallyDirty = this.__changes.size > 0;
+    if (locallyDirty) {
+      return true;
+    }
+    for (let proxy of this.__nestedProxies.values()) {
+      if (proxy.isDirty) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public get isPristine(): boolean {
@@ -202,8 +212,21 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       let getter = this.publicApiProperties.get(key) as Function;
       return getter();
     }
-    // it wasn't in there so look in our contents
-    return this.readArray[parseInt(key)];
+    let [localKey, subkey] = splitKey(key);
+    // it wasn't in there so look in our changes and then our contents
+    let index = parseInt(localKey);
+    if (this.__nestedProxies.has(index)) {
+      let proxy = this.__nestedProxies.get(index) as Record<string, any>;
+      if (subkey) {
+        return proxy[subkey];
+      } else {
+        return proxy;
+      }
+    } else {
+      let change = this.__changes.get(index);
+      // fall back to original if we don't have a change
+      return change ?? this.readArray[index];
+    }
   }
 
   private get readArray(): any[] {
@@ -224,22 +247,39 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
         throw `changeset.${key} is a readonly property of the changeset`;
       }
     }
-    // this is a change at our level
-    // check the changeset key filter
-    const index = parseInt(key);
-    if (requiresProxying(value)) {
-      value = this.addProxy(index, value);
-      // remove a tracked value if there was one with the same key
-      this.markChange(index, ObjectReplaced);
-    } else {
-      // the value is a plain value
-      this.markChange(index, value);
-      // remove a proxy if there was one with the same key
-      if (this.__nestedProxies.has(index)) {
-        this.__nestedProxies.delete(index);
+    let result = false;
+    let [localKey, subkey] = splitKey(key);
+    const index = parseInt(localKey);
+    if (subkey) {
+      // pass the change down to a nested level
+      let proxy = this.__nestedProxies.get(index);
+      if (!proxy) {
+        // no existing proxy
+        // so they're trying to set deep into an object that isn't yet proxied
+        // wrap the existing object or create an empty one
+        proxy = this.addProxy(index);
+        // if there was a previous leaf value here, delete it
+        this.__changes.delete(index);
       }
+      result = (proxy as Record<string, any>).set(subkey, value);
+    } else {
+      // this is a change at our level
+      // check the changeset key filter
+      if (requiresProxying(value)) {
+        value = this.addProxy(index, value);
+        // remove a tracked value if there was one with the same key
+        this.markChange(index, ObjectReplaced);
+      } else {
+        // the value is a plain value
+        this.markChange(index, value);
+        // remove a proxy if there was one with the same key
+        if (this.__nestedProxies.has(index)) {
+          this.__nestedProxies.delete(index);
+        }
+      }
+      result = true;
     }
-    return true;
+    return result;
   }
 
   private addProxy(index: number, value?: {}): any {
@@ -276,7 +316,9 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       }
     } else if (!unchanged) {
       // create a new pending change
-      changes = changes || new Map<number, any>();
+      if (!changes) {
+        this.__changes = changes = new Map<number, any>();
+      }
       changes.set(index, value);
     }
   }
