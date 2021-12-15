@@ -99,9 +99,31 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     ['pendingData', () => this.pendingData]
   ]);
 
+  public defineProperty(
+    target: Record<string, any>,
+    key: string,
+    desc: PropertyDescriptor
+  ): boolean {
+    // define a property on the proxy
+    // if (this.__outerProxy) {
+    //   Object.defineProperty(this.__outerProxy, key, desc);
+    // }
+    this.__changes.set(key, desc);
+    return true;
+  }
+
   public get(_target: {}, key: string, proxy?: Record<string, any>): any {
     if (!this.__outerProxy && proxy) {
       this.__outerProxy = proxy;
+      // add new properties if they've been defined
+      let changes = this.__changes;
+      for (let key of changes.keys()) {
+        let change = changes.get(key);
+        if (isObject(change)) {
+          // this is a defined property
+          Object.defineProperty(proxy, key, change);
+        }
+      }
     }
 
     //key may be dotted
@@ -120,6 +142,10 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     }
     // otherwise it's to be found on the wrapped object
     return this.getValue(key);
+  }
+
+  public has(target: Record<string, any>, key: string) {
+    return Reflect.has(target, key) || this.__nestedProxies.has(key) || this.__changes.has(key);
   }
 
   public set(_target: {}, key: string, value: any): any {
@@ -289,6 +315,13 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
         // we know it's not undefined so we can safely cast it
         let value = changes.get(localKey);
         if (value !== ObjectReplaced) {
+          if (isObject(value)) {
+            if (value.get) {
+              value = value.get.bind(this.__outerProxy).call();
+            } else {
+              value = value.value;
+            }
+          }
           if (subkey) {
             return getDeep(value, subkey);
           }
@@ -541,6 +574,9 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
           // apply the entire proxy now
           // and changes in the next phase below
           Reflect.set(this.__data, key, this.__nestedProxies.get(key).data);
+        } else if (isObject(newValue)) {
+          // this is a defineProperty descriptor
+          Reflect.defineProperty(this.__data, key, newValue);
         } else {
           Reflect.set(this.__data, key, newValue);
         }
