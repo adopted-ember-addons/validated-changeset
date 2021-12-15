@@ -1510,7 +1510,7 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
   });
 
-  it('#set use native setters with nested doesnt work', () => {
+  it('#set use native setters with nested', () => {
     dummyModel['org'] = {
       usa: {
         ny: 'ny'
@@ -1520,11 +1520,16 @@ describe('Unit | Utility | changeset', () => {
     const c = Changeset(dummyModel);
     set(c, 'org.usa.ny', 'foo');
 
-    expect(dummyModel.org.usa.ny).toBe('foo');
-    expect(c.get('org.usa.ny')).toBe('foo');
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.org.usa.ny).toBe('foo');
 
     const changes = c.changes;
-    expect(changes).toEqual([]);
+    expect(changes).toEqual([
+      {
+        key: 'org.usa.ny',
+        value: 'foo'
+      }
+    ]);
   });
 
   it('#set use native setters at single level', () => {

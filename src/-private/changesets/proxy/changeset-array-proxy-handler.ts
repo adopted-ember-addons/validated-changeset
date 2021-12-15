@@ -263,7 +263,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     const oldValue = this.__data[index];
     const unchanged = isUnchanged(value, oldValue);
     let changes = this.__changes;
-    if (changes.has(index)) {
+    if (changes && changes.has(index)) {
       // we have a pending change
       // modify it or delete
       if (unchanged) {
@@ -276,6 +276,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       }
     } else if (!unchanged) {
       // create a new pending change
+      changes = changes || new Map<number, any>();
       changes.set(index, value);
     }
   }
