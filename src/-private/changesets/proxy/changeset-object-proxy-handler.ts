@@ -355,7 +355,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       }
       result = true;
     }
-    if (_validate) {
+    if (_validate && this.__options.skipValidate !== true) {
       this._validateKey(key, value);
     }
     return result;
