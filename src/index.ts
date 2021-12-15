@@ -5,7 +5,7 @@ import Err from './-private/err';
 import normalizeObject from './utils/normalize-object';
 import pureAssign from './utils/assign';
 import isChangeset, { CHANGESET } from './utils/is-changeset';
-import isObject from './utils/is-object';
+import isObject from './-private/utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
 import mergeNested from './utils/merge-nested';

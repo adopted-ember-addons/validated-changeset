@@ -4,7 +4,7 @@ export { default as setDeep } from './set-deep';
 export { getKeyValues, getKeyErrorValues } from './get-key-values';
 export { default as handleMultipleValidations } from './handle-multiple-validations';
 export { default as isChangeset } from './is-changeset';
-export { default as isObject } from './is-object';
+export { default as isObject } from '../-private/utils/is-object';
 export { default as isPromise } from './is-promise';
 export { default as mergeDeep } from './merge-deep';
 export { default as mergeNested } from './merge-nested';

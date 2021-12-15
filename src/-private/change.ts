@@ -1,5 +1,5 @@
 /* import { IChange } from '../types'; */
-import isObject from '../utils/is-object';
+import isObject from './utils/is-object';
 
 export const VALUE = Symbol('__value__');
 

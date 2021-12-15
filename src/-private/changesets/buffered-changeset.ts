@@ -1,5 +1,5 @@
 import assert from '../utils/assert';
-import isObject from '../../utils/is-object';
+import isObject from '../utils/is-object';
 import {
   pureAssign,
   CHANGESET,

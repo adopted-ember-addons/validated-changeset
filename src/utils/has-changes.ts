@@ -1,4 +1,4 @@
-import isObject from './is-object';
+import isObject from '../-private/utils/is-object';
 import { isChange } from '../-private/change';
 
 export function hasChanges(changes: Record<string, any>): boolean {

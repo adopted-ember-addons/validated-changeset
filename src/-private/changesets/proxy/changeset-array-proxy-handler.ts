@@ -78,6 +78,10 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     if (typeof (this.readArray as Record<string, any>)[key] === 'function') {
       return (this.readArray as Record<string, any>)[key];
     }
+    switch (key) {
+      case 'length':
+        return this.readArray[key];
+    }
     if (this.publicApiMethods.has(key)) {
       return this.publicApiMethods.get(key);
     }
