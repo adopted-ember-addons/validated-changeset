@@ -212,15 +212,15 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', '');
 
     let expectedErrors = [
-      { key: 'org.usa.ny', validation: ['must be present', 'only letters work'], value: '' },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'org.usa.ny', validation: ['must be present', 'only letters work'], value: '' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
 
     dummyChangeset.set('org.usa.ny', '1');
     expectedErrors = [
-      { key: 'org.usa.ny', validation: ['only letters work'], value: '1' },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'org.usa.ny', validation: ['only letters work'], value: '1' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
   });

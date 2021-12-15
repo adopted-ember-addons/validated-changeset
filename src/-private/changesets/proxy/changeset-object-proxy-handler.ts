@@ -178,14 +178,25 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   public get errors(): PublicErrors {
-    return Object.keys(this.__errors).map(key => {
-      let entry = this.__errors[key];
-      return {
-        key,
-        value: entry.value,
-        validation: entry.validation
-      };
-    });
+    // walk the tree of errors and flatten
+    let result: PublicErrors = [];
+    let recurse = (obj: Record<string, any>, parentKey: string | null) => {
+      for (let key of Object.keys(obj).sort()) {
+        let entry = obj[key];
+        let fullKey = parentKey ? `${parentKey}.${key}` : key;
+        if (entry instanceof Err) {
+          result.push({
+            key: fullKey,
+            value: entry.value,
+            validation: entry.validation
+          });
+        } else if (isObject(entry)) {
+          recurse(entry, fullKey);
+        }
+      }
+    };
+    recurse(this.__errors, null);
+    return result;
   }
 
   public get isDirty(): boolean {
