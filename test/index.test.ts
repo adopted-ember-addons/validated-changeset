@@ -2529,12 +2529,12 @@ describe('Unit | Utility | changeset', () => {
     let expectedChanges = [
       { key: 'firstName', value: 'foo' },
       { key: 'lastName', value: 'bar' },
-      { key: 'password', value: false },
-      { key: 'name', value: '' }
+      { key: 'name', value: '' },
+      { key: 'password', value: false }
     ];
     let expectedErrors = [
-      { key: 'password', validation: ['foo', 'bar'], value: false },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'password', validation: ['foo', 'bar'], value: false }
     ];
     dummyChangeset.set('firstName', 'foo');
     dummyChangeset.set('lastName', 'bar');
