@@ -114,7 +114,7 @@ describe('Unit | Utility | changeset', () => {
     const emptyObject = {};
     const dummyChangeset = Changeset(emptyObject, lookupValidator(dummyValidations));
 
-    expect(dummyChangeset.toString()).toEqual('changeset:[object Object]');
+    expect(dummyChangeset.toString()).toEqual('[object Object]');
   });
 
   /**
