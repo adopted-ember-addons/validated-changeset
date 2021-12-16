@@ -2014,7 +2014,10 @@ describe('Unit | Utility | changeset', () => {
     });
     const changeKeys = dummyChangeset.changes.map(change => get(change, 'key'));
 
-    expect(changeKeys).toEqual(['first-name', 'date-of-birth']);
+    expect(changeKeys).toContain('date-of-birth');
+    expect(changeKeys).toContain('first-name');
+    expect(changeKeys).not.toContain('date_of_birth');
+    expect(changeKeys).not.toContain('first_name');
     dummyChangeset.execute();
     expect(dummyModel['first-name']).toEqual('foo');
     expect(dummyModel['date-of-birth']).toEqual(date);

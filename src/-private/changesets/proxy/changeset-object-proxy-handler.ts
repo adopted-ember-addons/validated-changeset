@@ -466,12 +466,15 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   @bind
-  public prepare(preparedChangedFn: PrepareChangesFn): this {
+  public prepare(fn: PrepareChangesFn): this {
+    if (!fn) {
+      return this;
+    }
     let changes: Record<string, any> = {};
     for (let change of this.changes) {
       changes[change.key] = change.value;
     }
-    const modifiedChanges = preparedChangedFn(changes);
+    const modifiedChanges = fn(changes);
     if (modifiedChanges === null || typeof modifiedChanges !== 'object') {
       throw 'prepare callback must return an object';
     }
@@ -1065,4 +1068,5 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   private __changes: Map<string, any> = new Map<string, any>();
   private __eventedNotifiers?: Map<string, Notifier<any>>;
   private __outerProxy!: Record<string, any>;
+  private __prepareFn?: PrepareChangesFn;
 }
