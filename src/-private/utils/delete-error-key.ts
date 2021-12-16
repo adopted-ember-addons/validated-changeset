@@ -12,6 +12,10 @@ export default function deleteErrorKey(obj: InternalMap, key = ''): InternalMap 
       let [childKey, ...remaining] = remainingKeys;
       let childNode: any = parentNode[childKey];
 
+      if (!childNode) {
+        // node is already missing
+        return;
+      }
       // depth first
       if (remaining.length > 0) {
         recurse(childNode, remaining);

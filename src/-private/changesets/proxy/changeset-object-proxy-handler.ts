@@ -366,12 +366,20 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
         return false;
       }
       if (requiresProxying(value)) {
+        // mark the overwrite if this is a new object
+        if (isUnchanged(this.__nestedProxies.get(localKey)?.data, value)) {
+          this.__changes.delete(localKey);
+        } else {
+          this.markChange(localKey, ObjectReplaced);
+        }
         this.addProxy(localKey, value);
-        // remove a tracked value if there was one with the same key
-        this.markChange(localKey, ObjectReplaced);
       } else {
-        // the value is a local property
-        this.markChange(localKey, value);
+        if (isUnchanged(value, this.__data[localKey])) {
+          this.__changes.delete(localKey);
+        } else {
+          // the value is a local property
+          this.markChange(localKey, value);
+        }
         // remove a proxy if there was one with the same key
         if (this.__nestedProxies.has(key)) {
           this.__nestedProxies.delete(key);

@@ -2939,9 +2939,9 @@ describe('Unit | Utility | changeset', () => {
 
     await dummyChangeset.validate();
     expect(dummyChangeset.changes).toEqual([
+      { key: 'async', value: true },
       { key: 'name', value: 'foo bar' },
-      { key: 'password', value: false },
-      { key: 'async', value: true }
+      { key: 'password', value: false }
     ]);
   });
 
