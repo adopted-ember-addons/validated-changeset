@@ -367,7 +367,8 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       }
       if (requiresProxying(value)) {
         // mark the overwrite if this is a new object
-        if (isUnchanged(this.__nestedProxies.get(localKey)?.data, value)) {
+        let currentObject = this.__nestedProxies.get(localKey)?.data ?? this.__data[localKey];
+        if (isUnchanged(currentObject, value)) {
           this.__changes.delete(localKey);
         } else {
           this.markChange(localKey, ObjectReplaced);
