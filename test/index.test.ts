@@ -2811,15 +2811,15 @@ describe('Unit | Utility | changeset', () => {
     await dummyChangeset.validate();
 
     expect(get(dummyChangeset, 'errors.length')).toBe(5);
-    expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
+    expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
     expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('passwordConfirmation', true);
 
     await dummyChangeset.validate();
     expect(get(dummyChangeset, 'errors.length')).toBe(5);
-    expect(get(dummyChangeset, 'errors')[0].key).toBe('org.usa.ny');
-    expect(get(dummyChangeset, 'errors')[1].key).toBe('org.isCompliant');
+    expect(get(dummyChangeset, 'errors')[0].key).toBe('org.isCompliant');
+    expect(get(dummyChangeset, 'errors')[1].key).toBe('org.usa.ny');
     expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
     expect(get(dummyChangeset, 'errors')[3].key).toBe('passwordConfirmation');
     expect(dummyChangeset.isInvalid).toEqual(true);
