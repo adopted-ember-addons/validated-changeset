@@ -58,6 +58,11 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       }
       this.__localChangesetKeyFilters = localKeyFilters;
     }
+    if (options.getMap) {
+      this.__nestedProxies = options.getMap<string>();
+    } else {
+      this.__nestedProxies = new Map<string, any>();
+    }
   }
 
   private publicApiMethods: Map<string, Function> = new Map<string, Function>([
@@ -93,8 +98,8 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     ['errors', () => this.errors],
     ['isChangeset', () => true],
     ['isDirty', () => this.isDirty],
-    ['isInvalid', () => !this.isValid],
-    ['isPristine', () => !this.isDirty],
+    ['isInvalid', () => this.isInvalid],
+    ['isPristine', () => this.isPristine],
     ['isValid', () => this.isValid],
     ['pendingData', () => this.pendingData]
   ]);
@@ -171,26 +176,23 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     target: Record<string, any>,
     key: string
   ): PropertyDescriptor | undefined {
-    let result = Reflect.getOwnPropertyDescriptor(target, key);
-    if (!result) {
-      if (this.__nestedProxies.has(key)) {
-        return {
-          value: this.__nestedProxies.get(key),
-          writable: true,
-          configurable: true,
-          enumerable: true
-        };
-      }
-      if (this.__changes.has(key)) {
-        return {
-          value: this.__changes.get(key),
-          writable: true,
-          configurable: true,
-          enumerable: true
-        };
-      }
+    if (this.__nestedProxies.has(key)) {
+      return {
+        value: this.__nestedProxies.get(key),
+        writable: true,
+        configurable: true,
+        enumerable: true
+      };
     }
-    return result;
+    if (this.__changes.has(key)) {
+      return {
+        value: this.__changes.get(key),
+        writable: true,
+        configurable: true,
+        enumerable: true
+      };
+    }
+    return Reflect.getOwnPropertyDescriptor(target, key);
   }
 
   public readonly isChangeset = true;
@@ -241,18 +243,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   public get isPristine(): boolean {
-    if (this.__changes.size > 0) {
-      // we have changes and we only store them if they're
-      // different from the original
-      return false;
-    }
-    // now look at all the nested proxies
-    for (let proxy of this.__nestedProxies.values()) {
-      if (!proxy.isPristine) {
-        return false;
-      }
-    }
-    return true;
+    return !this.isDirty;
   }
 
   public get isInvalid(): boolean {
@@ -731,7 +722,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     let changes = [...this.__changes.entries()];
     for (let [key, value] of changes) {
       if (value === ObjectReplaced) {
-        result[key] = Object.assign({}, this.__nestedProxies.get(key).data);
+        result[key] = this.__nestedProxies.get(key).pendingData;
       } else {
         result[key as string] = value;
       }
@@ -983,21 +974,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   //   return `changeset:${normalisedContent.toString()}`;
   // }
 
-  private get localChange(): { [index: string]: any } {
-    // only the changes at this level and not the nested content
-    let changes = [...this.__changes.entries()];
-    let result: { [index: string]: any } = {};
-    for (let [key, value] of changes) {
-      if (this.__nestedProxies.has(key)) {
-        continue;
-      }
-      if (value !== ObjectReplaced) {
-        result[key as string] = value;
-      }
-    }
-    return result;
-  }
-
   private addProxy(key: string, value?: {}): any {
     // get sends just the key
     // set sends the key and the new value
@@ -1075,7 +1051,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   private __errorsCache: Errors<any> = {};
   private __undoState: Map<string, any> | undefined;
   private __undoStateProxies: Map<string, any> | undefined;
-  private __nestedProxies: Map<string, any> = new Map<string, any>();
+  private __nestedProxies: Map<string, any>;
   private __changes: Map<string, any> = new Map<string, any>();
   private __eventedNotifiers?: Map<string, Notifier<any>>;
   private __outerProxy!: Record<string, any>;

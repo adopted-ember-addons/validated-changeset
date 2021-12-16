@@ -5,7 +5,7 @@ export interface ArrayWrapperFn {
 }
 
 export interface MapConstructorFn {
-  (): Map<string | number, any>;
+  <TKey>(): Map<TKey, any>;
 }
 
 export default interface ProxyOptions extends Config {
