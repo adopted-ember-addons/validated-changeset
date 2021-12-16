@@ -2272,7 +2272,7 @@ describe('Unit | Utility | changeset', () => {
    * #save
    */
 
-  it('#save proxies to content', done => {
+  it('#save proxies to content', async () => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2289,14 +2289,11 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.change).toEqual({});
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise
-      .then(saveResult => {
-        expect(saveResult).toEqual('saveResult');
-      })
-      .finally(() => done());
+    let saveResult = await promise;
+    expect(saveResult).toEqual('saveResult');
   });
 
-  it('#save handles non-promise proxy content', done => {
+  it('#save handles non-promise proxy content', async () => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2312,11 +2309,8 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBe('ok');
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise
-      .then(saveResult => {
-        expect(saveResult).toBe('saveResult');
-      })
-      .finally(() => done());
+    let saveResult = await promise;
+    expect(saveResult).toBe('saveResult');
   });
 
   it('#save handles rejected proxy content', done => {

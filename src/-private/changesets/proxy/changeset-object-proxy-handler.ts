@@ -656,11 +656,12 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   @bind
   public async save(options?: object): Promise<this | any> {
     this.execute();
+    let result = null;
     if (typeof this.__data.save === 'function') {
-      await this.__data.save(options);
+      result = await this.__data.save(options);
     }
     this.clearPending();
-    return this;
+    return result;
   }
 
   @bind
