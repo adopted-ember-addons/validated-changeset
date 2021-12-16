@@ -1,10 +1,12 @@
 import { bind } from 'bind-decorator';
-import { Err, getDeep, isObject, isPromise, setDeep } from '../../..';
+import { Changeset, Err, getDeep, isObject, isPromise, setDeep } from '../../..';
 import {
+  ChangeRecord,
   Changes,
   Content,
   Errors,
   IErr,
+  IPublicChangeset,
   NewProperty,
   PrepareChangesFn,
   PublicErrors,
@@ -15,7 +17,7 @@ import {
   ValidatorAction
 } from '../../../types';
 import { flattenValidations } from '../../../utils/flatten-validations';
-import { CHANGESET } from '../../../utils/is-changeset';
+import isChangeset, { CHANGESET } from '../../../utils/is-changeset';
 import { ObjectTreeNode } from '../../../utils/object-tree-node';
 import Notifier from '../../notifier';
 import assert from '../../utils/assert';
@@ -32,7 +34,7 @@ import {
   BEFORE_VALIDATION_EVENT,
   EXECUTE_EVENT
 } from '../../utils/strings';
-import IChangesetProxyHandler, { Change } from './changeset-proxy-handler-interface';
+import IChangesetProxyHandler from './changeset-proxy-handler-interface';
 import ProxyOptions from './proxy-options';
 import { ObjectReplaced, DeleteOnUndo } from './proxy-symbols';
 
@@ -71,6 +73,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     ['execute', this.execute],
     ['get', this.getValue],
     ['isValidating', this.isValidating],
+    ['merge', this.merge],
     ['on', this.on],
     ['off', this.off],
     ['prepare', this.prepare],
@@ -466,6 +469,34 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   @bind
+  public merge(changeset2: IPublicChangeset): IPublicChangeset {
+    assert('Cannot merge with a non-changeset', isChangeset(changeset2));
+    assert('Cannot merge with a changeset of different content', changeset2.data === this.__data);
+    let result = Changeset(
+      this.data,
+      this.__options.validateFn,
+      this.__options.validationMap,
+      this.__options
+    );
+    let applyChanges = (changes: ChangeRecord[]) => {
+      for (let change of changes) {
+        result[change.key] = change.value;
+      }
+    };
+    applyChanges(this.changes);
+    applyChanges(changeset2.changes);
+
+    let applyErrors = (errors: PublicErrors) => {
+      for (let error of errors) {
+        result.addError(error.key, new Err(error.value, error.validation));
+      }
+    };
+    applyErrors(this.errors);
+    applyErrors(changeset2.errors);
+    return result;
+  }
+
+  @bind
   public prepare(fn: PrepareChangesFn): this {
     if (!fn) {
       return this;
@@ -750,7 +781,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return result;
   }
 
-  public get changes(): Change[] {
+  public get changes(): ChangeRecord[] {
     let replacements: string[] = [];
     let allChanges = [...this.__changes.entries()].map(([key, value]) => {
       if (value === ObjectReplaced) {

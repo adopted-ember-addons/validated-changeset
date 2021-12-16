@@ -109,8 +109,13 @@ export type Snapshot = {
 
 export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any } | null;
 
+export interface ChangeRecord {
+  key: string;
+  value: any;
+}
+
 export interface PublicChangesetDef {
-  changes: Record<string, any>[];
+  changes: ChangeRecord[];
   errors: PublicErrors;
   error: Record<string, any>;
   change: Record<string, any>;
