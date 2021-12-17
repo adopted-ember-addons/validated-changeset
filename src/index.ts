@@ -16,15 +16,10 @@ import mergeDeep, { propertyIsUnsafe } from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep from './utils/get-deep';
 
-import { BufferedChangeset } from './-private/changesets/buffered-changeset';
-import { ValidatedChangeset } from './-private/changesets/validated-changeset';
 import proxiedChangeset from './-private/changesets/proxied-changeset';
 import { Config, IPublicChangeset, ValidatorAction, ValidatorMap } from './types';
 
 export {
-  BufferedChangeset,
-  ValidatedChangeset,
-  proxiedChangeset,
   CHANGESET,
   Change,
   Err,
@@ -67,16 +62,4 @@ export function Changeset(
   options?: Config
 ): IPublicChangeset {
   return proxiedChangeset(obj, validateFn, validationMap, options);
-
-  // return new Proxy(c, {
-  //   get(targetBuffer, key /*, receiver*/) {
-  //     const res = targetBuffer.get(key.toString());
-  //     return res;
-  //   },
-
-  //   set(targetBuffer, key, value /*, receiver*/) {
-  //     targetBuffer.set(key.toString(), value);
-  //     return true;
-  //   }
-  //});
 }
