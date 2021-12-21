@@ -55,7 +55,7 @@ On rollback, all changes are dropped and the underlying Object is left untouched
 
 ## Structure
 
-![Structure drawing](./structure.drawio.svg)
+![Structure drawing](./structure.drawio.svg?raw=true "Structure")
 
 ## Full API
 
