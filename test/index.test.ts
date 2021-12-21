@@ -1914,9 +1914,13 @@ describe('Unit | Utility | changeset', () => {
 
   it('it accepts async validations', async () => {
     delete dummyModel.save;
-    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    const dummyChangeset = Changeset(
+      dummyModel,
+      lookupValidator(dummyValidations),
+      dummyValidations
+    );
     const expectedChanges = [{ key: 'async', value: true }];
-    const expectedError = { async: { validation: 'is invalid', value: 'is invalid' } };
+    const expectedError = { validation: 'is invalid', value: 'is invalid' };
 
     dummyChangeset.set('async', true);
     expect(dummyChangeset.changes).toEqual(expectedChanges);
@@ -1925,7 +1929,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.error).toEqual({});
 
     await dummyChangeset.validate();
-    expect(dummyChangeset.error).toEqual(expectedError);
+    expect(dummyChangeset.error.async).toEqual(expectedError);
 
     await dummyChangeset.save();
     // save clears errors
