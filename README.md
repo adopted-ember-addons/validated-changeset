@@ -53,6 +53,10 @@ In the above example, when the input changes, only the changeset's internal valu
 
 On rollback, all changes are dropped and the underlying Object is left untouched.
 
+## Structure
+
+![Structure drawing](./structure.drawio.svg)
+
 ## Full API
 
 ```js
