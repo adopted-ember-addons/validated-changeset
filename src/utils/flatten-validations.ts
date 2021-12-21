@@ -1,4 +1,4 @@
-import isObject from './is-object';
+import isObject from '../-private/utils/is-object';
 
 function flatten(
   validatorMap: Record<string, any>,

@@ -1,4 +1,4 @@
-import { Changeset } from '../src';
+import { Changeset, Err } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 import lookupValidator from '../src/utils/validator-lookup';
@@ -109,12 +109,11 @@ describe('Unit | Utility | changeset', () => {
    */
 
   it('content can be an empty hash', () => {
-    expect.assertions(1);
-
     const emptyObject = {};
     const dummyChangeset = Changeset(emptyObject, lookupValidator(dummyValidations));
 
-    expect(dummyChangeset.toString()).toEqual('changeset:[object Object]');
+    expect(dummyChangeset.toString()).toEqual('[object Object]');
+    expect(dummyChangeset.isChangeset).toBeTruthy();
   });
 
   /**
@@ -212,15 +211,15 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('name', '');
 
     let expectedErrors = [
-      { key: 'org.usa.ny', validation: ['must be present', 'only letters work'], value: '' },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'org.usa.ny', validation: ['must be present', 'only letters work'], value: '' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
 
     dummyChangeset.set('org.usa.ny', '1');
     expectedErrors = [
-      { key: 'org.usa.ny', validation: ['only letters work'], value: '1' },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'org.usa.ny', validation: ['only letters work'], value: '1' }
     ];
     expect(dummyChangeset.get('errors')).toEqual(expectedErrors);
   });
@@ -507,7 +506,6 @@ describe('Unit | Utility | changeset', () => {
 
     newValue = c.get('startDate');
     newMomentInstance._isUTC = undefined;
-    expect(newValue).toEqual(newMomentInstance);
     expect(newValue instanceof Moment).toBeTruthy();
     expect(newValue.date).toBe(newD);
     expect(newValue._isUTC).toBeUndefined();
@@ -532,7 +530,7 @@ describe('Unit | Utility | changeset', () => {
 
     let newValue = c.get('startDate');
     expect(newValue.date).toEqual(momentInstance.date);
-    expect(newValue.content instanceof Moment).toBeTruthy();
+    // expect(newValue.content instanceof Moment).toBeTruthy(); // can't clone object and preserve type
     expect(newValue.date).toBe(d);
     expect(newValue._isUTC).toEqual(true);
 
@@ -605,16 +603,29 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyModel, 'contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     expect(dummyChangeset.get('name')).toBe('Bob');
-    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+    // must use pendingData as Proxy is not iterable
+    expect(dummyChangeset.get('contact.emails').pendingData).toEqual([
+      'bob@email.com',
+      'the_bob@email.com'
+    ]);
 
     dummyChangeset.set('contact.emails', ['fred@email.com', 'the_fred@email.com']);
 
-    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
+    expect(dummyChangeset.get('contact.emails').pendingData).toEqual([
+      'fred@email.com',
+      'the_fred@email.com'
+    ]);
 
     dummyChangeset.rollback();
-    expect(dummyChangeset.get('contact.emails')).toEqual(['bob@email.com', 'the_bob@email.com']);
+    expect(dummyChangeset.get('contact.emails').pendingData).toEqual([
+      'bob@email.com',
+      'the_bob@email.com'
+    ]);
     dummyChangeset.set('contact.emails', ['fred@email.com', 'the_fred@email.com']);
-    expect(dummyChangeset.get('contact.emails')).toEqual(['fred@email.com', 'the_fred@email.com']);
+    expect(dummyChangeset.get('contact.emails').pendingData).toEqual([
+      'fred@email.com',
+      'the_fred@email.com'
+    ]);
 
     dummyChangeset.execute();
     expect(dummyModel.contact.emails).toEqual(['fred@email.com', 'the_fred@email.com']);
@@ -651,14 +662,15 @@ describe('Unit | Utility | changeset', () => {
       const c = Changeset(model);
       const actual = get(c, 'foo.bar.dog');
       const expectedResult = get(model, 'foo.bar.dog');
-      expect(actual).toEqual(expectedResult);
+      // actual can be a proxy of expected, and proxy != original
+      expect(actual.breed).toEqual(expectedResult.breed);
     }
 
     {
       const c = Changeset(model);
       const actual = get(c, 'foo.bar.dog');
       const expectedResult = get(model, 'foo.bar.dog');
-      expect(actual).toEqual(expectedResult);
+      expect(actual.breed).toEqual(expectedResult.breed);
     }
   });
 
@@ -678,17 +690,6 @@ describe('Unit | Utility | changeset', () => {
     });
     const cat = c.get('foo.bar.cat');
     expect(cat.color).toEqual('red');
-  });
-
-  it('#get works with toString override', () => {
-    dummyModel.toString = function() {
-      return 'mine';
-    };
-    const dummyChangeset = Changeset(dummyModel);
-    dummyChangeset['name'] = undefined;
-    const result = dummyChangeset.toString();
-
-    expect(result).toEqual('changeset:mine');
   });
 
   it('#get prioritizes own methods/getters', () => {
@@ -808,6 +809,20 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.execute();
 
     expect(dummyModel.name.short).toBe('foo');
+  });
+
+  it('added properties are iterable', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['extraProperty'] = 'hello';
+    let keys = Object.keys(dummyChangeset);
+    expect(keys.includes('extraProperty')).toBeTruthy();
+  });
+
+  it('added objects are iterable', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset['extraProperty'] = { greeting: 'hello' };
+    let keys = Object.keys(dummyChangeset);
+    expect(keys.includes('extraProperty')).toBeTruthy();
   });
 
   it('#set overrides', () => {
@@ -951,13 +966,13 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
         expect(changeset.changes).toEqual([{ key: 'contact.emails.0', value: 'fred@email.com' }]);
-        expect(changeset.get('contact.emails').unwrap()).toEqual(['fred@email.com']);
+        expect(changeset.get('contact.emails').pendingData).toEqual(['fred@email.com']);
 
         changeset.rollback();
 
         expect(changeset.get('contact.emails.0')).toEqual('bob@email.com');
         expect(changeset.changes).toEqual([]);
-        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
+        expect(changeset.get('contact.emails').pendingData).toEqual(['bob@email.com']);
       });
 
       it('can be saved', () => {
@@ -980,7 +995,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.1', 'fred@email.com');
 
         expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           'bob@email.com',
           'fred@email.com'
         ]);
@@ -989,7 +1004,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.3', 'greg@email.com');
 
         expect(changeset.get('contact.emails.3')).toEqual('greg@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           'bob@email.com',
           'fred@email.com',
           undefined,
@@ -1011,7 +1026,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.1', 'fred@email.com');
 
         expect(changeset.get('contact.emails.1')).toEqual('fred@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           'bob@email.com',
           'fred@email.com'
         ]);
@@ -1020,7 +1035,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.0', null);
 
         expect(changeset.get('contact.emails.0')).toEqual(null);
-        expect(changeset.get('contact.emails').unwrap()).toEqual([null, 'fred@email.com']);
+        expect(changeset.get('contact.emails').pendingData).toEqual([null, 'fred@email.com']);
         expect(changeset.changes).toEqual([
           { key: 'contact.emails.0', value: null },
           { key: 'contact.emails.1', value: 'fred@email.com' }
@@ -1028,7 +1043,7 @@ describe('Unit | Utility | changeset', () => {
 
         changeset.set('contact.emails.1', null);
 
-        expect(changeset.get('contact.emails').unwrap()).toEqual([null, null]);
+        expect(changeset.get('contact.emails').pendingData).toEqual([null, null]);
         expect(changeset.changes).toEqual([
           { key: 'contact.emails.0', value: null },
           { key: 'contact.emails.1', value: null }
@@ -1054,14 +1069,14 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts.0')).toEqual(null);
-        expect(changeset.get('contacts')).toEqual([null, fred]);
+        expect(changeset.get('contacts').pendingData).toEqual([null, fred]);
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
 
         // Set array element to entirely new object
         changeset.set('contacts.0', sanHolo);
 
         expect(changeset.isDirty).toBeTruthy();
-        expect(changeset.get('contacts')).toEqual([sanHolo, fred]);
+        expect(changeset.get('contacts').pendingData).toEqual([sanHolo, fred]);
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: sanHolo }]);
 
@@ -1070,22 +1085,22 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts.0')).toEqual(null);
-        expect(changeset.get('contacts')).toEqual([null, fred]);
+        expect(changeset.get('contacts').pendingData).toEqual([null, fred]);
         expect(changeset.changes).toEqual([{ key: 'contacts.0', value: null }]);
 
         // Revert everything
         changeset.rollback();
         expect(changeset.isDirty).toBeFalsy();
         expect(changeset.changes).toEqual([]);
-        expect(changeset.get('contacts')).toEqual([bob, fred]);
+        expect(changeset.get('contacts').pendingData).toEqual([bob, fred]);
       });
 
-      xit(`negative values are not allowed`, () => {
+      it(`negative values are not allowed`, () => {
         // This test is currently disabled because setDeep doesn't have a reference to the
         // original array and setDeep is where we'd throw on invalid key values
         const changeset = Changeset(initialData);
 
-        expect(changeset.get('contact.emails')).toEqual(['bob@email.com']);
+        expect(changeset.get('contact.emails').pendingData).toEqual(['bob@email.com']);
 
         expect(() => {
           changeset.set('contact.emails.-1', 'fred@email.com');
@@ -1109,7 +1124,7 @@ describe('Unit | Utility | changeset', () => {
       changeset.set('emails.0.primary', 'fun@email.com');
 
       expect(changeset.get('emails.0.primary')).toEqual('fun@email.com');
-      expect(changeset.get('emails')).toEqual([{ primary: 'fun@email.com' }]);
+      expect(changeset.get('emails').pendingData).toEqual([{ primary: 'fun@email.com' }]);
       expect(changeset.changes).toEqual([{ key: 'emails.0.primary', value: 'fun@email.com' }]);
     });
 
@@ -1120,7 +1135,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.0.funEmail')).toEqual('fun@email.com');
       expect(changeset.changes).toEqual([{ key: 'emails.0.funEmail', value: 'fun@email.com' }]);
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         { primary: 'bob@email.com', funEmail: 'fun@email.com' }
       ]);
     });
@@ -1133,11 +1148,15 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
       expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary@email.com', funEmail: 'fun@email.com' }
       ]);
       expect(changeset.changes).toEqual([
+        {
+          key: 'emails.1',
+          value: { funEmail: 'fun@email.com', primary: 'primary@email.com' }
+        },
         { key: 'emails.1.funEmail', value: 'fun@email.com' },
         { key: 'emails.1.primary', value: 'primary@email.com' }
       ]);
@@ -1153,7 +1172,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.1.funEmail')).toEqual('fun@email.com');
       expect(changeset.get('emails.1.primary')).toEqual('primary@email.com');
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary@email.com', funEmail: 'fun@email.com' }
       ]);
@@ -1174,9 +1193,13 @@ describe('Unit | Utility | changeset', () => {
             primary: 'primary2@email.com',
             funEmail: 'fun@email.com'
           }
+        },
+        {
+          key: 'emails.1.primary',
+          value: 'primary2@email.com'
         }
       ]);
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         { primary: 'bob@email.com' },
         { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
       ]);
@@ -1200,7 +1223,7 @@ describe('Unit | Utility | changeset', () => {
 
       expect(changeset.get('emails.0.fun')).toEqual('fun0@email.com');
       expect(changeset.get('emails.0.primary')).toEqual('primary0@email.com');
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com'
@@ -1219,7 +1242,7 @@ describe('Unit | Utility | changeset', () => {
         primary: 'brandNewPrimary@email.com'
       });
 
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com'
@@ -1258,7 +1281,7 @@ describe('Unit | Utility | changeset', () => {
 
       changeset.set('emails.1', null);
 
-      expect(changeset.get('emails')).toEqual([
+      expect(changeset.get('emails').pendingData).toEqual([
         {
           fun: 'fun0@email.com',
           primary: 'primary0@email.com',
@@ -1296,7 +1319,7 @@ describe('Unit | Utility | changeset', () => {
         changeset.set('contact.emails.0.primary', 'fun@email.com');
 
         expect(changeset.get('contact.emails.0.primary')).toEqual('fun@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([{ primary: 'fun@email.com' }]);
+        expect(changeset.get('contact.emails').pendingData).toEqual([{ primary: 'fun@email.com' }]);
         expect(changeset.changes).toEqual([
           { key: 'contact.emails.0.primary', value: 'fun@email.com' }
         ]);
@@ -1311,7 +1334,7 @@ describe('Unit | Utility | changeset', () => {
         expect(changeset.changes).toEqual([
           { key: 'contact.emails.0.funEmail', value: 'fun@email.com' }
         ]);
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           { primary: 'bob@email.com', funEmail: 'fun@email.com' }
         ]);
       });
@@ -1324,11 +1347,18 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
         expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           { primary: 'bob@email.com' },
           { primary: 'primary@email.com', funEmail: 'fun@email.com' }
         ]);
         expect(changeset.changes).toEqual([
+          {
+            key: 'contact.emails.1',
+            value: {
+              primary: 'primary@email.com',
+              funEmail: 'fun@email.com'
+            }
+          },
           { key: 'contact.emails.1.funEmail', value: 'fun@email.com' },
           { key: 'contact.emails.1.primary', value: 'primary@email.com' }
         ]);
@@ -1344,7 +1374,7 @@ describe('Unit | Utility | changeset', () => {
 
         expect(changeset.get('contact.emails.1.funEmail')).toEqual('fun@email.com');
         expect(changeset.get('contact.emails.1.primary')).toEqual('primary@email.com');
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           { primary: 'bob@email.com' },
           { primary: 'primary@email.com', funEmail: 'fun@email.com' }
         ]);
@@ -1365,9 +1395,13 @@ describe('Unit | Utility | changeset', () => {
               primary: 'primary2@email.com',
               funEmail: 'fun@email.com'
             }
+          },
+          {
+            key: 'contact.emails.1.primary',
+            value: 'primary2@email.com'
           }
         ]);
-        expect(changeset.get('contact.emails').unwrap()).toEqual([
+        expect(changeset.get('contact.emails').pendingData).toEqual([
           { primary: 'bob@email.com' },
           { primary: 'primary2@email.com', funEmail: 'fun@email.com' }
         ]);
@@ -1391,7 +1425,7 @@ describe('Unit | Utility | changeset', () => {
 
         changeset.set('contacts.emails.1', null);
 
-        expect(changeset.get('contacts.emails').unwrap()).toEqual([
+        expect(changeset.get('contacts.emails').pendingData).toEqual([
           {
             fun: 'fun0@email.com',
             primary: 'primary0@email.com'
@@ -1510,7 +1544,7 @@ describe('Unit | Utility | changeset', () => {
     expect(changes).toEqual(expectedChanges);
   });
 
-  it('#set use native setters with nested doesnt work', () => {
+  it('#set use native setters with nested', () => {
     dummyModel['org'] = {
       usa: {
         ny: 'ny'
@@ -1520,11 +1554,16 @@ describe('Unit | Utility | changeset', () => {
     const c = Changeset(dummyModel);
     set(c, 'org.usa.ny', 'foo');
 
-    expect(dummyModel.org.usa.ny).toBe('foo');
-    expect(c.get('org.usa.ny')).toBe('foo');
+    expect(dummyModel.org.usa.ny).toBe('ny');
+    expect(c.org.usa.ny).toBe('foo');
 
     const changes = c.changes;
-    expect(changes).toEqual([]);
+    expect(changes).toEqual([
+      {
+        key: 'org.usa.ny',
+        value: 'foo'
+      }
+    ]);
   });
 
   it('#set use native setters at single level', () => {
@@ -1611,7 +1650,6 @@ describe('Unit | Utility | changeset', () => {
   it('#set removes a change if set back to original value in nested context', () => {
     const model = { name: { email: 'foo' } };
     const dummyChangeset = Changeset(model);
-    dummyChangeset.safeGet = get;
 
     dummyChangeset.set('name.email', 'bar');
     expect(dummyChangeset.changes).toEqual([{ key: 'name.email', value: 'bar' }]);
@@ -1876,9 +1914,13 @@ describe('Unit | Utility | changeset', () => {
 
   it('it accepts async validations', async () => {
     delete dummyModel.save;
-    const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    const dummyChangeset = Changeset(
+      dummyModel,
+      lookupValidator(dummyValidations),
+      dummyValidations
+    );
     const expectedChanges = [{ key: 'async', value: true }];
-    const expectedError = { async: { validation: 'is invalid', value: 'is invalid' } };
+    const expectedError = { validation: 'is invalid', value: 'is invalid' };
 
     dummyChangeset.set('async', true);
     expect(dummyChangeset.changes).toEqual(expectedChanges);
@@ -1887,7 +1929,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.error).toEqual({});
 
     await dummyChangeset.validate();
-    expect(dummyChangeset.error).toEqual(expectedError);
+    expect(dummyChangeset.error.async).toEqual(expectedError);
 
     await dummyChangeset.save();
     // save clears errors
@@ -1976,7 +2018,10 @@ describe('Unit | Utility | changeset', () => {
     });
     const changeKeys = dummyChangeset.changes.map(change => get(change, 'key'));
 
-    expect(changeKeys).toEqual(['first-name', 'date-of-birth']);
+    expect(changeKeys).toContain('date-of-birth');
+    expect(changeKeys).toContain('first-name');
+    expect(changeKeys).not.toContain('date_of_birth');
+    expect(changeKeys).not.toContain('first_name');
     dummyChangeset.execute();
     expect(dummyModel['first-name']).toEqual('foo');
     expect(dummyModel['date-of-birth']).toEqual(date);
@@ -1992,7 +2037,7 @@ describe('Unit | Utility | changeset', () => {
   it('#prepare works with initial model containing an object property', () => {
     const dummyChangeset = Changeset({ obj: {} });
 
-    dummyChangeset.get('obj').unwrap();
+    dummyChangeset.get('obj');
     dummyChangeset.prepare(function(changes) {
       return changes;
     });
@@ -2133,7 +2178,10 @@ describe('Unit | Utility | changeset', () => {
     dummyChangeset.set('org.usa.ma', { name: 'Massachusetts' });
     dummyChangeset.execute();
     expect(dummyChangeset.change).toEqual({});
-    expect(get(dummyChangeset, '_content.org')).toEqual(expectedResult.org);
+    expect(dummyChangeset._content.org.asia.sg).toEqual(expectedResult.org.asia.sg);
+    expect(dummyChangeset._content.org.usa.ca).toEqual(expectedResult.org.usa.ca);
+    expect(dummyChangeset._content.org.usa.ny).toEqual(expectedResult.org.usa.ny);
+    expect(dummyChangeset._content.org.usa.ma.name).toEqual(expectedResult.org.usa.ma.name);
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
 
@@ -2231,7 +2279,7 @@ describe('Unit | Utility | changeset', () => {
    * #save
    */
 
-  it('#save proxies to content', done => {
+  it('#save proxies to content', async () => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2248,14 +2296,11 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.change).toEqual({});
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise
-      .then(saveResult => {
-        expect(saveResult).toEqual('saveResult');
-      })
-      .finally(() => done());
+    let saveResult = await promise;
+    expect(saveResult).toEqual('saveResult');
   });
 
-  it('#save handles non-promise proxy content', done => {
+  it('#save handles non-promise proxy content', async () => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2271,11 +2316,8 @@ describe('Unit | Utility | changeset', () => {
     expect(result).toBe('ok');
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-    promise
-      .then(saveResult => {
-        expect(saveResult).toBe('saveResult');
-      })
-      .finally(() => done());
+    let saveResult = await promise;
+    expect(saveResult).toBe('saveResult');
   });
 
   it('#save handles rejected proxy content', done => {
@@ -2433,17 +2475,14 @@ describe('Unit | Utility | changeset', () => {
       { key: 'lastName', value: 'bar' },
       { key: 'name', value: '' }
     ];
-    let expectedErrors = [{ key: 'name', validation: 'too short', value: '' }];
     dummyChangeset.set('firstName', 'foo');
     dummyChangeset.set('lastName', 'bar');
     dummyChangeset.set('name', '');
 
     expect(dummyChangeset.changes).toEqual(expectedChanges);
-    expect(dummyChangeset.errors).toEqual(expectedErrors);
     expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
     expect(dummyChangeset.changes).toEqual([]);
-    expect(dummyChangeset.errors).toEqual([]);
     expect(dummyChangeset.isDirty).toBe(false);
   });
 
@@ -2523,12 +2562,12 @@ describe('Unit | Utility | changeset', () => {
     let expectedChanges = [
       { key: 'firstName', value: 'foo' },
       { key: 'lastName', value: 'bar' },
-      { key: 'password', value: false },
-      { key: 'name', value: '' }
+      { key: 'name', value: '' },
+      { key: 'password', value: false }
     ];
     let expectedErrors = [
-      { key: 'password', validation: ['foo', 'bar'], value: false },
-      { key: 'name', validation: 'too short', value: '' }
+      { key: 'name', validation: 'too short', value: '' },
+      { key: 'password', validation: ['foo', 'bar'], value: false }
     ];
     dummyChangeset.set('firstName', 'foo');
     dummyChangeset.set('lastName', 'bar');
@@ -2779,15 +2818,15 @@ describe('Unit | Utility | changeset', () => {
     await dummyChangeset.validate();
 
     expect(get(dummyChangeset, 'errors.length')).toBe(5);
-    expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
+    expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
     expect(dummyChangeset.isInvalid).toEqual(true);
 
     dummyChangeset.set('passwordConfirmation', true);
 
     await dummyChangeset.validate();
     expect(get(dummyChangeset, 'errors.length')).toBe(5);
-    expect(get(dummyChangeset, 'errors')[0].key).toBe('org.usa.ny');
-    expect(get(dummyChangeset, 'errors')[1].key).toBe('org.isCompliant');
+    expect(get(dummyChangeset, 'errors')[0].key).toBe('org.isCompliant');
+    expect(get(dummyChangeset, 'errors')[1].key).toBe('org.usa.ny');
     expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
     expect(get(dummyChangeset, 'errors')[3].key).toBe('passwordConfirmation');
     expect(dummyChangeset.isInvalid).toEqual(true);
@@ -2901,9 +2940,9 @@ describe('Unit | Utility | changeset', () => {
 
     await dummyChangeset.validate();
     expect(dummyChangeset.changes).toEqual([
+      { key: 'async', value: true },
       { key: 'name', value: 'foo bar' },
-      { key: 'password', value: false },
-      { key: 'async', value: true }
+      { key: 'password', value: false }
     ]);
   });
 
@@ -3440,7 +3479,7 @@ describe('Unit | Utility | changeset', () => {
     let secondResolver = latestDelayedAsyncResolver;
 
     // second one resolves first with false
-    secondResolver(false);
+    secondResolver('an error');
     // then the first resolves first with true
     firstResolver(true);
 
@@ -3453,7 +3492,7 @@ describe('Unit | Utility | changeset', () => {
     // current value state should be "second"
     // current error state should be invalid
     const expectedChanges = [{ key: 'delayedAsync', value: 'second' }];
-    const expectedError = { delayedAsync: { validation: false, value: 'second' } };
+    const expectedError = { delayedAsync: new Err('second', 'an error') };
     expect(dummyChangeset.changes).toEqual(expectedChanges);
     expect(dummyChangeset.error).toEqual(expectedError);
   });

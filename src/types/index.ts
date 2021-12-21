@@ -109,21 +109,16 @@ export type Snapshot = {
 
 export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any } | null;
 
-export interface ChangesetDef {
-  __changeset__: string;
+export interface ChangeRecord {
+  key: string;
+  value: any;
+}
 
-  _content: object;
-  _changes: Changes;
-  _errors: Errors<any>;
-  _validator: ValidatorAction;
-  _options: Config;
-  _runningValidations: RunningValidations;
-  _bareChanges: { [s: string]: any };
-
-  changes: Record<string, any>[];
+export interface PublicChangesetDef {
+  changes: ChangeRecord[];
   errors: PublicErrors;
-  error: object;
-  change: object;
+  error: Record<string, any>;
+  change: Record<string, any>;
   data: object;
 
   isValid: boolean;
@@ -142,20 +137,33 @@ export interface ChangesetDef {
   safeGet: (obj: any, key: string) => any;
   prepare(preparedChangedFn: PrepareChangesFn): this;
   execute: () => this;
-  save: (options: object) => Promise<ChangesetDef | any>;
+  unexecute: () => this;
+  save: (options?: object) => Promise<ChangesetDef | any>;
   merge: (changeset: this) => this;
   rollback: () => this;
   rollbackInvalid: (key: string | void) => this;
   rollbackProperty: (key: string) => this;
-  validate: (
-    key: string
-  ) => Promise<null> | Promise<any | IErr<any>> | Promise<Array<any | IErr<any>>>;
+  validate: (...keys: string[]) => Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
   addError: <T>(key: string, error: IErr<T> | ValidationErr) => IErr<T> | ValidationErr;
-  pushErrors: (key: string, newErrors: string[]) => IErr<any>;
+  pushErrors: (key: string, ...newErrors: string[]) => IErr<any>;
   snapshot: () => Snapshot;
   restore: (obj: Snapshot) => this;
-  cast: (allowed: Array<string>) => this;
+  cast: (allowed?: Array<string>) => this;
   isValidating: (key: string | void) => boolean;
+  [index: string]: any;
+}
+
+export interface ChangesetDef extends PublicChangesetDef {
+  __changeset__: string;
+
+  _content: object;
+  _changes: Changes;
+  _errors: Errors<any>;
+  _validator: ValidatorAction;
+  _options: Config;
+  _runningValidations: RunningValidations;
+  _bareChanges: { [s: string]: any };
+
   _validate: (
     key: string,
     newValue: any,
@@ -169,3 +177,4 @@ export interface ChangesetDef {
 }
 
 export interface IChangeset extends ChangesetDef, IEvented {}
+export interface IPublicChangeset extends PublicChangesetDef, IEvented {}

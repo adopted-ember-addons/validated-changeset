@@ -1,5 +1,5 @@
 import { getChangeValue, isChange } from '../-private/change';
-import isObject from './is-object';
+import isObject from '../-private/utils/is-object';
 import Err from '../-private/err';
 import { PublicErrors } from '../types';
 
