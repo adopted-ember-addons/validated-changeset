@@ -91,8 +91,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   ]);
 
   private publicApiProperties = new Map<string | symbol, Function>([
-    // [Symbol.toStringTag, () => this[Symbol.toStringTag]],
-    ['__changeset__', () => CHANGESET],
+    ['__changeset__', () => CHANGESET], // backwards compatibility only
     ['change', () => this.change],
     ['changes', () => this.changes],
     ['content', () => this.pendingData],
@@ -112,18 +111,21 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     key: string,
     desc: PropertyDescriptor
   ): boolean {
-    // define a property on the proxy
-    // if (this.__outerProxy) {
-    //   Object.defineProperty(this.__outerProxy, key, desc);
-    // }
+    // defining a property is a change
     this.__changes.set(key, desc);
     return true;
   }
 
+  /**
+   * Proxy trap that intercepts get of all properties and methods.
+   *
+   * @method get
+   */
   public get(_target: {}, key: string, proxy?: Record<string, any>): any {
     if (!this.__outerProxy && proxy) {
+      // this is the first time that we are given our containing proxy
       this.__outerProxy = proxy;
-      // add new properties if they've been defined
+      // add new properties to the proxy if they've been defined already
       let changes = this.__changes;
       for (let key of changes.keys()) {
         let change = changes.get(key);
@@ -134,7 +136,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       }
     }
 
-    //key may be dotted
+    // key may be dotted
     let [localkey, subkey] = splitKey(key);
 
     if (this.publicApiMethods.has(localkey)) {
@@ -152,6 +154,11 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return this.getValue(key);
   }
 
+  /**
+   * Proxy trap that intercepts has key.
+   *
+   * @method has
+   */
   public has(target: Record<string, any>, key: string) {
     return Reflect.has(target, key) || this.__nestedProxies.has(key) || this.__changes.has(key);
   }

@@ -114,46 +114,35 @@ export interface ChangeRecord {
   value: any;
 }
 
-export interface PublicChangesetDef {
+export interface IPublicChangeset {
   changes: ChangeRecord[];
   errors: PublicErrors;
   error: Record<string, any>;
   change: Record<string, any>;
-  data: object;
+
+  content: object;
+  pendingContent: object;
 
   isValid: boolean;
   isPristine: boolean;
   isInvalid: boolean;
   isDirty: boolean;
 
-  get: (key: string) => any;
-  set: <T>(
-    key: string,
-    value: T
-  ) => void | T | IErr<T> | Promise<T> | Promise<ValidationResult | T | IErr<T>> | ValidationResult;
-  maybeUnwrapProxy: Function;
-  getDeep: any;
-  setDeep: any;
-  safeGet: (obj: any, key: string) => any;
   prepare(preparedChangedFn: PrepareChangesFn): this;
   execute: () => this;
   unexecute: () => this;
-  save: (options?: object) => Promise<ChangesetDef | any>;
   merge: (changeset: this) => this;
   rollback: () => this;
   rollbackInvalid: (key: string | void) => this;
-  rollbackProperty: (key: string) => this;
+  apply: (target: {}, options?: object) => this;
   validate: (...keys: string[]) => Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
-  addError: <T>(key: string, error: IErr<T> | ValidationErr) => IErr<T> | ValidationErr;
-  pushErrors: (key: string, ...newErrors: string[]) => IErr<any>;
+  pushErrors: <T>(key: string, ...newErrors: (IErr<T> | ValidationErr)[]) => IErr<any>;
   snapshot: () => Snapshot;
   restore: (obj: Snapshot) => this;
-  cast: (allowed?: Array<string>) => this;
   isValidating: (key: string | void) => boolean;
-  [index: string]: any;
 }
 
-export interface ChangesetDef extends PublicChangesetDef {
+export interface IChangeset extends IPublicChangeset {
   __changeset__: string;
 
   _content: object;
@@ -175,6 +164,3 @@ export interface ChangesetDef extends PublicChangesetDef {
   _rollbackKeys: () => Array<string>;
   _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
 }
-
-export interface IChangeset extends ChangesetDef, IEvented {}
-export interface IPublicChangeset extends PublicChangesetDef, IEvented {}
