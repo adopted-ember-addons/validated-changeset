@@ -62,14 +62,14 @@ describe('Unit | Utility | changeset | access', () => {
   it('content can be read by changeset.get', () => {
     const dummyChangeset = Changeset(dummyModel);
 
-    expect(dummyChangeset.get('name')).toEqual('Bryan');
-    expect(dummyChangeset.get('person.age')).toEqual(42);
-    expect(dummyChangeset.get('person').get('age')).toEqual(42);
-    expect(dummyChangeset.get('primes.2')).toEqual(11);
-    expect(dummyChangeset.get('primes')[2]).toEqual(11);
-    expect(dummyChangeset.get('primes').length).toEqual(3);
-    expect(dummyChangeset.get('primes.length')).toEqual(3);
-    let keys = Object.keys(dummyChangeset.get('person'));
+    expect(dummyChangeset.content.name).toEqual('Bryan');
+    expect(dummyChangeset.content.person.age).toEqual(42);
+    expect(dummyChangeset.content.person.get('age')).toEqual(42);
+    expect(dummyChangeset.content.primes.2).toEqual(11);
+    expect(dummyChangeset.content.primes[2]).toEqual(11);
+    expect(dummyChangeset.content.primes.length).toEqual(3);
+    expect(dummyChangeset.content.primes.length).toEqual(3);
+    let keys = Object.keys(dummyChangeset.content.person);
     expect(keys).toContain('age');
     expect(keys).toContain('name');
   });
@@ -77,17 +77,17 @@ describe('Unit | Utility | changeset | access', () => {
   it('content can be written by changeset.set', () => {
     const dummyChangeset = Changeset(dummyModel);
 
-    dummyChangeset.set('person.name', 'Susan');
+    dummyChangeset.content.person.name =  'Susan';
     expect(dummyModel.person.name).toEqual('Steve');
     dummyChangeset.save();
     expect(dummyModel.person.name).toEqual('Susan');
 
-    dummyChangeset.set('primes.2', 17);
+    dummyChangeset.content.primes[2] =  17;
     expect(dummyModel.primes[2]).toEqual(11);
     dummyChangeset.save();
     expect(dummyModel.primes[2]).toEqual(17);
 
-    dummyChangeset.set('primes.2', dummyChangeset.get('primes.2') + 1);
+    dummyChangeset.content.primes[2] =  dummyChangeset.content.primes[2]+ 1;
     expect(dummyModel.primes[2]).toEqual(17);
     dummyChangeset.save();
     expect(dummyModel.primes[2]).toEqual(18);
