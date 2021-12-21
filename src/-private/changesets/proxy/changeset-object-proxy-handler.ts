@@ -749,7 +749,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   public async validate(...validationKeys: string[]): Promise<any> {
     // only called on the top level node
     let validationMap = this.__options.validationMap || {};
-    if (Object.keys(validationMap as object).length === 0 && !validationKeys.length) {
+    if (Object.keys(validationMap as object).length === 0 && validationKeys.length > 0) {
       return null;
     }
 
