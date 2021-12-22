@@ -7,10 +7,8 @@ import {
   PublicErrors,
   RunningValidations
 } from '../../../types';
-import isChangeset, { CHANGESET } from '../../../utils/is-changeset';
-import setDeep from '../../../utils/set-deep';
-import { DEBUG } from '../../utils/consts';
 import handlerFor from '../../utils/handler-for';
+import { ChangesetIdentityKey, isChangeset } from '../../utils/is-changeset';
 import isUnchanged from '../../utils/is-unchanged';
 import requiresProxying from '../../utils/requires-proxying';
 import splitKey from '../../utils/split-key';
@@ -32,32 +30,6 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     this.options = options;
     this.__data = source;
   }
-
-  private publicApiMethods = new Map<string, Function>([
-    ['cast', this.cast],
-    ['execute', this.execute],
-    ['get', this.getValue],
-    ['rollback', this.rollback],
-    ['save', this.save],
-    ['set', this.setValue],
-    ['unexecute', this.unexecute],
-    ['unwrap', this.unwrap],
-    ['validate', this.validate]
-  ]);
-
-  private publicApiProperties = new Map<string, Function>([
-    ['__changeset__', () => CHANGESET],
-    [Symbol.toStringTag.toString(), () => this[Symbol.toStringTag]],
-    ['change', () => this.change],
-    ['changes', () => this.changes],
-    ['data', () => this.data],
-    ['isChangeset', () => true],
-    ['isDirty', () => this.isDirty],
-    ['isInvalid', () => this.isInvalid],
-    ['isPristine', () => this.isPristine],
-    ['isValid', () => this.isValid],
-    ['pendingData', () => this.pendingData]
-  ]);
 
   public get(_target: any[], key: string | symbol, receiver: any): any {
     // extra stuff
@@ -82,14 +54,6 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       case 'length':
         return Reflect.get(this.writeArray, key, receiver);
     }
-    if (this.publicApiMethods.has(key)) {
-      return this.publicApiMethods.get(key);
-    }
-    if (this.publicApiProperties.has(key)) {
-      let getter = this.publicApiProperties.get(key) as Function;
-      return getter();
-    }
-
     return this.getValue(key);
   }
 
@@ -239,10 +203,8 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
 
   @bind
   public getValue(key: string) {
-    // to be backwards compatible we support getting properties by the get function
-    if (this.publicApiProperties.has(key)) {
-      let getter = this.publicApiProperties.get(key) as Function;
-      return getter();
+    if (key === ChangesetIdentityKey) {
+      return true;
     }
     let [localKey, subkey] = splitKey(key);
     // it wasn't in there so look in our array
@@ -254,7 +216,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       throw 'Negative indices are not allowed as arrays do not serialize values at negative indices';
     }
     let value = this.readArray[index];
-    if (!isChangeset(value) && requiresProxying(value)) {
+    if (requiresProxying(value)) {
       value = this.addProxy(index, this.writeArray[index]);
     }
     if (subkey) {
@@ -276,11 +238,6 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
 
   @bind
   public setValue(key: string, value: any, _validate = true): boolean {
-    if (DEBUG) {
-      if (this.publicApiMethods.has(key) || this.publicApiProperties.has(key)) {
-        throw `changeset.${key} is a readonly property of the changeset`;
-      }
-    }
     let [localKey, subkey] = splitKey(key);
     const index = parseInt(localKey);
     if (index === NaN) {
@@ -312,18 +269,11 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     }
   }
 
-  private addProxy(index: number, value?: {}): any {
+  private addProxy<T extends object>(index: number, value?: T): any {
     // get sends just the key
     // set sends the key and the new value
-    if (value === undefined) {
-      // use the original
-      value = this.__data[index];
-    }
-    if (value === undefined) {
-      // missing on original but added in the changeset
-      value = {};
-    }
-    let proxy = new Proxy(value, handlerFor(value, this.options)) as IChangeset;
+    let proxyValue: T | {} = value ?? (this.__data[index] as T) ?? {};
+    let proxy = new Proxy(proxyValue, handlerFor(proxyValue, this.options)) as IChangeset<T>;
     this.writeArray[index] = proxy;
     return proxy;
   }

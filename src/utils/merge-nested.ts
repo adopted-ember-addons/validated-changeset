@@ -1,4 +1,4 @@
-import setDeep from './set-deep';
+import setDeep from '../-private/utils/set-deep';
 
 const { keys } = Object;
 

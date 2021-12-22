@@ -1,6 +1,5 @@
 import { Changeset, Err } from '../src';
 import get from '../src/utils/get-deep';
-import set from '../src/utils/set-deep';
 import lookupValidator from '../src/utils/validator-lookup';
 
 let dummyModel: any;
@@ -112,8 +111,7 @@ describe('Unit | Utility | changeset', () => {
     const emptyObject = {};
     const dummyChangeset = Changeset(emptyObject, lookupValidator(dummyValidations));
 
-    expect(dummyChangeset.toString()).toEqual('[object Object]');
-    expect(dummyChangeset.isChangeset).toBeTruthy();
+    expect(dummyChangeset.content.toString()).toEqual('[object Object]');
   });
 
   /**

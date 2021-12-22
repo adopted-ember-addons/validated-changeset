@@ -114,14 +114,14 @@ export interface ChangeRecord {
   value: any;
 }
 
-export interface IPublicChangeset {
+export interface IChangeset<T> {
   changes: ChangeRecord[];
   errors: PublicErrors;
   error: Record<string, any>;
   change: Record<string, any>;
 
-  content: object;
-  pendingContent: object;
+  content: T;
+  pendingContent: T;
 
   isValid: boolean;
   isPristine: boolean;
@@ -142,25 +142,25 @@ export interface IPublicChangeset {
   isValidating: (key: string | void) => boolean;
 }
 
-export interface IChangeset extends IPublicChangeset {
-  __changeset__: string;
+// export interface IChangeset extends IPublicChangeset<T> {
+//   __changeset__: string;
 
-  _content: object;
-  _changes: Changes;
-  _errors: Errors<any>;
-  _validator: ValidatorAction;
-  _options: Config;
-  _runningValidations: RunningValidations;
-  _bareChanges: { [s: string]: any };
+//   _content: object;
+//   _changes: Changes;
+//   _errors: Errors<any>;
+//   _validator: ValidatorAction;
+//   _options: Config;
+//   _runningValidations: RunningValidations;
+//   _bareChanges: { [s: string]: any };
 
-  _validate: (
-    key: string,
-    newValue: any,
-    oldValue: any
-  ) => ValidationResult | Promise<ValidationResult>;
-  _setProperty: <T>(obj: NewProperty<T>) => void;
-  _setIsValidating: (key: string, value: Promise<ValidationResult>) => void;
-  _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
-  _rollbackKeys: () => Array<string>;
-  _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
-}
+//   _validate: (
+//     key: string,
+//     newValue: any,
+//     oldValue: any
+//   ) => ValidationResult | Promise<ValidationResult>;
+//   _setProperty: <T>(obj: NewProperty<T>) => void;
+//   _setIsValidating: (key: string, value: Promise<ValidationResult>) => void;
+//   _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
+//   _rollbackKeys: () => Array<string>;
+//   _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
+// }

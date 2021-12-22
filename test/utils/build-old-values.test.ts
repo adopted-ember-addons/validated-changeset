@@ -1,5 +1,4 @@
 import { buildOldValues } from '../../src/utils/build-old-values';
-import getDeep from '../../src/utils/get-deep';
 
 describe('Unit | Utility | build old values', () => {
   it('it returns k-v of old values', () => {
@@ -9,7 +8,7 @@ describe('Unit | Utility | build old values', () => {
       { key: 'user.lastName', value: 'Bolton' }
     ];
 
-    const contentValues = buildOldValues(objA, changes, getDeep);
+    const contentValues = buildOldValues(objA, changes);
 
     expect(contentValues).toEqual({ 'user.firstName': 'Ivan' });
   });
@@ -18,7 +17,7 @@ describe('Unit | Utility | build old values', () => {
     const objA = { user: { firstName: 'Ivan' } };
     const changes = [{ key: 'user.firstName', value: 'Ivan' }];
 
-    const contentValues = buildOldValues(objA, changes, getDeep);
+    const contentValues = buildOldValues(objA, changes);
 
     expect(contentValues).toEqual({ 'user.firstName': 'Ivan' });
   });
@@ -30,7 +29,7 @@ describe('Unit | Utility | build old values', () => {
       { key: 'user.lastName.nickname', value: 'Bolt' }
     ];
 
-    const contentValues = buildOldValues(objA, changes, getDeep);
+    const contentValues = buildOldValues(objA, changes);
 
     expect(contentValues).toEqual({ 'user.firstName': 'Ivan', 'user.lastName.nickname': 'CC' });
   });

@@ -1,10 +1,10 @@
-import { ChangeRecord, IPublicChangeset, PublicErrors } from '../../../types';
+import { ChangeRecord, IChangeset, PublicErrors } from '../../../types';
 import ChangesetNode from './changeset-node';
 
 const NotImplemented = 'Not Implemented';
 
-export default class ChangeSetNodeForObject extends ChangesetNode implements IPublicChangeset {
-  get content(): object {
+export default class ChangeSetNodeForObject<T> extends ChangesetNode implements IChangeset<T> {
+  get content(): T {
     throw NotImplemented;
   }
 
@@ -24,7 +24,7 @@ export default class ChangeSetNodeForObject extends ChangesetNode implements IPu
     throw NotImplemented;
   }
 
-  get pendingContent(): object {
+  get pendingContent(): T {
     throw NotImplemented;
   }
 

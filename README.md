@@ -60,7 +60,10 @@ On rollback, all changes are dropped and the underlying Object is left untouched
 ## Full API
 
 ```js
-Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, changesetKeys: string[] });
+changeset(model); // simplest
+
+changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, changesetKeys: string[] });
+
 ```
 
 - `model` (required)

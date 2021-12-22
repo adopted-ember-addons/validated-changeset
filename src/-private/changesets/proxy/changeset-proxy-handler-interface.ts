@@ -1,4 +1,4 @@
-import { Content, PrepareChangesFn, PublicErrors } from '../../../types';
+import { PrepareChangesFn, PublicErrors } from '../../../types';
 
 export interface Change {
   key: string;
@@ -12,7 +12,6 @@ export default interface IChangesetProxyHandler {
   change: object;
   data: object;
 
-  isChangeset: boolean;
   isDirty: boolean;
   isPristine: boolean;
   isValid: boolean;
@@ -27,7 +26,4 @@ export default interface IChangesetProxyHandler {
   unexecute(): this;
   unwrap(): this; // deprecated
   validate(): Promise<void>;
-  // backwards compatible with old ember-changeset
-  get(target: Content, key: string, proxy?: {}): any;
-  set(target: Content, key: string, value: any): any;
 }

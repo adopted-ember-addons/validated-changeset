@@ -1,12 +1,12 @@
 import { bind } from 'bind-decorator';
-import { Changeset, Err, getDeep, isObject, isPromise, setDeep } from '../../..';
+import { Changeset, Err, isObject, isPromise } from '../../..';
 import {
   ChangeRecord,
   Changes,
   Content,
   Errors,
+  IChangeset,
   IErr,
-  IPublicChangeset,
   NewProperty,
   PrepareChangesFn,
   PublicErrors,
@@ -17,16 +17,15 @@ import {
   ValidatorAction
 } from '../../../types';
 import { flattenValidations } from '../../../utils/flatten-validations';
-import isChangeset, { CHANGESET } from '../../../utils/is-changeset';
+import getDeep from '../../../utils/get-deep';
 import { ObjectTreeNode } from '../../../utils/object-tree-node';
 import Notifier from '../../notifier';
 import assert from '../../utils/assert';
-import { DEBUG } from '../../utils/consts';
 import deleteErrorKey from '../../utils/delete-error-key';
 import handlerFor from '../../utils/handler-for';
+import { ChangesetIdentityKey } from '../../utils/is-changeset';
 import isUnchanged from '../../utils/is-unchanged';
 import requiresProxying from '../../utils/requires-proxying';
-import safeSet from '../../utils/safe-set';
 import splitKey from '../../utils/split-key';
 import {
   AFTER_ROLLBACK_EVENT,
@@ -67,45 +66,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     }
   }
 
-  private publicApiMethods: Map<string, Function> = new Map<string, Function>([
-    ['addError', this.addError],
-    ['cast', this.cast],
-    ['execute', this.execute],
-    ['get', this.getValue],
-    ['isValidating', this.isValidating],
-    ['merge', this.merge],
-    ['on', this.on],
-    ['off', this.off],
-    ['prepare', this.prepare],
-    ['pushErrors', this.pushErrors],
-    ['restore', this.restore],
-    ['rollback', this.rollback],
-    ['rollbackInvalid', this.rollbackInvalid],
-    ['rollbackProperty', this.rollbackProperty],
-    ['save', this.save],
-    ['set', this.setValue],
-    ['snapshot', this.snapshot],
-    ['unexecute', this.unexecute],
-    ['unwrap', this.unwrap],
-    ['validate', this.validate]
-  ]);
-
-  private publicApiProperties = new Map<string | symbol, Function>([
-    ['__changeset__', () => CHANGESET], // backwards compatibility only
-    ['change', () => this.change],
-    ['changes', () => this.changes],
-    ['content', () => this.pendingData],
-    ['data', () => this.data],
-    ['error', () => this.error],
-    ['errors', () => this.errors],
-    ['isChangeset', () => true],
-    ['isDirty', () => this.isDirty],
-    ['isInvalid', () => this.isInvalid],
-    ['isPristine', () => this.isPristine],
-    ['isValid', () => this.isValid],
-    ['pendingData', () => this.pendingData]
-  ]);
-
   public defineProperty(
     target: Record<string, any>,
     key: string,
@@ -136,20 +96,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
       }
     }
 
-    // key may be dotted
-    let [localkey, subkey] = splitKey(key);
-
-    if (this.publicApiMethods.has(localkey)) {
-      return this.publicApiMethods.get(localkey);
-    }
-    if (this.publicApiProperties.has(localkey)) {
-      let getter = this.publicApiProperties.get(localkey) as Function;
-      let result = getter();
-      if (subkey) {
-        result = getDeep(result, subkey);
-      }
-      return result;
-    }
     // otherwise it's to be found on the wrapped object
     return this.getValue(key);
   }
@@ -204,8 +150,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     }
     return Reflect.getOwnPropertyDescriptor(target, key);
   }
-
-  public readonly isChangeset = true;
 
   public get data(): Content {
     return this.__data;
@@ -280,27 +224,13 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
   @bind
   public getValue(key: string): any {
+    if (key === ChangesetIdentityKey) {
+      return true;
+    }
+
     // nested keys are separated by dots
     let [localKey, subkey] = splitKey(key as string);
 
-    // to be backwards compatible we support getting properties by the get function
-    if (this.publicApiProperties.has(localKey)) {
-      let getter = this.publicApiProperties.get(localKey) as Function;
-      let value = getter();
-      if (subkey) {
-        return value[subkey];
-      }
-      return value;
-    }
-    // it wasn't in there so look in our contents
-
-    if (localKey === '_content') {
-      // backwards compatibility only
-      if (subkey) {
-        return this.__outerProxy[subkey];
-      }
-      return this.__outerProxy;
-    }
     // is it an existing proxy?
     if (this.__nestedProxies.has(localKey)) {
       let proxy = this.__nestedProxies.get(localKey);
@@ -347,12 +277,6 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
   @bind
   public setValue(key: string, value: any, _validate = true): boolean {
-    if (DEBUG) {
-      if (this.publicApiMethods.has(key) || this.publicApiProperties.has(key)) {
-        throw `changeset.${key} is a readonly property of the changeset`;
-      }
-    }
-
     // nested keys are separated by dots
     let [localKey, subkey] = splitKey(key as string);
 
@@ -476,9 +400,11 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
   }
 
   @bind
-  public merge(changeset2: IPublicChangeset): IPublicChangeset {
-    assert('Cannot merge with a non-changeset', isChangeset(changeset2));
-    assert('Cannot merge with a changeset of different content', changeset2.data === this.__data);
+  public merge<T>(changeset2: IChangeset<T>): IChangeset<T> {
+    assert(
+      'Cannot merge with a changeset of different content',
+      changeset2.content === this.__data
+    );
     let result = Changeset(
       this.data,
       this.__options.validateFn,
@@ -950,9 +876,9 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     }
 
     // Add `key` to errors map.
-    let errors: Errors<any> = this.__errors || {};
+    //    let errors: Errors<any> = this.__errors || {};
     // @tracked
-    this.__errors = setDeep(errors, key, newError, {});
+    //    this.__errors = setDeep(errors, key, newError, {});
     this.__errorsCache = this.__errors;
 
     // Return passed-in `error`.
@@ -972,9 +898,9 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
 
     let v = existingError.validation;
     validation = [...v, ...newErrors];
-    let newError = new Err(value, validation);
+    // let newError = new Err(value, validation);
     // @tracked
-    this.__errors = setDeep(errors, key as string, newError, { safeSet });
+    // this.__errors = setDeep(errors, key as string, newError, { safeSet });
     this.__errorsCache = this.__errors;
 
     return { value, validation };
@@ -986,7 +912,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
    */
   private _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
     let running: RunningValidations = this._runningValidations;
-    setDeep(running, key, promise);
+    // setDeep(running, key, promise);
   }
 
   private clearPending() {

@@ -1,6 +1,6 @@
-import Change, { getChangeValue, isChange } from '../-private/change';
-import isObject from '../-private/utils/is-object';
-import { isArrayObject } from './array-object';
+import Change, { getChangeValue, isChange } from '../change';
+import isObject from './is-object';
+import { isArrayObject } from '../../utils/array-object';
 
 interface Options {
   safeSet?: any;

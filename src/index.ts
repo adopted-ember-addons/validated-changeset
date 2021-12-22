@@ -13,8 +13,6 @@ import { buildOldValues } from './utils/build-old-values';
 import objectWithout from './utils/object-without';
 import take from './utils/take';
 import mergeDeep, { propertyIsUnsafe } from './utils/merge-deep';
-import setDeep from './utils/set-deep';
-import getDeep from './utils/get-deep';
 
 import proxiedChangeset from './-private/changesets/proxied-changeset';
 import { Config, IPublicChangeset, ValidatorAction, ValidatorMap } from './types';
@@ -38,8 +36,6 @@ export {
   pureAssign,
   take,
   mergeDeep,
-  setDeep,
-  getDeep,
   propertyIsUnsafe
 };
 
