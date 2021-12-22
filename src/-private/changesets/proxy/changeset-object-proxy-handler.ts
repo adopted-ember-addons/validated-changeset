@@ -218,7 +218,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     return true;
   }
 
-  public get pendingData(): { [index: string]: any } {
+  public get content(): { [index: string]: any } {
     return this.__outerProxy as {};
   }
 
@@ -699,7 +699,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     let changes = [...this.__changes.entries()];
     for (let [key, value] of changes) {
       if (value === ObjectReplaced) {
-        result[key] = this.__nestedProxies.get(key).pendingData;
+        result[key] = this.__nestedProxies.get(key);
       } else {
         result[key as string] = value;
       }
@@ -719,7 +719,7 @@ export default class ChangesetObjectProxyHandler implements IChangesetProxyHandl
     let allChanges = [...this.__changes.entries()].map(([key, value]) => {
       if (value === ObjectReplaced) {
         replacements.push(key);
-        value = Object.assign({}, this.__nestedProxies.get(key).pendingData);
+        value = Object.assign({}, this.__nestedProxies.get(key));
       }
       return {
         key,

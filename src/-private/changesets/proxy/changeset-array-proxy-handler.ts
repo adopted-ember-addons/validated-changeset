@@ -139,7 +139,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     return true;
   }
 
-  public get pendingData(): any[] {
+  public get content(): any[] {
     return this.readArray;
   }
 
@@ -441,7 +441,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
           if (!isUnchanged(newValue.data, oldValue)) {
             allChanges.push({
               key: `${i}`,
-              value: newValue.pendingData
+              value: newValue.content
             });
           }
           // now add any changes within the object

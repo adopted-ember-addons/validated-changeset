@@ -5,17 +5,17 @@ export interface Change {
   value: any;
 }
 
-export default interface IChangesetProxyHandler {
+export default interface IChangesetProxyHandler<T extends object> {
   changes: Record<string, any>[];
   errors: PublicErrors;
   error: object;
   change: object;
-  data: object;
+  data: T;
 
   isDirty: boolean;
   isPristine: boolean;
   isValid: boolean;
-  pendingData: { [index: string]: any };
+  content: T;
   execute(): this;
   isValidating: (key: string | void) => boolean;
   prepare(preparedChangedFn: PrepareChangesFn): this;

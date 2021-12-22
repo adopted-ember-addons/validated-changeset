@@ -1,5 +1,5 @@
-import setDeep from '../../src/utils/set-deep';
 import Change from '../../src/-private/change';
+import setDeep from '../../src/-private/utils/set-deep';
 
 describe('Unit | Utility | set deep', () => {
   it('it sets value', () => {
@@ -32,11 +32,11 @@ describe('Unit | Utility | set deep', () => {
 
   it('handles booleans', () => {
     const objA = { name: [{ nick: false }] };
-    const value = setDeep(objA, 'name[0].nick', true);
+    const value = setDeep(objA, 'name.0.nick', true);
 
     expect(value).toEqual({ name: [{ nick: true }] });
 
-    const value2 = setDeep(value, 'name[0].nick', false);
+    const value2 = setDeep(value, 'name.0.nick', false);
 
     expect(value2).toEqual({ name: [{ nick: false }] });
   });
@@ -58,21 +58,21 @@ describe('Unit | Utility | set deep', () => {
 
   it('handles existing arrays', () => {
     const objA = { entries: [{ prop: 'foo' }] };
-    const value = setDeep(objA, 'entries[0].prop', 'bar');
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
 
     expect(value).toEqual({ entries: [{ prop: 'bar' }] });
   });
 
   it('inserts data into existing arrays', () => {
     const objA = { entries: [{ prop: 'foo' }] };
-    const value = setDeep(objA, 'entries[1].prop', 'bar');
+    const value = setDeep(objA, 'entries.1.prop', 'bar');
 
     expect(value).toEqual({ entries: [{ prop: 'foo' }, { prop: 'bar' }] });
   });
 
   it('inserts data into empty arrays', () => {
     const objA = { entries: [] };
-    const value = setDeep(objA, 'entries[0].prop', 'bar');
+    const value = setDeep(objA, 'entries.0.prop', 'bar');
 
     expect(value).toEqual({ entries: [{ prop: 'bar' }] });
   });
@@ -288,13 +288,13 @@ describe('Unit | Utility | set deep', () => {
         const objA = {
           top: []
         };
-        let value = setDeep(objA, 'top[0].name', new Change('zoo'));
+        let value = setDeep(objA, 'top.0.name', new Change('zoo'));
 
         expect(value).toEqual({
           top: [{ name: new Change('zoo') }]
         });
 
-        value = setDeep(value, 'top[0].foo.other', new Change('baz'));
+        value = setDeep(value, 'top.0.foo.other', new Change('baz'));
 
         expect(value).toEqual({
           top: [
@@ -312,7 +312,7 @@ describe('Unit | Utility | set deep', () => {
         const objA = {
           top: [new Change({ foo: { other: 'bar' }, name: 'jimmy' })]
         };
-        let value = setDeep(objA, 'top[0].name', new Change('zoo'));
+        let value = setDeep(objA, 'top.0.name', new Change('zoo'));
 
         expect(value).toEqual({
           top: [
@@ -323,7 +323,7 @@ describe('Unit | Utility | set deep', () => {
           ]
         });
 
-        value = setDeep(value, 'top[0].foo.other', new Change('baz'));
+        value = setDeep(value, 'top.0.foo.other', new Change('baz'));
 
         expect(value).toEqual({
           top: [
@@ -348,7 +348,7 @@ describe('Unit | Utility | set deep', () => {
           }
         };
 
-        let value = setDeep(objA, 'contact.emails[1].primary', new Change('primary2@email.com'));
+        let value = setDeep(objA, 'contact.emails.1.primary', new Change('primary2@email.com'));
 
         expect(value).toEqual({
           contact: {

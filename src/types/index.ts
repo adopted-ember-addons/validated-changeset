@@ -121,7 +121,7 @@ export interface IChangeset<T> {
   change: Record<string, any>;
 
   content: T;
-  pendingContent: T;
+  originalContent: T;
 
   isValid: boolean;
   isPristine: boolean;
@@ -141,26 +141,3 @@ export interface IChangeset<T> {
   restore: (obj: Snapshot) => this;
   isValidating: (key: string | void) => boolean;
 }
-
-// export interface IChangeset extends IPublicChangeset<T> {
-//   __changeset__: string;
-
-//   _content: object;
-//   _changes: Changes;
-//   _errors: Errors<any>;
-//   _validator: ValidatorAction;
-//   _options: Config;
-//   _runningValidations: RunningValidations;
-//   _bareChanges: { [s: string]: any };
-
-//   _validate: (
-//     key: string,
-//     newValue: any,
-//     oldValue: any
-//   ) => ValidationResult | Promise<ValidationResult>;
-//   _setProperty: <T>(obj: NewProperty<T>) => void;
-//   _setIsValidating: (key: string, value: Promise<ValidationResult>) => void;
-//   _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
-//   _rollbackKeys: () => Array<string>;
-//   _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
-// }
