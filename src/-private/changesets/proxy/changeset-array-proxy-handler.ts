@@ -327,7 +327,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     if (this.isDirty) {
       this.__undoState = this.__originalContent.concat([]); // copy the array;
       if (this.__changes && this.isValid) {
-        this.replaceSourceWith(this.__changes);
+        replaceArrayContent(target, this.__changes);
       }
     }
     return this;
@@ -393,16 +393,12 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   public rollback(): void {
     // apply the undo state
     if (this.__undoState) {
-      this.replaceSourceWith(this.__undoState);
+      replaceArrayContent(this.__originalContent, this.__undoState);
     }
     this.clearPending();
   }
 
-  replaceSourceWith(newArray: any[]) {
-    this.__originalContent.splice(0, this.__originalContent.length, ...newArray);
-  }
-
-  @bind
+  
   public async validate(..._validationKeys: string[]): Promise<void> {}
 
   public get change(): { [index: string]: any } | any[] {
