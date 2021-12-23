@@ -3,7 +3,6 @@ import {
   ChangeRecord,
   Changes,
   Errors,
-  IChangeset,
   IErr,
   NewProperty,
   PrepareChangesFn,
@@ -18,7 +17,6 @@ import {
 import { flattenValidations } from '../../../utils/flatten-validations';
 import { ObjectTreeNode } from '../../../utils/object-tree-node';
 import Notifier from '../../notifier';
-import assert from '../../utils/assert';
 import deleteErrorKey from '../../utils/delete-error-key';
 import getDeep from '../../utils/get-deep';
 import handlerFor from '../../utils/handler-for';
@@ -46,7 +44,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
   implements IChangesetProxyHandler<T> {
   constructor(source: T, options: ProxyOptions) {
     this.__options = options || {};
-    this.__content = source;
+    this.__originalContent = source;
     let keyFilters = options?.changesetKeys;
     if (keyFilters) {
       let localKeyFilters = []; // only the ones where our property is the leaf
@@ -258,7 +256,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     // drop back to the internal object property
     // or a proxy of it if it's an object
 
-    let value = Reflect.get(this.__content, localKey);
+    let value = Reflect.get(this.__originalContent, localKey);
     if (requiresProxying(value)) {
       // we know that this key has not already been proxied
       let proxy = this.addProxy(localKey);
@@ -295,7 +293,8 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
       }
       if (requiresProxying(value)) {
         // mark the overwrite if this is a new object
-        let currentObject = this.__nestedProxies.get(localKey)?.data ?? this.__content[localKey];
+        let currentObject =
+          this.__nestedProxies.get(localKey)?.data ?? this.__originalContent[localKey];
         if (isUnchanged(currentObject, value)) {
           this.__changes.delete(localKey);
         } else {
@@ -303,7 +302,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
         }
         this.addProxy(localKey, value);
       } else {
-        if (isUnchanged(value, this.__content[localKey as keyof T])) {
+        if (isUnchanged(value, this.__originalContent[localKey as keyof T])) {
           this.__changes.delete(localKey);
         } else {
           // the value is a local property
@@ -357,7 +356,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
    *
    * @method restore
    */
-  @bind
+
   restore({ changes, errors }: Snapshot): this {
     this.clearPending();
     if (changes) {
@@ -478,7 +477,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
 
   public execute(target?: T): this {
     if (target === undefined) {
-      target = this.__content;
+      target = this.__originalContent;
     }
     // execute the tree from the top down
     if (!this.__undoState) {
@@ -493,7 +492,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
       let changes = [...this.__changes.entries()];
       for (let [key, newValue] of changes) {
         // grab the old value for undo
-        let oldValue = Reflect.get(this.__content, key);
+        let oldValue = Reflect.get(this.__originalContent, key);
         if (oldValue === undefined) {
           oldValue = DeleteOnUndo;
         }
@@ -502,19 +501,19 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
         if (newValue === ObjectReplaced) {
           // apply the entire proxy now
           // and changes in the next phase below
-          Reflect.set(this.__content, key, this.__nestedProxies.get(key).data);
+          Reflect.set(this.__originalContent, key, this.__nestedProxies.get(key).data);
         } else if (isObject(newValue)) {
           // this is a defineProperty descriptor
-          Reflect.defineProperty(this.__content, key, newValue);
+          Reflect.defineProperty(this.__originalContent, key, newValue);
         } else {
-          Reflect.set(this.__content, key, newValue);
+          Reflect.set(this.__originalContent, key, newValue);
         }
       }
     }
     // now apply the data from the nested proxies
     for (let [key, proxy] of this.__nestedProxies.entries()) {
-      if (!Reflect.has(this.__content, key)) {
-        Reflect.set(this.__content, key, proxy.data);
+      if (!Reflect.has(this.__originalContent, key)) {
+        Reflect.set(this.__originalContent, key, proxy.data);
         this.__undoState.set(key, DeleteOnUndo);
       }
       proxy.execute();
@@ -591,7 +590,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
 
   public unexecute(target?: T): this {
     if (target === undefined) {
-      target = this.__content;
+      target = this.__originalContent;
     }
 
     // apply the undo state from the bottom up
@@ -607,9 +606,9 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
       let oldStates = [...this.__undoState.entries()];
       for (let [key, value] of oldStates) {
         if (value === DeleteOnUndo) {
-          Reflect.deleteProperty(this.__content, key);
+          Reflect.deleteProperty(this.__originalContent, key);
         } else {
-          Reflect.set(this.__content, key, value);
+          Reflect.set(this.__originalContent, key, value);
         }
       }
     }
@@ -738,7 +737,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     oldValue: unknown
   ): ValidationResult | Promise<ValidationResult> {
     let validator: ValidatorAction = this.__options.validateFn;
-    let content = this.__content;
+    let content = this.__originalContent;
 
     if (typeof validator === 'function') {
       let validationResult = validator({
@@ -770,7 +769,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     key: string,
     value: T
   ): Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
-    let content = this.__content;
+    let content = this.__originalContent;
     let oldValue: any = getDeep(content, key);
     let validation: ValidationResult | Promise<ValidationResult> = this._validate(
       key,
@@ -828,10 +827,9 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return { value, validation };
   }
 
-  private get originalContent(): T {
+  get originalContent(): T {
     return this.__originalContent;
   }
-
 
   /**
    * Increment or decrement the number of running validations for a
@@ -850,7 +848,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
   }
 
   private markChange(localKey: string, value: any) {
-    const oldValue = Reflect.get(this.__content, localKey);
+    const oldValue = Reflect.get(this.__originalContent, localKey);
     const unchanged = isUnchanged(value, oldValue);
     let changes = this.__changes;
     if (changes.has(localKey)) {
@@ -874,7 +872,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
   //  * String representation for the changeset.
   //  */
   // get [Symbol.toStringTag](): string {
-  //   let normalisedContent: object = pureAssign(this.__content, {});
+  //   let normalisedContent: object = pureAssign(this.__originalContent, {});
   //   return `changeset:${normalisedContent.toString()}`;
   // }
 
@@ -883,7 +881,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     // set sends the key and the new value
     if (value === undefined) {
       // use the original
-      value = Reflect.get(this.__content, key);
+      value = Reflect.get(this.__originalContent, key);
     }
     if (value === undefined) {
       // missing on original but added in the changeset
@@ -950,7 +948,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
   private __options: ProxyOptions;
   private _runningValidations: RunningValidations = {};
   private __localChangesetKeyFilters?: string[]; // only where our property is the leaf
-  private __content: T;
+  private __originalContent: T;
   private __errors: Errors<any> = {};
   private __errorsCache: Errors<any> = {};
   private __undoState: Map<string, any> | undefined;

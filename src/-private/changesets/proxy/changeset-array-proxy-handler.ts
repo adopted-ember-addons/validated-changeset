@@ -2,14 +2,18 @@ import { Notifier } from '../..';
 import {
   Errors,
   IChangeset,
+  IErr,
   PrepareChangesFn,
   PublicErrors,
   RunningValidations,
-  TContentArray
+  Snapshot,
+  TContentArray,
+  ValidationErr
 } from '../../../types';
 import handlerFor from '../../utils/handler-for';
 import { ChangesetIdentityKey, isChangeset } from '../../utils/is-changeset';
 import isUnchanged from '../../utils/is-unchanged';
+import replaceArrayContent from '../../utils/replace-array-content';
 import requiresProxying from '../../utils/requires-proxying';
 import setDeep from '../../utils/set-deep';
 import splitKey from '../../utils/split-key';
@@ -31,6 +35,26 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   constructor(source: T, options: ProxyOptions) {
     this.options = options;
     this.__originalContent = source;
+  }
+
+  get originalContent(): T {
+    return this.__originalContent;
+  }
+
+  applyTo(target?: T): this {
+    this.execute(target);
+    this.clearPending();
+    return this;
+  }
+
+  pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
+    throw new Error('Method not implemented.');
+  }
+  restore(obj: Snapshot): this {
+    throw new Error('Method not implemented.');
+  }
+  snapshot(): Snapshot {
+    throw new Error('Method not implemented.');
   }
 
   public get(_target: T, key: string | symbol, receiver: any): any {
@@ -156,7 +180,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     });
   }
 
-  
   public isValidating(key: string | void): boolean {
     let runningValidations: RunningValidations = this._runningValidations;
     let ks: string[] = Object.keys(runningValidations);
@@ -166,7 +189,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return ks.length > 0;
   }
 
-  
   rollbackInvalid(key: string | void): this {
     if (!key) {
       // clone the array so we can edit the object
@@ -181,13 +203,11 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  
   public at(index: number) {
     // is it an existing proxy?
     return this.readArray[index];
   }
 
-  
   cast() {
     // noop
   }
@@ -199,7 +219,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this.readArray.toString();
   }
 
-  
   public getValue(key: string) {
     if (key === ChangesetIdentityKey) {
       return true;
@@ -234,7 +253,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this.__changes as T;
   }
 
-  
   public setValue(key: string, value: any, _validate = true): boolean {
     let [localKey, subkey] = splitKey(key);
     const index = parseInt(localKey);
@@ -301,7 +319,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     // }
   }
 
-  
   public prepare(preparedChangedFn: PrepareChangesFn): this {
     let changes: Record<string, any> = {};
     for (let change of this.changes) {
@@ -320,12 +337,14 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  
   public execute(target?: TContentArray): this {
     // apply the changes to the source
     // but keep the changes for undo later
+    if (target === undefined) {
+      target = this.__originalContent;
+    }
     if (this.isDirty) {
-      this.__undoState = this.__originalContent.concat([]); // copy the array;
+      this.__undoState = target.concat([]); // copy the array;
       if (this.__changes && this.isValid) {
         replaceArrayContent(target, this.__changes);
       }
@@ -333,25 +352,21 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  
   on(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.addListener(callback);
   }
 
-  
   off(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.removeListener(callback);
   }
 
-  
   public unwrap(): this {
     // deprecated
     return this;
   }
 
-  
   public unexecute(): this {
     if (this.__changes !== undefined) {
       // apply the undo state from the bottom up
@@ -382,14 +397,12 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     this.__undoState = undefined;
   }
 
-  
   public rollbackProperty(_key: string): this {
     // doesn't mean anything for arrays
     this.trigger(AFTER_ROLLBACK_EVENT);
     return this;
   }
 
-  
   public rollback(): void {
     // apply the undo state
     if (this.__undoState) {
@@ -398,7 +411,6 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     this.clearPending();
   }
 
-  
   public async validate(..._validationKeys: string[]): Promise<void> {}
 
   public get change(): { [index: string]: any } | any[] {
