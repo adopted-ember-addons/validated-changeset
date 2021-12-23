@@ -393,38 +393,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this;
   }
 
-  @bind
-  public merge(changeset2: IChangeset<T>): IChangeset<T> {
-    assert(
-      'Cannot merge with a changeset of different content',
-      changeset2.content === this.__content
-    );
-    let result = new Changeset(
-      this.content,
-      this.__options.validateFn,
-      this.__options.validationMap,
-      this.__options
-    );
-    let resultContent = result.content as TContentObject;
-    let applyChanges = (changes: ChangeRecord[]) => {
-      for (let change of changes) {
-        resultContent[change.key] = change.value;
-      }
-    };
-    applyChanges(this.changes);
-    applyChanges(changeset2.changes);
-
-    let applyErrors = (errors: PublicErrors) => {
-      for (let error of errors) {
-        result.pushErrors(error.key, new Err(error.value, error.validation));
-      }
-    };
-    applyErrors(this.errors);
-    applyErrors(changeset2.errors);
-    return result;
-  }
-
-  @bind
   public prepare(fn: PrepareChangesFn): this {
     if (!fn) {
       return this;

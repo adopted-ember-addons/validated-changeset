@@ -22,7 +22,7 @@ export default class Changeset<T extends TContent> implements IChangeset<T> {
     validationMap?: ValidatorMap | null | undefined,
     options?: Config
   ) {
-    const handlerOptions: ProxyOptions = {
+    this._options = {
       changesetKeys: options?.changesetKeys,
       skipValidate: options?.skipValidate,
       getArrayStorage: undefined,
@@ -30,13 +30,12 @@ export default class Changeset<T extends TContent> implements IChangeset<T> {
       validateFn,
       validationMap
     };
-    this._originalContent = data;
-    this._proxyHandler = handlerFor(data, handlerOptions);
+    this._proxyHandler = handlerFor(data, this._options);
     this._proxy = new Proxy(data, this._proxyHandler);
   }
 
+  private readonly _options: ProxyOptions;
   private readonly _proxy: T;
-  private readonly _originalContent: T;
   private readonly _proxyHandler: IChangesetProxyHandler<T>;
 
   get content(): T {
@@ -94,9 +93,18 @@ export default class Changeset<T extends TContent> implements IChangeset<T> {
     return this;
   }
 
-  merge(changeset: IChangeset<T>): this {
-    this._proxyHandler.merge(changeset);
-    return this;
+  merge(changeset2: IChangeset<T>): IChangeset<T> {
+    let newContent = (Array.isArray(this.content) ? [] : {}) as T;
+    // create a new changeset with our options
+    let result = new Changeset(newContent, this._options.validateFn, this._options.validationMap, {
+      changesetKeys: this._options.changesetKeys,
+      skipValidate: this._options.skipValidate
+    });
+    // apply our changes
+    this.applyTo(result.content);
+    // apply the other changes over the top
+    changeset2.applyTo(result.content);
+    return result;
   }
 
   rollback(): this {

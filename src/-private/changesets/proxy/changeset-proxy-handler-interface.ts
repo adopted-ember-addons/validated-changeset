@@ -1,6 +1,5 @@
 import {
   ChangeRecord,
-  IChangeset,
   IErr,
   PrepareChangesFn,
   PublicErrors,
@@ -28,7 +27,6 @@ export default interface IChangesetProxyHandler<T extends TContent> extends Prox
   originalContent: T;
   execute(): this;
   isValidating(key: string | void): boolean;
-  merge(changeset: IChangeset<T>): this;
   prepare(preparedChangedFn: PrepareChangesFn): this;
   applyTo(target?: T): this;
   pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any>;
