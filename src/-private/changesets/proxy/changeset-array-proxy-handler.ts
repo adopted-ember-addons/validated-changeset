@@ -1,5 +1,7 @@
-import { Notifier } from '../..';
+import { Err, Notifier } from '../..';
+import { isObject } from '../../..';
 import {
+  Changes,
   Errors,
   IChangeset,
   IErr,
@@ -10,6 +12,7 @@ import {
   TContentArray,
   ValidationErr
 } from '../../../types';
+import getDeep from '../../utils/get-deep';
 import handlerFor from '../../utils/handler-for';
 import { ChangesetIdentityKey, isChangeset } from '../../utils/is-changeset';
 import isUnchanged from '../../utils/is-unchanged';
@@ -48,13 +51,81 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   }
 
   pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
-    throw new Error('Method not implemented.');
+    let errors: Errors<any> = this.__errors;
+    let existingError: IErr<any> | Err = getDeep(errors, key) || new Err(null, []);
+    let validation: ValidationErr | ValidationErr[] = existingError.validation;
+    let value: any = this.getValue(key);
+
+    if (!Array.isArray(validation) && Boolean(validation)) {
+      existingError.validation = [validation];
+    }
+
+    let v = existingError.validation;
+    validation = [...v, ...newErrors];
+    // let newError = new Err(value, validation);
+    // @tracked
+    // this.__errors = setDeep(errors, key as string, newError, { safeSet });
+    this.__errorsCache = this.__errors;
+
+    return { value, validation };
   }
-  restore(obj: Snapshot): this {
-    throw new Error('Method not implemented.');
+
+  restore({ changes, errors }: Snapshot): this {
+    this.clearPending();
+    if (changes) {
+      for (let key of Object.keys(changes)) {
+        let value = changes[key];
+        if (isObject(value)) {
+          // pass the change down to a nested level
+          let proxy = this.__nestedProxies.get(key);
+          if (!proxy) {
+            // no existing proxy
+            proxy = this.addProxy(key);
+          }
+          proxy.restore({ changes: value });
+        } else {
+          this.__changes.set(key, value);
+        }
+      }
+    }
+    if (errors) {
+      let newErrors: Errors<any> = Object.keys(errors).reduce(
+        (newObj: Errors<any>, key: keyof Changes) => {
+          let e: IErr<any> = errors[key];
+          newObj[key] = new Err(e.value, e.validation);
+          return newObj;
+        },
+        {}
+      );
+
+      // @tracked
+      this.__errors = newErrors;
+      this.__errorsCache = this.__errors;
+    }
+    return this;
   }
+
   snapshot(): Snapshot {
-    throw new Error('Method not implemented.');
+    let changes: Changes = this.change;
+    let errors: Errors<any> = this.__errors;
+
+    return {
+      changes: Object.keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
+        let change = changes[key];
+        if (isObject(change)) {
+          // clone it
+          change = Object.assign({}, change);
+        }
+        newObj[key] = change;
+        return newObj;
+      }, {}),
+
+      errors: Object.keys(errors).reduce((newObj: Errors<any>, key: keyof Errors<any>) => {
+        let e = errors[key];
+        newObj[key] = { value: e.value, validation: e.validation };
+        return newObj;
+      }, {})
+    };
   }
 
   public get(_target: T, key: string | symbol, receiver: any): any {
@@ -98,7 +169,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return Reflect.getOwnPropertyDescriptor(this.readArray, key);
   }
 
-  public set(_target: any[], key: string, value: any): any {
+  public set(_target: {}, key: string, value: any): any {
     return this.setValue(key, value);
   }
 
