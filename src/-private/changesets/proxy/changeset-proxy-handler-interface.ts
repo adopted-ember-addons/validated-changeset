@@ -37,5 +37,5 @@ export default interface IChangesetProxyHandler<T extends TContent> extends Prox
   snapshot(): Snapshot;
   unexecute(): this;
   unwrap(): this; // deprecated
-  validate(keys: string[]): Promise<void>;
+  validate(...keys: string[]): Promise<any>;
 }
