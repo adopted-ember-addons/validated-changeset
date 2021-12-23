@@ -68,10 +68,9 @@ export interface Changes {
   [s: string]: any; //IChange;
 }
 
-export interface Content {
-  save?: Function | undefined;
-  [key: string]: any;
-}
+export type TContentObject = { [key: string]: any }; //Record<string, any>;
+export type TContentArray = any[];
+export type TContent = TContentObject | TContentArray;
 
 export interface IErr<T> {
   value: T;
@@ -114,7 +113,7 @@ export interface ChangeRecord {
   value: any;
 }
 
-export interface IChangeset<T> {
+export interface IChangeset<T extends TContent> {
   changes: ChangeRecord[];
   errors: PublicErrors;
   error: Record<string, any>;
@@ -134,7 +133,7 @@ export interface IChangeset<T> {
   merge: (changeset: this) => this;
   rollback: () => this;
   rollbackInvalid: (key: string | void) => this;
-  apply: (target: {}, options?: object) => this;
+  applyTo: (target: T, options?: object) => this;
   validate: (...keys: string[]) => Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
   pushErrors: <T>(key: string, ...newErrors: (IErr<T> | ValidationErr)[]) => IErr<any>;
   snapshot: () => Snapshot;

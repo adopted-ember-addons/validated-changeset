@@ -5,12 +5,14 @@ import {
   IChangeset,
   PrepareChangesFn,
   PublicErrors,
-  RunningValidations
+  RunningValidations,
+  TContentArray
 } from '../../../types';
 import handlerFor from '../../utils/handler-for';
 import { ChangesetIdentityKey, isChangeset } from '../../utils/is-changeset';
 import isUnchanged from '../../utils/is-unchanged';
 import requiresProxying from '../../utils/requires-proxying';
+import setDeep from '../../utils/set-deep';
 import splitKey from '../../utils/split-key';
 import { AFTER_ROLLBACK_EVENT } from '../../utils/strings';
 import IChangesetProxyHandler, { Change } from './changeset-proxy-handler-interface';
@@ -25,13 +27,14 @@ interface EventedCallback {
   (args: any[]): void;
 }
 
-export default class ChangesetArrayProxyHandler implements IChangesetProxyHandler {
-  constructor(source: any[], options: ProxyOptions) {
+export default class ChangesetArrayProxyHandler<T extends TContentArray>
+  implements IChangesetProxyHandler<T> {
+  constructor(source: T, options: ProxyOptions) {
     this.options = options;
-    this.__data = source;
+    this.__originalContent = source;
   }
 
-  public get(_target: any[], key: string | symbol, receiver: any): any {
+  public get(_target: T, key: string | symbol, receiver: any): any {
     // extra stuff
     console.log('get ' + key.toString());
     switch (key) {
@@ -78,10 +81,6 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
 
   public readonly isChangeset = true;
 
-  public get data(): any[] {
-    return this.__data;
-  }
-
   public get isDirty(): boolean {
     // we're dirty if either we have top level changes
     // or if a nested proxy is dirty
@@ -89,7 +88,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     if (!changes) {
       return false;
     }
-    let data = this.__data;
+    let data = this.__originalContent;
     if (changes.length !== data.length) {
       return true;
     }
@@ -139,7 +138,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     return true;
   }
 
-  public get content(): any[] {
+  public get content(): T {
     return this.readArray;
   }
 
@@ -225,15 +224,15 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     return value;
   }
 
-  private get readArray(): any[] {
-    return this.__changes ?? this.__data;
+  private get readArray(): T {
+    return this.__changes ?? this.__originalContent;
   }
 
-  private get writeArray(): any[] {
+  private get writeArray(): T {
     if (this.__changes === undefined) {
-      this.__changes = [...this.__data];
+      this.__changes = [...this.__originalContent];
     }
-    return this.__changes;
+    return this.__changes as T;
   }
 
   @bind
@@ -269,10 +268,10 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     }
   }
 
-  private addProxy<T extends object>(index: number, value?: T): any {
+  private addProxy<T>(index: number, value?: T): any {
     // get sends just the key
     // set sends the key and the new value
-    let proxyValue: T | {} = value ?? (this.__data[index] as T) ?? {};
+    let proxyValue: T | {} = value ?? (this.__originalContent[index] as T) ?? {};
     let proxy = new Proxy(proxyValue, handlerFor(proxyValue, this.options)) as IChangeset<T>;
     this.writeArray[index] = proxy;
     return proxy;
@@ -280,7 +279,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
 
   markChange(index: number, value: any) {
     this.writeArray[index] = value;
-    // const oldValue = this.__data[index];
+    // const oldValue = this.__originalContent[index];
     // const unchanged = isUnchanged(value, oldValue);
     // let changes = this.__changes;
     // if (changes && changes.has(index)) {
@@ -327,7 +326,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     // apply the changes to the source
     // but keep the changes for undo later
     if (this.isDirty) {
-      this.__undoState = this.__data.concat([]); // copy the array;
+      this.__undoState = this.__originalContent.concat([]); // copy the array;
       if (this.__changes && this.isValid) {
         this.replaceSourceWith(this.__changes);
       }
@@ -368,9 +367,9 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
       let oldStates = [...this.__undoState.entries()];
       for (let [key, value] of oldStates) {
         if (value === DeleteOnUndo) {
-          delete this.__data[key];
+          delete this.__originalContent[key];
         } else {
-          this.__data[key] = value;
+          this.__originalContent[key] = value;
         }
       }
     }
@@ -408,7 +407,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   }
 
   replaceSourceWith(newArray: any[]) {
-    this.__data.splice(0, this.__data.length, ...newArray);
+    this.__originalContent.splice(0, this.__originalContent.length, ...newArray);
   }
 
   @bind
@@ -430,7 +429,7 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
     if (changes === undefined) {
       return [];
     }
-    let data = this.__data;
+    let data = this.__originalContent;
     for (let i = 0; i < changes.length; i++) {
       let newValue = changes[i];
       let oldValue = data[i];
@@ -486,11 +485,11 @@ export default class ChangesetArrayProxyHandler implements IChangesetProxyHandle
   }
 
   private options: ProxyOptions;
-  private __data: any[];
+  private __originalContent: T;
   private __errors: Errors<any> = {};
   private __errorsCache: Errors<any> = {};
   private _runningValidations: RunningValidations = {};
-  private __undoState?: any[];
-  private __changes?: any[];
+  private __undoState?: T;
+  private __changes?: T;
   private __eventedNotifiers?: Map<string, Notifier<any>>;
 }

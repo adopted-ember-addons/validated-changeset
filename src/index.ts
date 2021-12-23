@@ -40,7 +40,7 @@ export {
 /**
  * Creates new changesets.
  */
-export function changeset<T extends object>(
+export function changeset<T extends TContent>(
   obj: T,
   validateFn?: ValidatorAction,
   validationMap?: ValidatorMap | null | undefined,

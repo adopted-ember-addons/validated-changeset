@@ -6,6 +6,7 @@ import {
   PrepareChangesFn,
   PublicErrors,
   Snapshot,
+  TContent,
   ValidationErr,
   ValidatorAction,
   ValidatorMap
@@ -14,7 +15,7 @@ import handlerFor from '../utils/handler-for';
 import IChangesetProxyHandler from './proxy/changeset-proxy-handler-interface';
 import ProxyOptions from './proxy/proxy-options';
 
-export default class Changeset<T extends object> implements IChangeset<T> {
+export default class Changeset<T extends TContent> implements IChangeset<T> {
   constructor(
     data: T,
     validateFn?: ValidatorAction,
@@ -34,39 +35,103 @@ export default class Changeset<T extends object> implements IChangeset<T> {
     this._proxy = new Proxy(data, this._proxyHandler);
   }
 
-  private _proxy: T;
-  private _originalContent: T;
-  private _proxyHandler: IChangesetProxyHandler<T>;
+  private readonly _proxy: T;
+  private readonly _originalContent: T;
+  private readonly _proxyHandler: IChangesetProxyHandler<T>;
 
   get content(): T {
     return this._proxy;
   }
 
   get originalContent(): T {
-    return this._originalContent;
+    return this._proxyHandler.originalContent;
   }
 
-  changes: ChangeRecord[];
-  errors: PublicErrors;
-  error: Record<string, any>;
-  change: Record<string, any>;
-  pendingContent: T;
-  isValid: boolean;
-  isPristine: boolean;
-  isInvalid: boolean;
-  isDirty: boolean;
-  prepare(preparedChangedFn: PrepareChangesFn): this {
-    throw new Error('Method not implemented.');
+  get changes(): ChangeRecord[] {
+    return this._proxyHandler.changes;
   }
-  execute: () => this;
-  unexecute: () => this;
-  merge: (changeset: IChangeset<T>) => this;
-  rollback: () => this;
-  rollbackInvalid: (key: string | void) => this;
-  apply: (target: {}, options?: object | undefined) => this;
-  validate: (...keys: string[]) => Promise<any>;
-  pushErrors: <T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]) => IErr<any>;
-  snapshot: () => Snapshot;
-  restore: (obj: Snapshot) => this;
-  isValidating: (key: string | void) => boolean;
+
+  get errors(): PublicErrors {
+    return this._proxyHandler.errors;
+  }
+
+  get error(): Record<string, any> {
+    return this._proxyHandler.errors;
+  }
+
+  get change(): Record<string, any> {
+    return this._proxyHandler.errors;
+  }
+
+  get isDirty(): boolean {
+    return this._proxyHandler.isDirty;
+  }
+
+  get isPristine(): boolean {
+    return this._proxyHandler.isPristine;
+  }
+
+  get isValid(): boolean {
+    return this._proxyHandler.isValid;
+  }
+
+  get isInvalid(): boolean {
+    return this._proxyHandler.isInvalid;
+  }
+
+  prepare(preparedChangedFn: PrepareChangesFn): this {
+    this._proxyHandler.prepare(preparedChangedFn);
+    return this;
+  }
+
+  execute(): this {
+    this._proxyHandler.execute();
+    return this;
+  }
+
+  unexecute(): this {
+    this._proxyHandler.unexecute();
+    return this;
+  }
+
+  merge(changeset: IChangeset<T>): this {
+    this._proxyHandler.merge(changeset);
+    return this;
+  }
+
+  rollback(): this {
+    this._proxyHandler.rollback();
+    return this;
+  }
+
+  rollbackInvalid(key: string | void): this {
+    this._proxyHandler.rollbackInvalid(key);
+    return this;
+  }
+
+  applyTo(target: T): this {
+    this._proxyHandler.applyTo(target);
+    return this;
+  }
+
+  validate(...keys: string[]): Promise<any> {
+    return this._proxyHandler.validate(keys);
+  }
+
+  pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
+    return this._proxyHandler.pushErrors(key, ...newErrors);
+  }
+
+  snapshot(): Snapshot {
+    return this._proxyHandler.snapshot();
+  }
+
+  restore(obj: Snapshot): this {
+    this._proxyHandler.restore(obj);
+    return this;
+  }
+
+  isValidating(key: string | void): boolean {
+    return this._proxyHandler.isValidating(key);
+  }
 }
