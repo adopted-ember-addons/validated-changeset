@@ -75,17 +75,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     if (changes) {
       for (let key of Object.keys(changes)) {
         let value = changes[key];
-        if (isObject(value)) {
-          // pass the change down to a nested level
-          let proxy = this.__nestedProxies.get(key);
-          if (!proxy) {
-            // no existing proxy
-            proxy = this.addProxy(key);
-          }
-          proxy.restore({ changes: value });
-        } else {
-          this.__changes.set(key, value);
-        }
+        this.setValue(key, value, false);
       }
     }
     if (errors) {
