@@ -128,15 +128,15 @@ export interface IChangeset<T extends TContent> {
   isDirty: boolean;
 
   prepare(preparedChangedFn: PrepareChangesFn): this;
-  execute: () => this;
-  unexecute: () => this;
-  merge: (changeset: this) => this;
-  rollback: () => this;
-  rollbackInvalid: (key: string | void) => this;
-  applyTo: (target: T, options?: object) => this;
-  validate: (...keys: string[]) => Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
-  pushErrors: <T>(key: string, ...newErrors: (IErr<T> | ValidationErr)[]) => IErr<any>;
-  snapshot: () => Snapshot;
-  restore: (obj: Snapshot) => this;
-  isValidating: (key: string | void) => boolean;
+  execute(): this;
+  unexecute(): this;
+  merge(changeset2: IChangeset<T>): IChangeset<T>;
+  rollback(): this;
+  rollbackInvalid(key?: string): this;
+  applyTo(target: T, options?: object): this;
+  validate(...keys: string[]): Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
+  pushErrors(key: string, ...newErrors: (IErr<T> | ValidationErr)[]): IErr<any>;
+  snapshot(): Snapshot;
+  restore(obj: Snapshot): this;
+  isValidating(key?: string): boolean;
 }
