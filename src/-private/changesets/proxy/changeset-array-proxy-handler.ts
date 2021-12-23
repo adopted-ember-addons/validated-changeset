@@ -1,4 +1,3 @@
-import { bind } from 'bind-decorator';
 import { Notifier } from '../..';
 import {
   Errors,
@@ -157,7 +156,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     });
   }
 
-  @bind
+  
   public isValidating(key: string | void): boolean {
     let runningValidations: RunningValidations = this._runningValidations;
     let ks: string[] = Object.keys(runningValidations);
@@ -167,7 +166,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return ks.length > 0;
   }
 
-  @bind
+  
   rollbackInvalid(key: string | void): this {
     if (!key) {
       // clone the array so we can edit the object
@@ -182,13 +181,13 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  @bind
+  
   public at(index: number) {
     // is it an existing proxy?
     return this.readArray[index];
   }
 
-  @bind
+  
   cast() {
     // noop
   }
@@ -200,7 +199,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this.readArray.toString();
   }
 
-  @bind
+  
   public getValue(key: string) {
     if (key === ChangesetIdentityKey) {
       return true;
@@ -235,7 +234,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this.__changes as T;
   }
 
-  @bind
+  
   public setValue(key: string, value: any, _validate = true): boolean {
     let [localKey, subkey] = splitKey(key);
     const index = parseInt(localKey);
@@ -302,7 +301,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     // }
   }
 
-  @bind
+  
   public prepare(preparedChangedFn: PrepareChangesFn): this {
     let changes: Record<string, any> = {};
     for (let change of this.changes) {
@@ -321,8 +320,8 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  @bind
-  public execute(): this {
+  
+  public execute(target?: TContentArray): this {
     // apply the changes to the source
     // but keep the changes for undo later
     if (this.isDirty) {
@@ -334,25 +333,25 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  @bind
+  
   on(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.addListener(callback);
   }
 
-  @bind
+  
   off(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.removeListener(callback);
   }
 
-  @bind
+  
   public unwrap(): this {
     // deprecated
     return this;
   }
 
-  @bind
+  
   public unexecute(): this {
     if (this.__changes !== undefined) {
       // apply the undo state from the bottom up
@@ -378,26 +377,19 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
     return this;
   }
 
-  @bind
-  public async save(_options?: object): Promise<this | any> {
-    this.execute();
-    this.clearPending();
-    return this;
-  }
-
   private clearPending() {
     this.__changes = undefined;
     this.__undoState = undefined;
   }
 
-  @bind
+  
   public rollbackProperty(_key: string): this {
     // doesn't mean anything for arrays
     this.trigger(AFTER_ROLLBACK_EVENT);
     return this;
   }
 
-  @bind
+  
   public rollback(): void {
     // apply the undo state
     if (this.__undoState) {

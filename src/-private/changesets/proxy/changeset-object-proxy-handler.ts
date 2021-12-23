@@ -1,5 +1,4 @@
-import { bind } from 'bind-decorator';
-import { Changeset, Err, isObject, isPromise } from '../../..';
+import { Err, isObject, isPromise } from '../../..';
 import {
   ChangeRecord,
   Changes,
@@ -219,7 +218,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this.__outerProxy;
   }
 
-  @bind
   public getValue(key: string): any {
     if (key === ChangesetIdentityKey) {
       return true;
@@ -272,7 +270,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return value;
   }
 
-  @bind
   public setValue(key: string, value: any, _validate = true): boolean {
     // nested keys are separated by dots
     let [localKey, subkey] = splitKey(key as string);
@@ -330,7 +327,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
    *
    * @method snapshot
    */
-  @bind
+
   snapshot(): Snapshot {
     let changes: Changes = this.change;
     let errors: Errors<any> = this.__errors;
@@ -452,19 +449,16 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this;
   }
 
-  @bind
   on(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.addListener(callback);
   }
 
-  @bind
   off(eventName: string, callback: EventedCallback) {
     const notifier = this.notifierForEvent(eventName);
     return notifier.removeListener(callback);
   }
 
-  @bind
   public cast(allowedKeys?: string[]): void {
     if (!allowedKeys) {
       return;
@@ -514,7 +508,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     }
   }
 
-  @bind
   public execute(target?: T): this {
     if (target === undefined) {
       target = this.__content;
@@ -566,7 +559,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this;
   }
 
-  @bind
   public isValidating(key: string | void): boolean {
     let runningValidations: RunningValidations = this._runningValidations;
     let ks: string[] = Object.keys(runningValidations);
@@ -576,7 +568,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return ks.length > 0;
   }
 
-  @bind
   public rollback(): void {
     // rollback from the bottom up to the previous execute
 
@@ -589,7 +580,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     this.trigger(AFTER_ROLLBACK_EVENT);
   }
 
-  @bind
   rollbackInvalid(key: string | void): this {
     if (!key) {
       // clone the array so we can edit the object
@@ -604,7 +594,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this;
   }
 
-  @bind
   public rollbackProperty(key: string): this {
     // nested keys are separated by dots
     let [localKey, subkey] = splitKey(key as string);
@@ -621,20 +610,17 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return this;
   }
 
-  @bind
   public applyTo(target: T): this {
     this.execute(target);
     this.clearPending();
     return this;
   }
 
-  @bind
   public unwrap(): this {
     // deprecated
     return this;
   }
 
-  @bind
   public unexecute(target?: T): this {
     if (target === undefined) {
       target = this.__content;
@@ -672,7 +658,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
    *
    * @method validate
    */
-  @bind
+
   public async validate(...validationKeys: string[]): Promise<any> {
     // only called on the top level node
     let validationMap = this.__options.validationMap || {};
@@ -854,7 +840,6 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return result;
   }
 
-  @bind
   public pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
     let errors: Errors<any> = this.__errors;
     let existingError: IErr<any> | Err = getDeep(errors, key) || new Err(null, []);
