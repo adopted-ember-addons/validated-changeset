@@ -123,7 +123,7 @@ export default class Changeset<T extends TContent> implements IChangeset<T> {
   }
 
   validate(...keys: string[]): Promise<any> {
-    return this._proxyHandler.validate(keys);
+    return this._proxyHandler.validate(...keys);
   }
 
   pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
