@@ -1,5 +1,5 @@
 import { getChangeValue, isChange } from '../-private/change';
-import isObject from './is-object';
+import isObject from '../-private/utils/is-object';
 
 /**
  * traverse through target and unset `value` from leaf key so can access normally

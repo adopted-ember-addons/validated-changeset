@@ -68,14 +68,13 @@ export interface Changes {
   [s: string]: any; //IChange;
 }
 
-export interface Content {
-  save?: Function | undefined;
-  [key: string]: any;
-}
+export type TContentObject = { [key: string]: any }; //Record<string, any>;
+export type TContentArray = any[];
+export type TContent = TContentObject | TContentArray;
 
 export interface IErr<T> {
   value: T;
-  validation: ValidationErr | ValidationErr[];
+  validation: ValidationErr[];
 }
 
 export type Errors<T> = {
@@ -109,63 +108,35 @@ export type Snapshot = {
 
 export type PrepareChangesFn = (obj: { [s: string]: any }) => { [s: string]: any } | null;
 
-export interface ChangesetDef {
-  __changeset__: string;
+export interface ChangeRecord {
+  key: string;
+  value: any;
+}
 
-  _content: object;
-  _changes: Changes;
-  _errors: Errors<any>;
-  _validator: ValidatorAction;
-  _options: Config;
-  _runningValidations: RunningValidations;
-  _bareChanges: { [s: string]: any };
-
-  changes: Record<string, any>[];
+export interface IChangeset<T extends TContent> {
+  changes: ChangeRecord[];
   errors: PublicErrors;
-  error: object;
-  change: object;
-  data: object;
+  error: Record<string, any>;
+  change: Record<string, any>;
+
+  content: T;
+  originalContent: T;
 
   isValid: boolean;
   isPristine: boolean;
   isInvalid: boolean;
   isDirty: boolean;
 
-  get: (key: string) => any;
-  set: <T>(
-    key: string,
-    value: T
-  ) => void | T | IErr<T> | Promise<T> | Promise<ValidationResult | T | IErr<T>> | ValidationResult;
-  maybeUnwrapProxy: Function;
-  getDeep: any;
-  setDeep: any;
-  safeGet: (obj: any, key: string) => any;
   prepare(preparedChangedFn: PrepareChangesFn): this;
-  execute: () => this;
-  save: (options: object) => Promise<ChangesetDef | any>;
-  merge: (changeset: this) => this;
-  rollback: () => this;
-  rollbackInvalid: (key: string | void) => this;
-  rollbackProperty: (key: string) => this;
-  validate: (
-    key: string
-  ) => Promise<null> | Promise<any | IErr<any>> | Promise<Array<any | IErr<any>>>;
-  addError: <T>(key: string, error: IErr<T> | ValidationErr) => IErr<T> | ValidationErr;
-  pushErrors: (key: string, newErrors: string[]) => IErr<any>;
-  snapshot: () => Snapshot;
-  restore: (obj: Snapshot) => this;
-  cast: (allowed: Array<string>) => this;
-  isValidating: (key: string | void) => boolean;
-  _validate: (
-    key: string,
-    newValue: any,
-    oldValue: any
-  ) => ValidationResult | Promise<ValidationResult>;
-  _setProperty: <T>(obj: NewProperty<T>) => void;
-  _setIsValidating: (key: string, value: Promise<ValidationResult>) => void;
-  _notifyVirtualProperties: (keys?: string[]) => string[] | undefined;
-  _rollbackKeys: () => Array<string>;
-  _deleteKey: (objName: InternalMapKey, key: string) => InternalMap;
+  execute(): this;
+  unexecute(): this;
+  merge(changeset2: IChangeset<T>): IChangeset<T>;
+  rollback(): this;
+  rollbackInvalid(key?: string): this;
+  applyTo(target: T, options?: object): this;
+  validate(...keys: string[]): Promise<null | any | IErr<any> | Array<any | IErr<any>>>;
+  pushErrors(key: string, ...newErrors: (IErr<T> | ValidationErr)[]): IErr<any>;
+  snapshot(): Snapshot;
+  restore(obj: Snapshot): this;
+  isValidating(key?: string): boolean;
 }
-
-export interface IChangeset extends ChangesetDef, IEvented {}

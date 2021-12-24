@@ -1,5 +1,5 @@
-import getDeep, { getSubObject } from '../../src/utils/get-deep';
 import Change from '../../src/-private/change';
+import getDeep, { getSubObject } from '../../src/-private/utils/get-deep';
 
 describe('Unit | Utility | get deep', () => {
   it('it returns value', () => {

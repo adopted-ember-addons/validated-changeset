@@ -17,12 +17,12 @@ let changeset = Changeset(user, validatorFn);
 user.firstName; // "Michael"
 user.lastName; // "Bolton"
 
-changeset.set('firstName', 'Jim');
-changeset.set('lastName', 'B');
-changeset.get('isInvalid'); // true
-changeset.get('errors'); // [{ key: 'lastName', validation: 'too short', value: 'B' }]
-changeset.set('lastName', 'Bob');
-changeset.get('isValid'); // true
+changeset.content.firstName =  'Jim';
+changeset.content.lastName =  'B';
+changeset.isInvalid; // true
+changeset.errors; // [{ key: 'lastName', validation: 'too short', value: 'B' }]
+changeset.content.lastName =  'Bob';
+changeset.isValid; // true
 
 user.firstName; // "Michael"
 user.lastName; // "Bolton"
@@ -53,10 +53,17 @@ In the above example, when the input changes, only the changeset's internal valu
 
 On rollback, all changes are dropped and the underlying Object is left untouched.
 
+## Structure
+
+![Structure drawing](./structure.drawio.svg?sanitize=true "Structure")
+
 ## Full API
 
 ```js
-Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, changesetKeys: string[] });
+changeset(model); // simplest
+
+changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, changesetKeys: string[] });
+
 ```
 
 - `model` (required)
@@ -81,14 +88,13 @@ Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: 
   + [`change`](#change)
   + [`errors`](#errors)
   + [`changes`](#changes)
-  + [`data`](#data)
+  + [`content`](#content)
+  + [`originalContent`](#originalcontent)
   + [`isValid`](#isvalid)
   + [`isInvalid`](#isinvalid)
   + [`isPristine`](#ispristine)
   + [`isDirty`](#isdirty)
 * Methods
-  + [`get`](#get)
-  + [`set`](#set)
   + [`prepare`](#prepare)
   + [`execute`](#execute)
   + [`save`](#save)
@@ -253,15 +259,54 @@ You can use this property to render a list of changes:
 
 **[⬆️ back to top](#api)**
 
-#### `data`
+#### `content`
 
-Returns the Object that was wrapped in the changeset.
+Returns an Proxy representing `originalContent` plus all the current changes.
+
+You can call `asChangeset` on the proxy to get back to this changeset api. You can do this on any child object in the tree to get a changeset that you can pass
+for example to a child component. This is the only property on the proxy that will conflict with your object's API. All other property and methods will be
+passed through to your object.
+
+In this way a child component can see its changes and validation errors scoped
+only to this proxied object.
+
+```hbs
+{{#each this.changeset.content.people as |person|}}
+  <p>{{person.name}}</p>
+  <AddressEditor @address={{person.address.asChangeset}}/>
+{{/each}}
+```
 
 ```js
 let user = { name: 'Bobby', age: 21, address: { zipCode: '10001' } };
 let changeset = Changeset(user);
 
-changeset.get('data'); // user
+changeset.content.age = 17;
+```
+
+**[⬆️ back to top](#api)**
+
+
+```js
+let user = { name: 'Bobby', age: 21, address: { zipCode: '10001' } };
+let changeset = Changeset(user);
+
+changeset.content.age = 17;
+```
+
+**[⬆️ back to top](#api)**
+
+#### `originalContent`
+
+Returns the Object that was wrapped in the changeset without any 
+pending changes applied.
+
+```js
+let user = { name: 'Bobby', age: 21, address: { zipCode: '10001' } };
+let changeset = Changeset(user);
+
+changeset.content.age = 45;
+changeset.originalContent.age; // 21
 ```
 
 **[⬆️ back to top](#api)**
@@ -271,7 +316,7 @@ changeset.get('data'); // user
 Returns a Boolean value of the changeset's validity.
 
 ```js
-changeset.get('isValid'); // true
+changeset.isValid; // true
 ```
 
 You can use this property in the template:
@@ -289,7 +334,7 @@ You can use this property in the template:
 Returns a Boolean value of the changeset's (in)validity.
 
 ```js
-changeset.get('isInvalid'); // true
+changeset.isInvalid; // true
 ```
 
 You can use this property in the template:
@@ -307,7 +352,7 @@ You can use this property in the template:
 Returns a Boolean value of the changeset's state. A pristine changeset is one with no changes.
 
 ```js
-changeset.get('isPristine'); // true
+changeset.isPristine; // true
 ```
 
 If changes present on the changeset are equal to the content's, this will return `true`. However, note that key/value pairs in the list of changes must all be present and equal on the content, but not necessarily vice versa:
@@ -315,14 +360,14 @@ If changes present on the changeset are equal to the content's, this will return
 ```js
 let user = { name: 'Bobby', age: 21, address: { zipCode: '10001' } };
 
-changeset.set('name', 'Bobby');
-changeset.get('isPristine'); // true
+changeset.content.name =  'Bobby';
+changeset.isPristine; // true
 
-changeset.set('address.zipCode', '10001');
-changeset.get('isPristine'); // true
+changeset.content.address.zipCode =  '10001';
+changeset.isPristine; // true
 
-changeset.set('foo', 'bar');
-changeset.get('isPristine'); // false
+changeset.content.foo =  'bar';
+changeset.isPristine; // false
 ```
 
 **[⬆️ back to top](#api)**
@@ -332,65 +377,8 @@ changeset.get('isPristine'); // false
 Returns a Boolean value of the changeset's state. A dirty changeset is one with changes.
 
 ```js
-changeset.get('isDirty'); // true
+changeset.isDirty; // true
 ```
-
-**[⬆️ back to top](#api)**
-
-#### `get`
-
-Exactly the same semantics as `Ember.get`. This proxies first to the error value, the changed value, and finally to the underlying Object.
-
-```js
-changeset.get('firstName'); // "Jim"
-changeset.set('firstName', 'Billy'); // "Billy"
-changeset.get('firstName'); // "Billy"
-
-changeset.get('address.zipCode'); // "10001"
-changeset.set('address.zipCode', '94016'); // "94016"
-changeset.get('address.zipCode'); // "94016"
-```
-
-You can use and bind this property in the template:
-
-```hbs
-{{input value=changeset.firstName}}
-```
-
-Note that using `Ember.get` **will not necessarily work if you're expecting an Object**. On the other hand, using `changeset.get` will work just fine:
-
-```js
-get(changeset, 'momentObj').format('dddd'); // will error, format is undefined
-changeset.get('momentObj').format('dddd');  // => "Friday"
-```
-
-This is because `Changeset` wraps an Object with `Ember.ObjectProxy` internally, and overrides `Ember.Object.get` to hide this implementation detail.
-
-Because an Object is wrapped with `Ember.ObjectProxy`, the following (although more verbose) will also work:
-
-```js
-get(changeset, 'momentObj.content').format('dddd'); // => "Friday"
-```
-
-**[⬆️ back to top](#api)**
-
-#### `set`
-
-Exactly the same semantics as `Ember.set`. This stores the change on the changeset. It is recommended to use `changeset.set(...)` instead of `Ember.set(changeset, ...)`.  `Ember.set` will set the property for nested keys on the underlying model.
-
-```js
-changeset.set('firstName', 'Milton'); // "Milton"
-changeset.set('address.zipCode', '10001'); // "10001"
-```
-
-You can use and bind this property in the template:
-
-```hbs
-{{input value=changeset.firstName}}
-{{input value=changeset.address.country}}
-```
-
-Any updates on this value will only store the change on the changeset, even with 2 way binding.
 
 **[⬆️ back to top](#api)**
 
@@ -524,8 +512,8 @@ Rolls back unsaved changes for the specified property only. All other changes wi
 ```js
 // user = { firstName: "Jim", lastName: "Bob" };
 let changeset = Changeset(user);
-changeset.set('firstName', 'Jimmy');
-changeset.set('lastName', 'Fallon');
+changeset.content.firstName =  'Jimmy';
+changeset.content.lastName =  'Fallon';
 changeset.rollbackProperty('lastName'); // returns changeset
 changeset.execute();
 user.firstName; // "Jimmy"
@@ -554,7 +542,7 @@ let validationMap = {
 };
 
 let changeset = Changeset(user, validatorFn, validationMap);
-changeset.get('isValid'); // true
+changeset.isValid; // true
 
 // validate single field; returns Promise
 changeset.validate('lastName');
@@ -564,11 +552,11 @@ changeset.validate('lastName', 'address.zipCode');
 
 // validate all fields; returns Promise
 changeset.validate().then(() => {
-  changeset.get('isInvalid'); // true
+  changeset.isInvalid; // true
 
   // [{ key: 'lastName', validation: 'too short', value: 'B' },
   //  { key: 'address.zipCode', validation: 'too short', value: '123' }]
-  changeset.get('errors');
+  changeset.errors;
 });
 ```
 
@@ -629,16 +617,16 @@ Restores a snapshot of changes and errors to the changeset. This overrides exist
 let user = { name: 'Adam', address: { country: 'United States' } };
 let changeset = Changeset(user, validatorFn);
 
-changeset.set('name', 'Jim Bob');
-changeset.set('address.country', 'North Korea');
+changeset.content.name =  'Jim Bob';
+changeset.content.address.country =  'North Korea';
 let snapshot = changeset.snapshot();
 
-changeset.set('name', 'Poteto');
-changeset.set('address.country', 'Australia')
+changeset.content.name =  'Poteto';
+changeset.content.address.country =  'Australia'
 
 changeset.restore(snapshot);
-changeset.get('name'); // "Jim Bob"
-changeset.get('address.country'); // "North Korea"
+changeset.name; // "Jim Bob"
+changeset.address.country; // "North Korea"
 ```
 
 **[⬆️ back to top](#api)**
@@ -651,18 +639,18 @@ Unlike `Ecto.Changeset.cast`, `cast` will take an array of allowed keys and remo
 let allowed = ['name', 'password', 'address.country'];
 let changeset = Changeset(user, validatorFn);
 
-changeset.set('name', 'Jim Bob');
-changeset.set('address.country', 'United States');
+changeset.content.name =  'Jim Bob';
+changeset.content.address.country =  'United States';
 
-changeset.set('unwantedProp', 'foo');
-changeset.set('address.unwantedProp', 123);
-changeset.get('unwantedProp'); // "foo"
-changeset.get('address.unwantedProp'); // 123
+changeset.content.unwantedProp =  'foo';
+changeset.content.address.unwantedProp =  123;
+changeset.unwantedProp; // "foo"
+changeset.address.unwantedProp; // 123
 
 changeset.cast(allowed); // returns changeset
-changeset.get('unwantedProp'); // undefined
-changeset.get('address.country'); // "United States"
-changeset.get('another.unwantedProp'); // undefined
+changeset.unwantedProp; // undefined
+changeset.address.country; // "United States"
+changeset.another.unwantedProp; // undefined
 ```
 
 For example, this method can be used to only allow specified changes through prior to saving. This is especially useful if you also setup a `schema` object for your model (using Ember Data), which can then be exported and used as a list of allowed keys:
@@ -701,9 +689,9 @@ export default Controller.extend({
 Checks to see if async validator for a given key has not resolved.  If no key is provided it will check to see if any async validator is running.
 
 ```js
-changeset.set('lastName', 'Appleseed');
-changeset.set('firstName', 'Johnny');
-changeset.set('address.city', 'Anchorage');
+changeset.content.lastName =  'Appleseed';
+changeset.content.firstName =  'Johnny';
+changeset.content.address.city =  'Anchorage';
 changeset.validate();
 
 changeset.isValidating(); // true if any async validation is still running

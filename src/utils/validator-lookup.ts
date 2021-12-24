@@ -1,6 +1,6 @@
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
-import isObject from './is-object';
+import isObject from '../-private/utils/is-object';
 import {
   ValidatorAction,
   ValidatorMapFunc,
@@ -8,7 +8,7 @@ import {
   ValidationResult,
   ValidatorMap
 } from '../types';
-import get from './get-deep';
+import getDeep from '../-private/utils/get-deep';
 
 /**
  * returns a closure to lookup and validate k/v pairs set on a changeset
@@ -24,7 +24,7 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
       | ValidatorMapFunc[]
       | ValidatorClass
       | ValidatorClass[]
-      | Array<ValidatorMapFunc | ValidatorClass> = get(validations, key);
+      | Array<ValidatorMapFunc | ValidatorClass> = getDeep(validations, key);
     const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass =>
       !!(maybeClass as Record<string, any>).validate;
     if (validator && isValidatorClass(validator)) {

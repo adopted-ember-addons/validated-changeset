@@ -1,8 +1,6 @@
-export function buildOldValues(
-  content: any,
-  changes: Record<string, any>[],
-  getDeep: Function
-): object {
+import getDeep from '../-private/utils/get-deep';
+
+export function buildOldValues(content: any, changes: Record<string, any>[]): object {
   const obj = Object.create(null);
 
   for (let change of changes) {

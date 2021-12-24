@@ -1,5 +1,5 @@
-import setDeep from '../../src/utils/set-deep';
 import Change from '../../src/-private/change';
+import setDeep from '../../src/-private/utils/set-deep';
 
 describe('Unit | Utility | set deep', () => {
   it('it sets value', () => {

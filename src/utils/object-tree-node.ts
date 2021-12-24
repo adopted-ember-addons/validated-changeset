@@ -1,6 +1,6 @@
 import { ProxyHandler, Content } from '../types';
-import isObjectFn from './is-object';
-import setDeep from './set-deep';
+import isObjectFn from '../-private/utils/is-object';
+import setDeep from '../-private/utils/set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
 import normalizeObject from './normalize-object';
 import { objectToArray, arrayToObject } from './array-object';

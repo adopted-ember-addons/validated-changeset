@@ -1,0 +1,4 @@
+{
+  "jest.jestCommandLine": "./node_modules/.bin/jest --runInBand",
+  "svg.preview.background": "custom"
+}

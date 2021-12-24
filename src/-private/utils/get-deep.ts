@@ -1,4 +1,4 @@
-import { isChange, getChangeValue } from '../-private/change';
+import { getChangeValue, isChange } from '../change';
 
 /**
  * Handles both single key or nested string keys ('person.name')
