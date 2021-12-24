@@ -74,7 +74,7 @@ export type TContent = TContentObject | TContentArray;
 
 export interface IErr<T> {
   value: T;
-  validation: ValidationErr | ValidationErr[];
+  validation: ValidationErr[];
 }
 
 export type Errors<T> = {

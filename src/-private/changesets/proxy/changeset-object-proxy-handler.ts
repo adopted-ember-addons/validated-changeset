@@ -379,7 +379,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
       let newErrors: Errors<any> = Object.keys(errors).reduce(
         (newObj: Errors<any>, key: keyof Changes) => {
           let e: IErr<any> = errors[key];
-          newObj[key] = new Err(e.value, e.validation);
+          newObj[key] = new Err(e.value, ...e.validation);
           return newObj;
         },
         {}
@@ -704,12 +704,10 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
    * @private
    */
   private _handleValidation<T>(
-    validation: ValidationResult,
+    validationResult: ValidationResult,
     { key, value }: NewProperty<T>
   ): T | IErr<T> | ValidationErr {
-    const isValid: boolean =
-      validation === true ||
-      (Array.isArray(validation) && validation.length === 1 && validation[0] === true);
+    const isValid: boolean = validationResult === true;
 
     // Happy path: remove `key` from error map.
     // @tracked
@@ -719,7 +717,7 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
 
     // Error case.
     if (!isValid) {
-      return this.pushErrors(key, new Err(value, validation));
+      return this.pushErrors(key, new Err(value, [validationResult as string]));
     }
 
     return value;
@@ -807,13 +805,13 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     return result;
   }
 
-  public pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
-    let errors: Errors<any> = this.__errors;
+  public pushErrors<T>(_key: string, ..._newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
+    /*    let errors: Errors<any> = this.__errors;
     let existingError: IErr<any> | Err = getDeep(errors, key) || new Err(null, []);
     let validation: ValidationErr | ValidationErr[] = existingError.validation;
     let value: any = this.getValue(key);
 
-    if (!Array.isArray(validation) && Boolean(validation)) {
+    if (Boolean(validation)) {
       existingError.validation = [validation];
     }
 
@@ -824,7 +822,8 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
     // this.__errors = setDeep(errors, key as string, newError, { safeSet });
     this.__errorsCache = this.__errors;
 
-    return { value, validation };
+    return { value, validation }; */
+    return new Err('', ['']);
   }
 
   get originalContent(): T {
@@ -835,8 +834,8 @@ export default class ChangesetObjectProxyHandler<T extends TContentObject>
    * Increment or decrement the number of running validations for a
    * given key.
    */
-  private _setIsValidating(key: string, promise: Promise<ValidationResult>): void {
-    let running: RunningValidations = this._runningValidations;
+  private _setIsValidating(_key: string, _promise: Promise<ValidationResult>): void {
+    // let running: RunningValidations = this._runningValidations;
     // setDeep(running, key, promise);
   }
 

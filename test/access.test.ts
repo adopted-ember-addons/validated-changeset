@@ -29,43 +29,43 @@ describe('Unit | Utility | changeset | access', () => {
    */
 
   it('content can be read by direct property access', () => {
-    const dummyChangeset = Changeset(dummyModel);
+    const dummyChangeset = new Changeset(dummyModel);
 
-    expect(dummyChangeset.name).toEqual('Bryan');
-    expect(dummyChangeset.person.age).toEqual(42);
-    expect(dummyChangeset.primes[2]).toEqual(11);
-    expect(dummyChangeset.primes.length).toEqual(3);
-    let keys = Object.keys(dummyChangeset.person);
+    expect(dummyChangeset.content.name).toEqual('Bryan');
+    expect(dummyChangeset.content.person.age).toEqual(42);
+    expect(dummyChangeset.content.primes[2]).toEqual(11);
+    expect(dummyChangeset.content.primes.length).toEqual(3);
+    let keys = Object.keys(dummyChangeset.content.person);
     expect(keys).toContain('age');
     expect(keys).toContain('name');
   });
 
   it('content can be written by direct property access', () => {
-    const dummyChangeset = Changeset(dummyModel);
+    const dummyChangeset = new Changeset(dummyModel);
 
-    dummyChangeset.person.name = 'Susan';
+    dummyChangeset.content.person.name = 'Susan';
     expect(dummyModel.person.name).toEqual('Steve');
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.person.name).toEqual('Susan');
 
-    dummyChangeset.primes[2] = 17;
+    dummyChangeset.content.primes[2] = 17;
     expect(dummyModel.primes[2]).toEqual(11);
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.primes[2]).toEqual(17);
 
-    dummyChangeset.primes[2]++;
+    dummyChangeset.content.primes[2]++;
     expect(dummyModel.primes[2]).toEqual(17);
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.primes[2]).toEqual(18);
   });
 
   it('content can be read by changeset.get', () => {
-    const dummyChangeset = Changeset(dummyModel);
+    const dummyChangeset = new Changeset(dummyModel);
 
     expect(dummyChangeset.content.name).toEqual('Bryan');
     expect(dummyChangeset.content.person.age).toEqual(42);
     expect(dummyChangeset.content.person.get('age')).toEqual(42);
-    expect(dummyChangeset.content.primes.2).toEqual(11);
+    expect(dummyChangeset.content.primes[2]).toEqual(11);
     expect(dummyChangeset.content.primes[2]).toEqual(11);
     expect(dummyChangeset.content.primes.length).toEqual(3);
     expect(dummyChangeset.content.primes.length).toEqual(3);
@@ -75,21 +75,21 @@ describe('Unit | Utility | changeset | access', () => {
   });
 
   it('content can be written by changeset.set', () => {
-    const dummyChangeset = Changeset(dummyModel);
+    const dummyChangeset = new Changeset(dummyModel);
 
-    dummyChangeset.content.person.name =  'Susan';
+    dummyChangeset.content.person.name = 'Susan';
     expect(dummyModel.person.name).toEqual('Steve');
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.person.name).toEqual('Susan');
 
-    dummyChangeset.content.primes[2] =  17;
+    dummyChangeset.content.primes[2] = 17;
     expect(dummyModel.primes[2]).toEqual(11);
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.primes[2]).toEqual(17);
 
-    dummyChangeset.content.primes[2] =  dummyChangeset.content.primes[2]+ 1;
+    dummyChangeset.content.primes[2] = dummyChangeset.content.primes[2] + 1;
     expect(dummyModel.primes[2]).toEqual(17);
-    dummyChangeset.save();
+    dummyChangeset.applyTo(dummyModel);
     expect(dummyModel.primes[2]).toEqual(18);
   });
 });

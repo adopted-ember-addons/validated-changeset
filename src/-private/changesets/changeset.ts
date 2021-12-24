@@ -117,6 +117,11 @@ export default class Changeset<T extends TContent> implements IChangeset<T> {
     return this;
   }
 
+  rollbackProperty(key: string): this {
+    this._proxyHandler.rollbackProperty(key);
+    return this;
+  }
+
   applyTo(target: T): this {
     this._proxyHandler.applyTo(target);
     return this;

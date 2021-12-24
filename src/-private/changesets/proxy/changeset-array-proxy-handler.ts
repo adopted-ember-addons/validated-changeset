@@ -41,7 +41,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   }
 
   get originalContent(): T {
-    return this.__originalContent;
+    return this.__originalContent as T;
   }
 
   applyTo(target?: T): this {
@@ -52,19 +52,11 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
 
   pushErrors<T>(key: string, ...newErrors: (ValidationErr | IErr<T>)[]): IErr<any> {
     let errors: Errors<any> = this.__errors;
-    let existingError: IErr<any> | Err = getDeep(errors, key) || new Err(null, []);
-    let validation: ValidationErr | ValidationErr[] = existingError.validation;
+    let existingError: IErr<any> = getDeep(errors, key) || new Err(null);
+    let validation: ValidationErr[] = existingError.validation;
     let value: any = this.getValue(key);
 
-    if (!Array.isArray(validation) && Boolean(validation)) {
-      existingError.validation = [validation];
-    }
-
-    let v = existingError.validation;
-    validation = [...v, ...newErrors];
-    // let newError = new Err(value, validation);
-    // @tracked
-    // this.__errors = setDeep(errors, key as string, newError, { safeSet });
+    this.__errors = setDeep(errors, key as string, newErrors);
     this.__errorsCache = this.__errors;
 
     return { value, validation };
@@ -82,7 +74,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
       let newErrors: Errors<any> = Object.keys(errors).reduce(
         (newObj: Errors<any>, key: keyof Changes) => {
           let e: IErr<any> = errors[key];
-          newObj[key] = new Err(e.value, e.validation);
+          newObj[key] = new Err(e.value, ...e.validation);
           return newObj;
         },
         {}
@@ -304,7 +296,7 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   }
 
   private get readArray(): T {
-    return this.__changes ?? this.__originalContent;
+    return (this.__changes ?? this.__originalContent) as T;
   }
 
   private get writeArray(): T {
@@ -546,11 +538,11 @@ export default class ChangesetArrayProxyHandler<T extends TContentArray>
   }
 
   private options: ProxyOptions;
-  private __originalContent: T;
+  private __originalContent: TContentArray;
   private __errors: Errors<any> = {};
   private __errorsCache: Errors<any> = {};
   private _runningValidations: RunningValidations = {};
-  private __undoState?: T;
-  private __changes?: T;
+  private __undoState?: TContentArray;
+  private __changes?: TContentArray;
   private __eventedNotifiers?: Map<string, Notifier<any>>;
 }
