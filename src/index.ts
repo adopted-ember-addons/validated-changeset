@@ -660,10 +660,7 @@ export class BufferedChangeset implements IChangeset {
     let errors: Errors<any> = this[ERRORS];
 
     return {
-      changes: keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
-        newObj[key] = getChangeValue(changes[key]);
-        return newObj;
-      }, {}),
+      changes: this.getChangesForSnapshot(changes),
 
       errors: keys(errors).reduce((newObj: Errors<any>, key: keyof Errors<any>) => {
         let e = errors[key];
@@ -671,6 +668,15 @@ export class BufferedChangeset implements IChangeset {
         return newObj;
       }, {})
     };
+  }
+
+  private getChangesForSnapshot(changes: Changes) {
+    return keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
+      newObj[key] = isChange(changes[key])
+        ? getChangeValue(changes[key])
+        : this.getChangesForSnapshot(changes[key]);
+      return newObj;
+    }, {});
   }
 
   /**
