@@ -3208,6 +3208,23 @@ describe('Unit | Utility | changeset', () => {
     });
   });
 
+  it('#restore restores a snapshot of the changeset with nested values', () => {
+    let user = { name: 'Adam', address: { country: 'United States' } };
+    let changeset = Changeset(user);
+
+    changeset.set('name', 'Jim Bob');
+    changeset.set('address.country', 'North Korea');
+    let snapshot1 = changeset.snapshot();
+
+    changeset.set('name', 'Poteto');
+    changeset.set('address.country', 'Australia');
+
+    changeset.restore(snapshot1);
+
+    expect(changeset.get('name')).toBe('Jim Bob');
+    expect(changeset.get('address.country')).toBe('North Korea');
+  });
+
   /**
    * #cast
    */
