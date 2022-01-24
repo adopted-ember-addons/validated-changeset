@@ -1,5 +1,5 @@
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="Download count all time" src="https://img.shields.io/npm/dt/validated-changeset.svg"></a>
-<a href="https://travis-ci.org/validated-changeset/validated-changeset"><img alt="TravisCI Build Status" src="https://img.shields.io/travis/validated-changeset/validated-changeset/master.svg"></a>
+<a href="https://github.com/validated-changeset/validated-changeset/actions/workflows/ci.yml"><img alt="TravisCI Build Status" src="https://github.com/validated-changeset/validated-changeset/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="npm version" src="https://badge.fury.io/js/validated-changeset.svg"></a>
 
 ```
