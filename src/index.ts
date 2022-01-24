@@ -678,7 +678,7 @@ export class BufferedChangeset implements IChangeset {
         newObj[key] = this.getChangesForSnapshot(changes[key]);
       }
       return newObj;
-    }, {})
+    }, {});
   }
 
   /**
