@@ -69,4 +69,16 @@ describe('Unit | Utility | object tree node', () => {
     expect(result.changes).toEqual({});
     expect(result.proxy.foo).toBe('foo');
   });
+
+  it('it returns falsy values', () => {
+    const result = new ObjectTreeNode({}, { name: '', flag: false, count: 0, ref: null });
+
+    expect(result.proxy.name).toBe('');
+    expect(result.proxy.flag).toBe(false);
+    expect(result.proxy.count).toBe(0);
+    expect(result.proxy.ref).toBe(null);
+
+    // backward compatibility - unknown properties should still resolve to undefined
+    expect(result.proxy.nonExistentProperty).toBe(undefined);
+  });
 });
