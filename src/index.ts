@@ -686,10 +686,7 @@ export class BufferedChangeset implements IChangeset {
    * @method restore
    */
   restore({ changes, errors }: Snapshot): this {
-    let newChanges: Changes = keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
-      newObj[key] = new Change(changes[key]);
-      return newObj;
-    }, {});
+    let newChanges: Changes = this.getChangesFromSnapshot(changes);
 
     let newErrors: Errors<any> = keys(errors).reduce((newObj: Errors<any>, key: keyof Changes) => {
       let e: IErr<any> = errors[key];
@@ -705,6 +702,24 @@ export class BufferedChangeset implements IChangeset {
 
     this._notifyVirtualProperties();
     return this;
+  }
+
+  private getChangesFromSnapshot(changes: Changes) {
+    return keys(changes).reduce((newObj, key) => {
+      newObj[key] = this.getChangeForProp(changes[key]);
+      return newObj;
+    }, {} as Changes)
+  }
+
+  private getChangeForProp(value: any) {
+    if (!isObject(value)) {
+      return new Change(value);
+    }
+
+    return keys(value).reduce((newObj, key) => {
+      newObj[key] = this.getChangeForProp(value[key]);
+      return newObj;
+    }, {} as Changes)
   }
 
   /**

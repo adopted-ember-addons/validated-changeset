@@ -3223,6 +3223,10 @@ describe('Unit | Utility | changeset', () => {
 
     expect(changeset.get('name')).toBe('Jim Bob');
     expect(changeset.get('address.country')).toBe('North Korea');
+    expect(changeset.changes).toEqual([
+      { key: 'name', value: 'Jim Bob' },
+      { key: 'address.country', value: 'North Korea' }
+    ]);
   });
 
   /**
