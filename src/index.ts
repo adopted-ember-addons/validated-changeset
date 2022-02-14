@@ -708,7 +708,7 @@ export class BufferedChangeset implements IChangeset {
     return keys(changes).reduce((newObj, key) => {
       newObj[key] = this.getChangeForProp(changes[key]);
       return newObj;
-    }, {} as Changes)
+    }, {} as Changes);
   }
 
   private getChangeForProp(value: any) {
@@ -719,7 +719,7 @@ export class BufferedChangeset implements IChangeset {
     return keys(value).reduce((newObj, key) => {
       newObj[key] = this.getChangeForProp(value[key]);
       return newObj;
-    }, {} as Changes)
+    }, {} as Changes);
   }
 
   /**
