@@ -686,7 +686,7 @@ export class BufferedChangeset implements IChangeset {
    * @method restore
    */
   restore({ changes, errors }: Snapshot): this {
-    let newChanges: Changes = this.getChangesFromSnapshot(changes);
+    let newChanges: Changes = this._getChangesFromSnapshot(changes);
 
     let newErrors: Errors<any> = keys(errors).reduce((newObj: Errors<any>, key: keyof Changes) => {
       let e: IErr<any> = errors[key];
@@ -704,20 +704,22 @@ export class BufferedChangeset implements IChangeset {
     return this;
   }
 
-  private getChangesFromSnapshot(changes: Changes) {
-    return keys(changes).reduce((newObj, key) => {
-      newObj[key] = this.getChangeForProp(changes[key]);
-      return newObj;
-    }, {} as Changes);
-  }
-
-  private getChangeForProp(value: any) {
-    if (!isObject(value)) {
-      return new Change(value);
+  /**
+   * Gets the changes from the snapshot as well as
+   * takes nested keys and recursively makes their values into `Change` objects.
+   *
+   * @method _getChangesFromSnapshot
+   * @private
+   */
+   _getChangesFromSnapshot(changes: Changes) {
+    // To avoid unnecessary recursion,
+    // but allow to go deeper if it is nested objects.
+    if (changes.constructor !== Object) {
+      return new Change(changes);
     }
 
-    return keys(value).reduce((newObj, key) => {
-      newObj[key] = this.getChangeForProp(value[key]);
+    return keys(changes).reduce((newObj: Changes, key: keyof Changes) => {
+      newObj[key] = this._getChangesFromSnapshot(changes[key]);
       return newObj;
     }, {} as Changes);
   }
