@@ -10,6 +10,7 @@ export interface ProxyHandler {
 
 export type Config = {
   skipValidate?: boolean;
+  initValidate?: boolean;
   changesetKeys?: string[];
 };
 

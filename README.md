@@ -56,7 +56,7 @@ On rollback, all changes are dropped and the underlying Object is left untouched
 ## Full API
 
 ```js
-Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, changesetKeys: string[] });
+Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: boolean, initValidate: boolean, changesetKeys: string[] });
 ```
 
 - `model` (required)
@@ -68,6 +68,8 @@ Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: 
     > note: `validationMap` might not be inclusive of all keys that can be set on an object.
 
 - `changesetKeys` (optional) - will ensure your changeset and related `isDirty` state is contained to a specific enum of keys.  If a key that is not in `changesetKeys` is set on the changeset, it will not dirty the changeset.
+
+- `initValidate` (optional) - will run the validations and set the validation state when the changeset is created. This option does not support async validations.
 
 ## Examples
 

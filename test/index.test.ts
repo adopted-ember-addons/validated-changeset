@@ -242,6 +242,54 @@ describe('Unit | Utility | changeset', () => {
   /**
    * #isValid
    */
+  it('does not validate with default options', () => {
+    const dummyChangeset = Changeset(
+      dummyModel,
+      lookupValidator(dummyValidations),
+      dummyValidations,
+      {}
+    );
+
+    expect(dummyChangeset.get('isValid')).toBeTruthy();
+  });
+
+  it('does not validate when the initValidate option is set to false', () => {
+    const dummyChangeset = Changeset(
+      dummyModel,
+      lookupValidator(dummyValidations),
+      dummyValidations,
+      { initValidate: false }
+    );
+
+    expect(dummyChangeset.get('isValid')).toBeTruthy();
+  });
+
+  it('validates when the initValidate option is set to true', () => {
+    const dummyChangeset = Changeset(
+      dummyModel,
+      lookupValidator(dummyValidations),
+      dummyValidations,
+      { initValidate: true }
+    );
+
+    expect(dummyChangeset.get('isValid')).toBeFalsy();
+  });
+
+  it('validates when the initValidate option is set to true and the initial changeset data is valid', () => {
+    dummyModel.name = 'Bobby';
+
+    let validations: Record<string, any> = {
+      name(_k: string, value: any) {
+        return (!!value && value.length > 3) || 'too short';
+      }
+    };
+
+    const dummyChangeset = Changeset(dummyModel, lookupValidator(validations), validations, {
+      initValidate: true
+    });
+
+    expect(dummyChangeset.get('isValid')).toBeTruthy();
+  });
 
   /**
    * #isInvalid
