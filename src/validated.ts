@@ -25,7 +25,6 @@ import {
   INotifier,
   InternalMap,
   NewProperty,
-  PrepareChangesFn,
   Snapshot,
   ValidationErr,
   ValidatorKlass
@@ -35,6 +34,7 @@ const { keys } = Object;
 const CONTENT = '_content';
 const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
+const ORIGINAL = '_original';
 const ERRORS = '_errors';
 const ERRORS_CACHE = '_errorsCache';
 const VALIDATOR = '_validator';
@@ -55,8 +55,22 @@ function maybeUnwrapProxy(content: Content): any {
   return content;
 }
 
-// function getKeyValues(obj) {
-// }
+export function newFormat(
+  obj: Record<string, any>[],
+  original: any,
+  getDeep: Function
+): Record<string, any> {
+  let newFormat: Record<string, any> = {};
+  for (let item of obj) {
+    const { key, value } = item;
+    newFormat[key] = {
+      current: value,
+      original: getDeep(original, key)
+    };
+  }
+
+  return newFormat;
+}
 
 // This is intended to provide an alternative changeset structure compatible with `yup`
 // This slims down the set of features, including removed APIs and `validate` returns just the `validate()` method call and requires users to manually add errors.
@@ -84,6 +98,7 @@ export class ValidatedChangeset {
   [key: string]: unknown;
   [CONTENT]: object;
   [PREVIOUS_CONTENT]: object | undefined;
+  [ORIGINAL]: Changes;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [ERRORS_CACHE]: Errors<any>;
@@ -157,27 +172,19 @@ export class ValidatedChangeset {
     return (obj[key] = value);
   }
 
-  get _bareChanges() {
-    let obj = this[CHANGES];
-
-    return getKeyValues(obj).reduce((newObj: { [key: string]: any }, { key, value }) => {
-      newObj[key] = value;
-      return newObj;
-    }, Object.create(null));
-  }
-
   /**
    * @property changes
    * @type {Array}
    */
   get changes() {
     let obj = this[CHANGES];
+    let original = this[CONTENT];
 
     // foo: {
     //  original: 0,
     //  current: 1,
     // }
-    return getKeyValues(obj);
+    return newFormat(getKeyValues(obj), original, this.getDeep);
   }
 
   /**
@@ -186,9 +193,9 @@ export class ValidatedChangeset {
    */
   get errors() {
     let obj = this[ERRORS];
+    let original = this[CONTENT];
 
-    // [{ key, validation, value }, ...]
-    return getKeyErrorValues(obj);
+    return newFormat(getKeyValues(obj), original, this.getDeep);
   }
 
   get change() {
@@ -286,49 +293,6 @@ export class ValidatedChangeset {
   }
 
   /**
-   * Provides a function to run before emitting changes to the model. The
-   * callback function must return a hash in the same shape:
-   *
-   * ```
-   * changeset
-   *   .prepare((changes) => {
-   *     let modified = {};
-   *
-   *     for (let key in changes) {
-   *       modified[underscore(key)] = changes[key];
-   *     }
-   *
-   *    return modified; // { first_name: "Jim", last_name: "Bob" }
-   *  })
-   *  .execute(); // execute the changes
-   * ```
-   *
-   * @method prepare
-   */
-  prepare(prepareChangesFn: PrepareChangesFn): this {
-    let changes: { [s: string]: any } = this._bareChanges;
-    let preparedChanges = prepareChangesFn(changes);
-
-    assert('Callback to `changeset.prepare` must return an object', this.isObject(preparedChanges));
-
-    let newObj: Changes = {};
-    if (this.isObject(preparedChanges)) {
-      let newChanges: Changes = keys(preparedChanges as Record<string, any>).reduce(
-        (newObj: Changes, key: keyof Changes) => {
-          newObj[key] = new Change((preparedChanges as Record<string, any>)[key]);
-          return newObj;
-        },
-        newObj
-      );
-
-      // @tracked
-      this[CHANGES] = newChanges;
-    }
-
-    return this;
-  }
-
-  /**
    * Executes the changeset if in a valid state.
    *
    * @method execute
@@ -340,7 +304,7 @@ export class ValidatedChangeset {
       let changes: Changes = this[CHANGES];
 
       // keep old values in case of error and we want to rollback
-      oldContent = buildOldValues(content, this.changes, this.getDeep);
+      oldContent = buildOldValues(content, getKeyValues(changes), this.getDeep);
 
       // we want mutation on original object
       // @tracked
