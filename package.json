@@ -63,7 +63,10 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "ts-jest": "^24.2.0",
-    "typescript": "^3.8.0"
+    "typescript": "^3.8.0",
+    "yup": "^0.32.11"
   },
-  "dependencies": {}
+  "volta": {
+    "node": "14.19.1"
+  }
 }

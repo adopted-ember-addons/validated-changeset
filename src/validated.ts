@@ -28,7 +28,7 @@ import {
   PrepareChangesFn,
   Snapshot,
   ValidationErr,
-  ValidatorKlass,
+  ValidatorKlass
 } from './types';
 
 const { keys } = Object;
@@ -61,11 +61,7 @@ function maybeUnwrapProxy(content: Content): any {
 // This is intended to provide an alternative changeset structure compatible with `yup`
 // This slims down the set of features, including removed APIs and `validate` returns just the `validate()` method call and requires users to manually add errors.
 export class ValidatedChangeset {
-  constructor(
-    obj: object,
-    public Validator: ValidatorKlass,
-    options: Config = {}
-  ) {
+  constructor(obj: object, public Validator: ValidatorKlass, options: Config = {}) {
     this[CONTENT] = obj;
     this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
