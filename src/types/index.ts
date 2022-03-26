@@ -57,7 +57,7 @@ export interface ValidatorClass {
 }
 
 export interface ValidatorKlass {
-  validate: () => any;
+  validate: (obj: any) => any;
   [s: string]: any;
 }
 

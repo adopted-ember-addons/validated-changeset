@@ -73,7 +73,7 @@ export function newFormat(
 }
 
 // This is intended to provide an alternative changeset structure compatible with `yup`
-// This slims down the set of features, including removed APIs and `validate` returns just the `validate()` method call and requires users to manually add errors.
+// This slims down the set of features, including removed APIs and `validate` returns just the `validate(obj)` method call and requires users to manually add errors.
 export class ValidatedChangeset {
   constructor(obj: object, public Validator: ValidatorKlass, options: Config = {}) {
     this[CONTENT] = obj;
@@ -394,7 +394,9 @@ export class ValidatedChangeset {
    * @method validate
    */
   async validate(): Promise<any> {
-    return this.Validator.validate();
+    const changes = this[CHANGES];
+
+    return this.Validator.validate(normalizeObject(changes));
   }
 
   /**
