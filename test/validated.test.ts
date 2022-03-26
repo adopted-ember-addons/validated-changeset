@@ -7,6 +7,11 @@ let userSchema = object({
   name: string().required(),
   age: number().required().positive().integer(),
   email: string().email(),
+  org: object({
+    usa: object({
+      minAge: number().moreThan(18)
+    }),
+  }),
   teams: array(string()),
   website: string().url().nullable(),
   createdOn: date().default(() => new Date()),
@@ -2435,34 +2440,46 @@ describe('Unit | Utility | validation changeset', () => {
    * #validate
    */
 
-  // it.only('#validate/0 validates all fields immediately', async () => {
-  //   dummyModel.name = 'J';
-  //   dummyModel.age = 10;
-  //   dummyModel.password = false;
-  //   dummyModel.options = null;
-  //   let dummyChangeset = Changeset(dummyModel, userSchema);
+  it('#validate/0', async () => {
+    expect.assertions(5);
+    dummyModel.name = 'J';
+    let dummyChangeset = Changeset(dummyModel, userSchema);
 
-  //   await dummyChangeset.validate();
-  //   expect(get(dummyChangeset, 'error.password')).toEqual({
-  //     validation: ['foo', 'bar'],
-  //     value: false
-  //   });
-  //   expect(dummyChangeset.changes).toEqual({});
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(8);
-  // });
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      expect(e.message).toEqual('age is a required field');
+      const error = dummyChangeset.addError('age', e.message);
+      expect(get(dummyChangeset, 'error.age')).toEqual(error);
+    }
+    expect(dummyChangeset.changes).toEqual({});
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+    expect(get(dummyChangeset, 'errors')).toEqual([
+      { key: 'age', validation: 'age is a required field', value: undefined }
+    ]);
+  });
 
-  // it('#validate/0 validates nested fields', async () => {
-  //   dummyModel.org = { usa: { ny: 7 } };
-  //   let dummyChangeset = Changeset(dummyModel, userSchema), dummyValidations);
+  it('#validate/0 validates nested fields', async () => {
+    expect.assertions(5);
+    dummyModel.name = 'scott';
+    dummyModel.age = 10;
+    dummyModel.org = { usa: { minAge: 7 } };
+    let dummyChangeset = Changeset(dummyModel, userSchema);
 
-  //   await dummyChangeset.validate();
-  //   expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({
-  //     validation: ['only letters work'],
-  //     value: 7
-  //   });
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(8);
-  // });
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      expect(e.message).toEqual('org.usa.minAge must be greater than 18');
+      const error = dummyChangeset.addError('org.usa.minAge', e.message);
+      expect(get(dummyChangeset, 'error.org.usa.minAge')).toEqual(error);
+    }
+
+    expect(dummyChangeset.changes).toEqual({});
+    expect(get(dummyChangeset, 'errors.length')).toBe(1);
+    expect(get(dummyChangeset, 'errors')).toEqual([
+      { key: 'org.usa.minAge', validation: 'org.usa.minAge must be greater than 18', value: 7 }
+    ]);
+  });
 
   // it('#validate/1 validates a single field immediately', async () => {
   //   dummyModel.name = 'J';

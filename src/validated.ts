@@ -195,7 +195,7 @@ export class ValidatedChangeset {
     let obj = this[ERRORS];
     let original = this[CONTENT];
 
-    return newFormat(getKeyValues(obj), original, this.getDeep);
+    return getKeyErrorValues(obj);
   }
 
   get change() {
@@ -395,8 +395,9 @@ export class ValidatedChangeset {
    */
   async validate(): Promise<any> {
     const changes = this[CHANGES];
+    const content = this[CONTENT];
 
-    return this.Validator.validate(normalizeObject(changes));
+    return this.Validator.validate({ ...normalizeObject(content), ...normalizeObject(changes) });
   }
 
   /**
@@ -427,7 +428,7 @@ export class ValidatedChangeset {
     this[ERRORS_CACHE] = this[ERRORS];
 
     // Return passed-in `error`.
-    return error;
+    return newError;
   }
 
   /**
