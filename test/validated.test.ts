@@ -2111,107 +2111,37 @@ describe('Unit | Utility | validation changeset', () => {
   //   });
   // });
 
-  // /**
-  //  * #merge
-  //  */
+  /**
+   * #rollback
+   */
 
-  // it('#merge merges 2 valid changesets', () => {
-  //   const dummyChangesetA = Changeset(dummyModel, userSchema);
-  //   const dummyChangesetB = Changeset(dummyModel, userSchema);
-  //   dummyChangesetA.set('firstName', 'Jim');
-  //   dummyChangesetB.set('lastName', 'Bob');
-  //   const dummyChangesetC = dummyChangesetA.merge(dummyChangesetB);
-  //   const expectedChanges = [
-  //     { key: 'firstName', value: 'Jim' },
-  //     { key: 'lastName', value: 'Bob' }
-  //   ];
+  it('#rollback restores old values', async () => {
+    let userSchema = object({
+      age: number().required().min(21)
+    });
+    let dummyChangeset = Changeset(dummyModel, userSchema);
+    let expectedChanges = {
+      age: {
+        current: 2,
+        original: undefined,
+      }
+    };
+    dummyChangeset.set('age', 2);
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+    }
 
-  //   expect(dummyChangesetC.changes).toEqual(expectedChanges);
-  //   expect(dummyChangesetA.changes).toEqual([{ key: 'firstName', value: 'Jim' }]);
-  //   expect(dummyChangesetB.changes).toEqual([{ key: 'lastName', value: 'Bob' }]);
-  // });
-
-  // it('#merge merges invalid changesets', () => {
-  //   const dummyChangesetA = Changeset(dummyModel, userSchema));
-  //   const dummyChangesetB = Changeset(dummyModel, userSchema));
-  //   const dummyChangesetC = Changeset(dummyModel, userSchema));
-  //   dummyChangesetA.set('age', 21);
-  //   dummyChangesetA.set('name', 'a');
-  //   dummyChangesetB.set('name', 'Tony Stark');
-  //   dummyChangesetC.set('name', 'b');
-
-  //   let dummyChangesetD = dummyChangesetA.merge(dummyChangesetB);
-  //   dummyChangesetD = dummyChangesetD.merge(dummyChangesetC);
-
-  //   const expectedChanges = [
-  //     { key: 'age', value: 21 },
-  //     { key: 'name', value: 'b' }
-  //   ];
-  //   const expectedErrors = [{ key: 'name', validation: 'too short', value: 'b' }];
-
-  //   expect(dummyChangesetA.isInvalid).toEqual(true);
-  //   expect(dummyChangesetB.isValid).toEqual(true);
-  //   expect(dummyChangesetC.isInvalid).toEqual(true);
-  //   expect(dummyChangesetD.isInvalid).toEqual(true);
-  //   expect(dummyChangesetD.changes).toEqual(expectedChanges);
-  //   expect(dummyChangesetD.errors).toEqual(expectedErrors);
-  // });
-
-  // it('#merge does not merge a changeset with a non-changeset', () => {
-  //   const dummyChangesetA = Changeset(dummyModel, userSchema));
-  //   const dummyChangesetB = Changeset({ _changes: { name: 'b' } });
-  //   dummyChangesetA.set('name', 'a');
-
-  //   expect(() => dummyChangesetA.merge(dummyChangesetB)).toThrow();
-  // });
-
-  // it('#merge does not merge a changeset with different content', () => {
-  //   let dummyChangesetA = Changeset(dummyModel, userSchema));
-  //   let dummyChangesetB = Changeset({}, lookupValidator(dummyValidations));
-
-  //   expect(() => dummyChangesetA.merge(dummyChangesetB)).toThrow();
-  // });
-
-  // it('#merge preserves content and validator of origin changeset', async () => {
-  //   delete dummyModel.save;
-  //   let dummyChangesetA = Changeset(dummyModel, userSchema));
-  //   let dummyChangesetB = Changeset(dummyModel, userSchema);
-  //   let dummyChangesetC = dummyChangesetA.merge(dummyChangesetB);
-  //   let expectedErrors = [{ key: 'name', validation: 'too short', value: 'a' }];
-
-  //   dummyChangesetC.set('name', 'a');
-  //   expect(dummyChangesetC.get('errors')).toEqual(expectedErrors);
-
-  //   dummyChangesetC.set('name', 'Jim Bob');
-  //   await dummyChangesetC.save();
-
-  //   expect(dummyModel.name).toBe('Jim Bob');
-  // });
-
-  // /**
-  //  * #rollback
-  //  */
-
-  // it('#rollback restores old values', () => {
-  //   let dummyChangeset = Changeset(dummyModel, userSchema));
-  //   let expectedChanges = [
-  //     { key: 'firstName', value: 'foo' },
-  //     { key: 'lastName', value: 'bar' },
-  //     { key: 'name', value: '' }
-  //   ];
-  //   let expectedErrors = [{ key: 'name', validation: 'too short', value: '' }];
-  //   dummyChangeset.set('firstName', 'foo');
-  //   dummyChangeset.set('lastName', 'bar');
-  //   dummyChangeset.set('name', '');
-
-  //   expect(dummyChangeset.changes).toEqual(expectedChanges);
-  //   expect(dummyChangeset.errors).toEqual(expectedErrors);
-  //   expect(dummyChangeset.isDirty).toBe(true);
-  //   dummyChangeset.rollback();
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(dummyChangeset.errors).toEqual([]);
-  //   expect(dummyChangeset.isDirty).toBe(false);
-  // });
+    expect(dummyChangeset.changes).toEqual(expectedChanges);
+    let expectedErrors = [{ key: 'age', validation: 'age must be greater than or equal to 21', value: 2 }];
+    expect(dummyChangeset.errors).toEqual(expectedErrors);
+    expect(dummyChangeset.isDirty).toBe(true);
+    dummyChangeset.rollback();
+    expect(dummyChangeset.changes).toEqual({});
+    expect(dummyChangeset.errors).toEqual([]);
+    expect(dummyChangeset.isDirty).toBe(false);
+  });
 
   // it('#rollback resets valid state', () => {
   //   let dummyChangeset = Changeset(dummyModel, userSchema));
@@ -2442,7 +2372,17 @@ describe('Unit | Utility | validation changeset', () => {
 
   it('#validate/0', async () => {
     expect.assertions(5);
-    dummyModel.name = 'J';
+
+    let userSchema = object({
+      age: number().required().positive().integer(),
+      email: string().email(),
+      org: object({
+        usa: object({
+          minAge: number().moreThan(18)
+        }),
+      }),
+    });
+
     let dummyChangeset = Changeset(dummyModel, userSchema);
 
     try {
@@ -2459,10 +2399,39 @@ describe('Unit | Utility | validation changeset', () => {
     ]);
   });
 
+  it('#validate/0 happy', async () => {
+    let userSchema = object({
+      age: number().required().positive().integer(),
+      email: string().email(),
+      org: object({
+        usa: object({
+          minAge: number().moreThan(18)
+        }),
+      }),
+    });
+
+    dummyModel.age = 10;
+    dummyModel.org = { usa: { minAge: 27 } };
+    let dummyChangeset = Changeset(dummyModel, userSchema);
+
+    await dummyChangeset.validate();
+    expect(dummyChangeset.changes).toEqual({});
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+    expect(get(dummyChangeset, 'errors.length')).toBe(0);
+  });
+
   it('#validate/0 validates nested fields', async () => {
     expect.assertions(5);
-    dummyModel.name = 'scott';
-    dummyModel.age = 10;
+
+    let userSchema = object({
+      org: object({
+        usa: object({
+          minAge: number().moreThan(18)
+        }),
+      }),
+    });
+
     dummyModel.org = { usa: { minAge: 7 } };
     let dummyChangeset = Changeset(dummyModel, userSchema);
 
@@ -2686,161 +2655,27 @@ describe('Unit | Utility | validation changeset', () => {
   //   ]);
   // });
 
-  // it('#validate changeset getter', async () => {
-  //   class MyModel {
-  //     isOptionOne = false;
-  //     isOptionTwo = false;
-  //     isOptionThree = true;
-  //   }
+  /**
+   * #addError
+   */
 
-  //   const Validations = {
-  //     isOptionSelected: (newValue: boolean) => {
-  //       return newValue === true ? true : 'No options selected';
-  //     }
-  //   };
+  it('#addError adds an error to the changeset', async () => {
+    let userSchema = object({
+      email: string().email()
+    });
+    let dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
 
-  //   function myValidator({
-  //     key,
-  //     newValue,
-  //     oldValue,
-  //     changes,
-  //     content
-  //   }: {
-  //     key: string;
-  //     newValue: unknown;
-  //     oldValue: unknown;
-  //     changes: any;
-  //     content: any;
-  //   }) {
-  //     let validatorFn = get(Validations, key);
-
-  //     if (typeof validatorFn === 'function') {
-  //       return validatorFn(newValue, oldValue, changes, content);
-  //     }
-  //   }
-
-  //   const myObject = new MyModel();
-  //   const myChangeset = Changeset(myObject, myValidator, Validations);
-
-  //   Object.defineProperty(myChangeset, 'isOptionSelected', {
-  //     get() {
-  //       return this.get('isOptionOne') || this.get('isOptionTwo') || this.get('isOptionThree');
-  //     }
-  //   });
-
-  //   await myChangeset.validate();
-  //   expect(myChangeset.isInvalid).toEqual(false);
-
-  //   myChangeset.set('isOptionThree', false);
-  //   await myChangeset.validate();
-  //   expect(myChangeset.isInvalid).toEqual(true);
-
-  //   myChangeset.set('isOptionTwo', true);
-  //   await myChangeset.validate();
-  //   expect(myChangeset.isInvalid).toEqual(false);
-  // });
-
-  // it('#validate/0 works with a class', async () => {
-  //   class PersonalValidator {
-  //     _validate() {
-  //       return 'oh no';
-  //     }
-  //     async validate(_key: string, _newValue: unknown) {
-  //       return this._validate();
-  //     }
-  //   }
-  //   const validationMap = {
-  //     name: new PersonalValidator()
-  //   };
-  //   dummyModel.name = 'J';
-  //   let dummyChangeset = Changeset(dummyModel, lookupValidator(validationMap), validationMap);
-  //   dummyChangeset.name = null;
-
-  //   await dummyChangeset.validate();
-
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(1);
-  //   expect(get(dummyChangeset, 'error.name.validation')).toEqual('oh no');
-  //   expect(dummyChangeset.changes).toEqual([
-  //     {
-  //       key: 'name',
-  //       value: null
-  //     }
-  //   ]);
-  // });
-
-  // it('#validate/0 works with a class and multiple validators', async () => {
-  //   function validatePresence(): Function {
-  //     return (val: unknown) => !!val;
-  //   }
-  //   class PersonalValidator {
-  //     _validate() {
-  //       return 'oh no';
-  //     }
-  //     async validate(_key: string, _newValue: unknown) {
-  //       return this._validate();
-  //     }
-  //   }
-  //   const validationMap = {
-  //     name: [validatePresence(), new PersonalValidator()]
-  //   };
-  //   dummyModel.name = 'J';
-  //   let dummyChangeset = Changeset(dummyModel, lookupValidator(validationMap), validationMap);
-  //   dummyChangeset.name = null;
-
-  //   await dummyChangeset.validate();
-
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(1);
-  //   expect(get(dummyChangeset, 'error.name.validation')).toEqual(['oh no']);
-  //   expect(dummyChangeset.changes).toEqual([
-  //     {
-  //       key: 'name',
-  //       value: null
-  //     }
-  //   ]);
-  // });
-
-  // it('#isInvalid does not trigger validations without validate keys', async () => {
-  //   const model = { name: 'o' };
-  //   const dummyChangeset = Changeset(model, lookupValidator(dummyValidations));
-
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.isInvalid).toEqual(false);
-
-  //   await dummyChangeset.validate();
-
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.isInvalid).toEqual(false);
-  // });
-
-  // it('#isInvalid does not trigger on init of changeset', async () => {
-  //   const model = { name: 'o' };
-  //   const dummyChangeset = Changeset(model, lookupValidator(dummyValidations));
-
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.isInvalid).toEqual(false);
-
-  //   await dummyChangeset.validate('name');
-
-  //   expect(dummyChangeset.isValid).toEqual(false);
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  // });
-
-  // /**
-  //  * #addError
-  //  */
-
-  // it('#addError adds an error to the changeset', () => {
-  //   let dummyChangeset = Changeset(dummyModel, userSchema);
-  //   dummyChangeset.addError('email', {
-  //     value: 'jim@bob.com',
-  //     validation: 'Email already taken'
-  //   });
-
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
-  //   dummyChangeset.set('email', 'unique@email.com');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  // });
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+    dummyChangeset.set('email', 'unique@email.com');
+    await dummyChangeset.validate();
+    dummyChangeset.removeError('email');
+    expect(dummyChangeset.isValid).toEqual(true);
+  });
 
   // it('#addError adds an error then validates', async () => {
   //   let dummyChangeset = Changeset(dummyModel, userSchema);
@@ -2947,24 +2782,42 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyChangeset.isValid).toEqual(true);
   // });
 
-  // /**
-  //  * #snapshot
-  //  */
+  /**
+   * #snapshot
+   */
 
-  // it('#snapshot creates a snapshot of the changeset', () => {
-  //   let dummyChangeset = Changeset(dummyModel, userSchema));
-  //   dummyChangeset.set('name', 'Pokemon Go');
-  //   dummyChangeset.set('password', false);
-  //   let snapshot = dummyChangeset.snapshot();
-  //   let expectedResult = {
-  //     changes: { name: 'Pokemon Go', password: false },
-  //     errors: { password: { validation: ['foo', 'bar'], value: false } }
-  //   };
+  it('#snapshot creates a snapshot of the changeset', async () => {
+    expect.assertions(2)
+    let userSchema = object({
+      password: string().min(8),
+    });
+    let dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('name', 'Pokemon Go');
+    dummyChangeset.set('password', 'test');
+    const error = dummyChangeset.validateSync();
+    try {
+      await error;
+    } catch (e) {
+      dummyChangeset.addError(e.inner[0].path, { value: e.inner[0].value, validation: e.message });
+      let snapshot = dummyChangeset.snapshot();
+      let expectedResult = {
+        changes: { name: 'Pokemon Go', password: 'test' },
+        errors: { password: { validation: 'password must be at least 8 characters', value: 'test' } }
+      };
 
-  //   expect(snapshot).toEqual(expectedResult);
-  //   dummyChangeset.set('name', "Gotta catch'em all");
-  //   expect(snapshot).toEqual(expectedResult);
-  // });
+      expect(snapshot).toEqual(expectedResult);
+    }
+
+    dummyChangeset.set('password', 'maestro violin');
+    const noError = await dummyChangeset.validateSync();
+    dummyChangeset.removeError('password');
+    let snapshot = dummyChangeset.snapshot();
+    let expectedResult = {
+      changes: { name: 'Pokemon Go', password: 'maestro violin' },
+      errors: {},
+    };
+    expect(snapshot).toEqual(expectedResult);
+  });
 
   // /**
   //  * #restore
@@ -3041,47 +2894,6 @@ describe('Unit | Utility | validation changeset', () => {
   //   dummyChangeset.cast();
 
   //   expect(dummyChangeset.get('changes')).toEqual(expectedResult);
-  // });
-
-  // /**
-  //  * #isValidating
-  //  */
-
-  // it('isValidating returns true when validations have not resolved', () => {
-  //   let dummyChangeset;
-  //   const _validator = () => Promise.resolve([]);
-  //   const _validations = {
-  //     reservations() {
-  //       return _validator();
-  //     }
-  //   };
-
-  //   dummyModel['reservations'] = 'ABC12345';
-  //   dummyChangeset = Changeset(dummyModel, _validator, _validations);
-  //   dummyChangeset['reservations'] = 'DCE12345';
-
-  //   dummyChangeset.validate();
-  //   // expect(dummyChangeset.change, { reservations: 'DCE12345' });
-
-  //   expect(dummyChangeset.isValidating()).toBeTruthy();
-  //   expect(dummyChangeset.isValidating('reservations')).toBeTruthy();
-  // });
-
-  // it('isValidating returns false when validations have resolved', () => {
-  //   let dummyChangeset;
-  //   const _validator = () => Promise.resolve(true);
-  //   const _validations = {
-  //     reservations() {
-  //       return _validator();
-  //     }
-  //   };
-
-  //   dummyModel['reservations'] = 'ABC12345';
-  //   dummyChangeset = Changeset(dummyModel, _validator, _validations);
-
-  //   dummyChangeset.validate();
-  //   expect(dummyChangeset.isValidating()).toBeTruthy();
-  //   expect(dummyChangeset.isValidating('reservations')).toBeTruthy();
   // });
 
   // /**

@@ -386,11 +386,6 @@ export class ValidatedChangeset {
   }
 
   /**
-   * Validates the changeset immediately against the validationMap passed in.
-   * If no key is passed into this method, it will validate all fields on the
-   * validationMap and set errors accordingly. Will throw an error if no
-   * validationMap is present.
-   *
    * @method validate
    */
   async validate(): Promise<any> {
@@ -399,6 +394,16 @@ export class ValidatedChangeset {
 
     return this.Validator.validate({ ...normalizeObject(content), ...normalizeObject(changes) });
   }
+
+  /**
+   * @method validateSync
+   */
+     async validateSync(): Promise<any> {
+      const changes = this[CHANGES];
+      const content = this[CONTENT];
+  
+      return this.Validator.validateSync({ ...normalizeObject(content), ...normalizeObject(changes) }, { abortEarly: false });
+    }
 
   /**
    * Manually add an error to the changeset. If there is an existing
@@ -429,6 +434,18 @@ export class ValidatedChangeset {
 
     // Return passed-in `error`.
     return newError;
+  }
+
+  /**
+   * @method removeError
+   */
+  removeError<T>(key: string) {
+    // Remove `key` to errors map.
+    let errors: Errors<any> = this[ERRORS];
+    // @tracked
+    this[ERRORS] = this.setDeep(errors, key, null, { safeSet: this.safeSet });
+    this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+    this[ERRORS_CACHE] = this[ERRORS];
   }
 
   /**
