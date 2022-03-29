@@ -5,21 +5,29 @@ import { array, object, string, number, date, InferType } from 'yup';
 
 let userSchema = object({
   name: string().required(),
-  age: number().required().positive().integer(),
+  age: number()
+    .required()
+    .positive()
+    .integer(),
   email: string().email(),
   org: object({
     usa: object({
       minAge: number().moreThan(18)
-    }),
+    })
   }),
   teams: array(string()),
-  website: string().url().nullable(),
-  createdOn: date().default(() => new Date()),
+  website: string()
+    .url()
+    .nullable(),
+  createdOn: date().default(() => new Date())
 });
 
 let dogSchema = object({
   name: string().required(),
-  age: number().required().positive().integer(),
+  age: number()
+    .required()
+    .positive()
+    .integer()
 });
 
 let dummyModel: any = {};
@@ -122,10 +130,7 @@ describe('Unit | Utility | validation changeset', () => {
    * #isValid
    */
   it('does not validate with default options', () => {
-    const dummyChangeset = Changeset(
-      dummyModel,
-      userSchema
-    );
+    const dummyChangeset = Changeset(dummyModel, userSchema);
 
     expect(dummyChangeset.get('isValid')).toBeTruthy();
   });
@@ -293,9 +298,12 @@ describe('Unit | Utility | validation changeset', () => {
 
     const d = new Date('2015');
     const momentInstance = new Moment(d);
-    const c = Changeset({
-      startDate: momentInstance
-    }, userSchema);
+    const c = Changeset(
+      {
+        startDate: momentInstance
+      },
+      userSchema
+    );
 
     const newValue = c.get('startDate');
     expect(newValue.date).toEqual(momentInstance.date);
@@ -316,9 +324,12 @@ describe('Unit | Utility | validation changeset', () => {
     const d = new Date('2015');
     const momentInstance = new Moment(d);
     momentInstance._isUTC = true;
-    const c = Changeset({
-      startDate: momentInstance
-    }, userSchema);
+    const c = Changeset(
+      {
+        startDate: momentInstance
+      },
+      userSchema
+    );
 
     let newValue = c.get('startDate');
     expect(newValue.date).toEqual(momentInstance.date);
@@ -351,9 +362,12 @@ describe('Unit | Utility | validation changeset', () => {
     const d = new Date('2015');
     const momentInstance = new Moment(d);
     momentInstance._isUTC = true;
-    const c = Changeset({
-      startDate: momentInstance
-    }, userSchema);
+    const c = Changeset(
+      {
+        startDate: momentInstance
+      },
+      userSchema
+    );
 
     let newValue = c.get('startDate');
     expect(newValue.date).toEqual(momentInstance.date);
@@ -642,7 +656,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.get('name.title.id')).toEqual('Mr');
 
     let changes = get(dummyChangeset, 'changes');
-    let expected = {'name.title': {current: title1, original: undefined}};
+    let expected = { 'name.title': { current: title1, original: undefined } };
     expect(changes).toEqual(expected);
 
     set(dummyChangeset, 'name.title', title2);
@@ -652,7 +666,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.get('name.title.id')).toEqual('Mrs');
 
     changes = get(dummyChangeset, 'changes');
-    expected = {'name.title': {current: title2, original: undefined}};
+    expected = { 'name.title': { current: title2, original: undefined } };
     expect(changes).toEqual(expected);
 
     dummyChangeset.execute();
@@ -672,7 +686,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.get('name.title.id')).toEqual('Mr');
 
     let changes = dummyChangeset.changes;
-    let expected = {'name.title': {current: title1, original: undefined}};
+    let expected = { 'name.title': { current: title1, original: undefined } };
     expect(changes).toEqual(expected);
 
     dummyChangeset.set('name.title', title2);
@@ -682,7 +696,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.get('name.title.id')).toEqual('Mrs');
 
     changes = dummyChangeset.changes;
-    expected = {'name.title': {current: title2, original: undefined}};
+    expected = { 'name.title': { current: title2, original: undefined } };
     expect(changes).toEqual(expected);
 
     dummyChangeset.execute();
@@ -730,7 +744,9 @@ describe('Unit | Utility | validation changeset', () => {
         changeset.set('contact.emails.0', 'fred@email.com');
 
         expect(changeset.get('contact.emails.0')).toEqual('fred@email.com');
-        const expected =  {'contact.emails.0': {current: 'fred@email.com', original: 'bob@email.com'} };
+        const expected = {
+          'contact.emails.0': { current: 'fred@email.com', original: 'bob@email.com' }
+        };
         expect(changeset.changes).toEqual(expected);
         expect(changeset.get('contact.emails').unwrap()).toEqual(['fred@email.com']);
 
@@ -751,7 +767,9 @@ describe('Unit | Utility | validation changeset', () => {
           'bob@email.com',
           'fred@email.com'
         ]);
-        let expected: any = { 'contact.emails.1': {current: 'fred@email.com', 'original': undefined } }
+        let expected: any = {
+          'contact.emails.1': { current: 'fred@email.com', original: undefined }
+        };
         expect(changeset.changes).toEqual(expected);
 
         changeset.set('contact.emails.3', 'greg@email.com');
@@ -763,7 +781,10 @@ describe('Unit | Utility | validation changeset', () => {
           undefined,
           'greg@email.com'
         ]);
-        expected = { 'contact.emails.1': { current: 'fred@email.com', original: undefined }, 'contact.emails.3': { current: 'greg@email.com', original: undefined } };
+        expected = {
+          'contact.emails.1': { current: 'fred@email.com', original: undefined },
+          'contact.emails.3': { current: 'greg@email.com', original: undefined }
+        };
         expect(changeset.changes).toEqual(expected);
 
         expect(changeset.change).toEqual({
@@ -781,19 +802,27 @@ describe('Unit | Utility | validation changeset', () => {
           'bob@email.com',
           'fred@email.com'
         ]);
-        let expected: any = { 'contact.emails.1': {current: 'fred@email.com', 'original': undefined } }
+        let expected: any = {
+          'contact.emails.1': { current: 'fred@email.com', original: undefined }
+        };
         expect(changeset.changes).toEqual(expected);
 
         changeset.set('contact.emails.0', null);
 
         expect(changeset.get('contact.emails.0')).toEqual(null);
         expect(changeset.get('contact.emails').unwrap()).toEqual([null, 'fred@email.com']);
-        expected = { 'contact.emails.0': { current: null, original: 'bob@email.com' }, 'contact.emails.1': { current: 'fred@email.com', original: undefined } };
+        expected = {
+          'contact.emails.0': { current: null, original: 'bob@email.com' },
+          'contact.emails.1': { current: 'fred@email.com', original: undefined }
+        };
         expect(changeset.changes).toEqual(expected);
 
         changeset.set('contact.emails.1', null);
 
-        expected = { 'contact.emails.0': { current: null, original: 'bob@email.com' }, 'contact.emails.1': { current: null, original: undefined } };
+        expected = {
+          'contact.emails.0': { current: null, original: 'bob@email.com' },
+          'contact.emails.1': { current: null, original: undefined }
+        };
         expect(changeset.get('contact.emails').unwrap()).toEqual([null, null]);
         expect(changeset.changes).toEqual(expected);
       });
@@ -808,9 +837,12 @@ describe('Unit | Utility | validation changeset', () => {
         const fred = deepObj('fred@email.com');
         const sanHolo = deepObj('sanholo@email.com');
 
-        const changeset = Changeset({
-          contacts: [bob, fred]
-        }, userSchema);
+        const changeset = Changeset(
+          {
+            contacts: [bob, fred]
+          },
+          userSchema
+        );
 
         // "Delete" array element
         changeset.set('contacts.0', null);
@@ -818,7 +850,7 @@ describe('Unit | Utility | validation changeset', () => {
         expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts.0')).toEqual(null);
         expect(changeset.get('contacts')).toEqual([null, fred]);
-        let expected: any = {'contacts.0': { current: null, original: bob } };
+        let expected: any = { 'contacts.0': { current: null, original: bob } };
         expect(changeset.changes).toEqual(expected);
 
         // Set array element to entirely new object
@@ -827,7 +859,7 @@ describe('Unit | Utility | validation changeset', () => {
         expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts')).toEqual([sanHolo, fred]);
         expect(changeset.get('contacts.0.emails.primary')).toEqual('sanholo@email.com');
-        expected = {'contacts.0': { current: sanHolo, original: sanHolo } }; // todo: is 'original' sanHolo concerning?
+        expected = { 'contacts.0': { current: sanHolo, original: sanHolo } }; // todo: is 'original' sanHolo concerning?
         expect(changeset.changes).toEqual(expected);
 
         // "Delete" array element again
@@ -836,7 +868,7 @@ describe('Unit | Utility | validation changeset', () => {
         expect(changeset.isDirty).toBeTruthy();
         expect(changeset.get('contacts.0')).toEqual(null);
         expect(changeset.get('contacts')).toEqual([null, fred]);
-        expected = {'contacts.0': { current: null, original: sanHolo } };
+        expected = { 'contacts.0': { current: null, original: sanHolo } };
         expect(changeset.changes).toEqual(expected);
 
         // Revert everything
@@ -1380,7 +1412,7 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.safeGet = get;
 
     dummyChangeset.set('name.email', 'bar');
-    expect(dummyChangeset.changes).toEqual({ 'name.email': { current: 'bar', original: 'foo' }});
+    expect(dummyChangeset.changes).toEqual({ 'name.email': { current: 'bar', original: 'foo' } });
 
     dummyChangeset.set('name.email', 'foo');
     expect(dummyChangeset.changes).toEqual({});
@@ -1450,7 +1482,9 @@ describe('Unit | Utility | validation changeset', () => {
     c.set('org', 'no travelling for you');
 
     const actual = c.changes;
-    const expectedResult = { org: { current: 'no travelling for you', original: { usa: { ca: 'ca', ny: 'ny' } } } };
+    const expectedResult = {
+      org: { current: 'no travelling for you', original: { usa: { ca: 'ca', ny: 'ny' } } }
+    };
     expect(actual).toEqual(expectedResult);
   });
 
@@ -2041,13 +2075,15 @@ describe('Unit | Utility | validation changeset', () => {
 
   it('#rollback restores old values', async () => {
     let userSchema = object({
-      age: number().required().min(21)
+      age: number()
+        .required()
+        .min(21)
     });
     let dummyChangeset = Changeset(dummyModel, userSchema);
     let expectedChanges = {
       age: {
         current: 2,
-        original: undefined,
+        original: undefined
       }
     };
     dummyChangeset.set('age', 2);
@@ -2058,7 +2094,9 @@ describe('Unit | Utility | validation changeset', () => {
     }
 
     expect(dummyChangeset.changes).toEqual(expectedChanges);
-    let expectedErrors = [{ key: 'age', validation: 'age must be greater than or equal to 21', value: 2 }];
+    let expectedErrors = [
+      { key: 'age', validation: 'age must be greater than or equal to 21', value: 2 }
+    ];
     expect(dummyChangeset.errors).toEqual(expectedErrors);
     expect(dummyChangeset.isDirty).toBe(true);
     dummyChangeset.rollback();
@@ -2298,13 +2336,16 @@ describe('Unit | Utility | validation changeset', () => {
     expect.assertions(5);
 
     let userSchema = object({
-      age: number().required().positive().integer(),
+      age: number()
+        .required()
+        .positive()
+        .integer(),
       email: string().email(),
       org: object({
         usa: object({
           minAge: number().moreThan(18)
-        }),
-      }),
+        })
+      })
     });
 
     let dummyChangeset = Changeset(dummyModel, userSchema);
@@ -2325,13 +2366,16 @@ describe('Unit | Utility | validation changeset', () => {
 
   it('#validate/0 happy', async () => {
     let userSchema = object({
-      age: number().required().positive().integer(),
+      age: number()
+        .required()
+        .positive()
+        .integer(),
       email: string().email(),
       org: object({
         usa: object({
           minAge: number().moreThan(18)
-        }),
-      }),
+        })
+      })
     });
 
     dummyModel.age = 10;
@@ -2352,8 +2396,8 @@ describe('Unit | Utility | validation changeset', () => {
       org: object({
         usa: object({
           minAge: number().moreThan(18)
-        }),
-      }),
+        })
+      })
     });
 
     dummyModel.org = { usa: { minAge: 7 } };
@@ -2711,9 +2755,9 @@ describe('Unit | Utility | validation changeset', () => {
    */
 
   it('#snapshot creates a snapshot of the changeset', async () => {
-    expect.assertions(2)
+    expect.assertions(2);
     let userSchema = object({
-      password: string().min(8),
+      password: string().min(8)
     });
     let dummyChangeset = Changeset(dummyModel, userSchema);
     dummyChangeset.set('name', 'Pokemon Go');
@@ -2726,7 +2770,9 @@ describe('Unit | Utility | validation changeset', () => {
       let snapshot = dummyChangeset.snapshot();
       let expectedResult = {
         changes: { name: 'Pokemon Go', password: 'test' },
-        errors: { password: { validation: 'password must be at least 8 characters', value: 'test' } }
+        errors: {
+          password: { validation: 'password must be at least 8 characters', value: 'test' }
+        }
       };
 
       expect(snapshot).toEqual(expectedResult);
@@ -2738,7 +2784,7 @@ describe('Unit | Utility | validation changeset', () => {
     let snapshot = dummyChangeset.snapshot();
     let expectedResult = {
       changes: { name: 'Pokemon Go', password: 'maestro violin' },
-      errors: {},
+      errors: {}
     };
     expect(snapshot).toEqual(expectedResult);
   });

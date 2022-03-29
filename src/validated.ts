@@ -398,12 +398,15 @@ export class ValidatedChangeset {
   /**
    * @method validateSync
    */
-     async validateSync(): Promise<any> {
-      const changes = this[CHANGES];
-      const content = this[CONTENT];
-  
-      return this.Validator.validateSync({ ...normalizeObject(content), ...normalizeObject(changes) }, { abortEarly: false });
-    }
+  async validateSync(): Promise<any> {
+    const changes = this[CHANGES];
+    const content = this[CONTENT];
+
+    return this.Validator.validateSync(
+      { ...normalizeObject(content), ...normalizeObject(changes) },
+      { abortEarly: false }
+    );
+  }
 
   /**
    * Manually add an error to the changeset. If there is an existing
