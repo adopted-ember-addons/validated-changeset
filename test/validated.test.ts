@@ -1188,17 +1188,17 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyModel.value.short).toBe('foo');
   // });
 
-  // it('nested objects can be replaced with different ones without changing the nested return values', () => {
-  //   dummyModel['org'] = { usa: { ny: 'ny' } };
+  it('nested objects can be replaced with different ones without changing the nested return values', () => {
+    dummyModel['org'] = { usa: { ny: 'ny' } };
 
-  //   const dummyChangeset = Changeset(dummyModel, userSchema));
-  //   dummyChangeset.set('org', { usa: { ca: 'ca' } });
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('org', { usa: { ca: 'ca' } });
 
-  //   expect(dummyChangeset.get('org')).toEqual({ usa: { ca: 'ca', ny: undefined } });
-  //   expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca', ny: undefined });
-  //   expect(dummyChangeset.get('org.usa.ca')).toBe('ca');
-  //   expect(dummyChangeset.get('org.usa.ny')).toBeUndefined();
-  // });
+    expect(dummyChangeset.get('org')).toEqual({ usa: { ca: 'ca', ny: undefined } });
+    expect(dummyChangeset.get('org.usa')).toEqual({ ca: 'ca', ny: undefined });
+    expect(dummyChangeset.get('org.usa.ca')).toBe('ca');
+    expect(dummyChangeset.get('org.usa.ny')).toBeUndefined();
+  });
 
   // it('nested objects can be replaced with different ones as classes', () => {
   //   class Country {
@@ -1334,22 +1334,22 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(newValue.date).toEqual(d);
   // });
 
-  // it('#set supports `undefined`', () => {
-  //   const model = { name: 'foo' };
-  //   const dummyChangeset = Changeset(model);
+  it('#set supports `undefined`', () => {
+    const model = { name: 'foo' };
+    const dummyChangeset = Changeset(model, userSchema);
 
-  //   dummyChangeset.set('name', undefined);
-  //   expect(dummyChangeset.name).toBeUndefined();
-  //   expect(dummyChangeset.changes).toEqual([{ key: 'name', value: undefined }]);
-  // });
+    dummyChangeset.set('name', undefined);
+    expect(dummyChangeset.name).toBeUndefined();
+    expect(dummyChangeset.changes).toEqual({ name: { current: undefined, original: 'foo' } });
+  });
 
-  // it('#set does not add a change if new value equals old value', () => {
-  //   const model = { name: 'foo' };
-  //   const dummyChangeset = Changeset(model);
+  it('#set does not add a change if new value equals old value', () => {
+    const model = { name: 'foo' };
+    const dummyChangeset = Changeset(model, userSchema);
 
-  //   dummyChangeset.set('name', 'foo');
-  //   expect(dummyChangeset.changes).toEqual([]);
-  // });
+    dummyChangeset.set('name', 'foo');
+    expect(dummyChangeset.changes).toEqual({});
+  });
 
   // it('#set does not add a change if new value equals old value and `skipValidate` is true', () => {
   //   const model = { name: 'foo' };
@@ -1374,17 +1374,17 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyChangeset.changes).toEqual([]);
   // });
 
-  // it('#set removes a change if set back to original value in nested context', () => {
-  //   const model = { name: { email: 'foo' } };
-  //   const dummyChangeset = Changeset(model);
-  //   dummyChangeset.safeGet = get;
+  it('#set removes a change if set back to original value in nested context', () => {
+    const model = { name: { email: 'foo' } };
+    const dummyChangeset = Changeset(model, userSchema);
+    dummyChangeset.safeGet = get;
 
-  //   dummyChangeset.set('name.email', 'bar');
-  //   expect(dummyChangeset.changes).toEqual([{ key: 'name.email', value: 'bar' }]);
+    dummyChangeset.set('name.email', 'bar');
+    expect(dummyChangeset.changes).toEqual({ 'name.email': { current: 'bar', original: 'foo' }});
 
-  //   dummyChangeset.set('name.email', 'foo');
-  //   expect(dummyChangeset.changes).toEqual([]);
-  // });
+    dummyChangeset.set('name.email', 'foo');
+    expect(dummyChangeset.changes).toEqual({});
+  });
 
   // it('#set does add a change if invalid', () => {
   //   const expectedErrors = [
@@ -1407,22 +1407,6 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(errors).toEqual(expectedErrors);
   //   expect(isValid).toEqual(false);
   //   expect(isInvalid).toBeTruthy();
-  // });
-
-  // it('#set adds the change without validation if `skipValidate` option is set', () => {
-  //   const expectedChanges = [{ key: 'password', value: false }];
-
-  //   const dummyChangeset = Changeset(dummyModel, userSchema), null, {
-  //     skipValidate: true
-  //   });
-
-  //   expect(dummyChangeset.isValid).toEqual(true);
-
-  //   dummyChangeset.set('password', false);
-  //   const changes = dummyChangeset.changes;
-
-  //   expect(changes).toEqual(expectedChanges);
-  //   expect(dummyChangeset.isValid).toEqual(true);
   // });
 
   // it('#set adds errors if undefined value', () => {
@@ -1452,23 +1436,23 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyChangeset.get('errors')).toEqual(expectedResult);
   // });
 
-  // it('#set should remove nested changes when setting roots', () => {
-  //   dummyModel['org'] = {
-  //     usa: {
-  //       ny: 'ny',
-  //       ca: 'ca'
-  //     }
-  //   };
+  it('#set should remove nested changes when setting roots', () => {
+    dummyModel['org'] = {
+      usa: {
+        ny: 'ny',
+        ca: 'ca'
+      }
+    };
 
-  //   const c = Changeset(dummyModel, userSchema);
-  //   c.set('org.usa.ny', 'foo');
-  //   c.set('org.usa.ca', 'bar');
-  //   c.set('org', 'no usa for you');
+    const c = Changeset(dummyModel, userSchema);
+    c.set('org.usa.ny', 'foo');
+    c.set('org.usa.ca', 'bar');
+    c.set('org', 'no travelling for you');
 
-  //   const actual = c.changes;
-  //   const expectedResult = [{ key: 'org', value: 'no usa for you' }];
-  //   expect(actual).toEqual(expectedResult);
-  // });
+    const actual = c.changes;
+    const expectedResult = { org: { current: 'no travelling for you', original: { usa: { ca: 'ca', ny: 'ny' } } } };
+    expect(actual).toEqual(expectedResult);
+  });
 
   // it('#set should handle bulk replace', () => {
   //   dummyModel['org'] = {
@@ -1640,26 +1624,6 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyChangeset.get('org').get('asia.sg')).toBe('sg');
   // });
 
-  // it('it accepts async validations', async () => {
-  //   delete dummyModel.save;
-  //   const dummyChangeset = Changeset(dummyModel, userSchema));
-  //   const expectedChanges = [{ key: 'async', value: true }];
-  //   const expectedError = { async: { validation: 'is invalid', value: 'is invalid' } };
-
-  //   dummyChangeset.set('async', true);
-  //   expect(dummyChangeset.changes).toEqual(expectedChanges);
-
-  //   dummyChangeset.set('async', 'is invalid');
-  //   expect(dummyChangeset.error).toEqual({});
-
-  //   await dummyChangeset.validate();
-  //   expect(dummyChangeset.error).toEqual(expectedError);
-
-  //   await dummyChangeset.save();
-  //   // save clears errors
-  //   expect(dummyChangeset.error).toEqual({});
-  // });
-
   // it('it clears errors when setting to original value', () => {
   //   dummyModel.name = 'Jim Bob';
   //   const dummyChangeset = Changeset(dummyModel, userSchema));
@@ -1698,99 +1662,60 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyChangeset.isInvalid).toEqual(false);
   // });
 
-  // it('#set should delete nested changes when equal', () => {
-  //   dummyModel['org'] = {
-  //     usa: { ny: 'i need a vacation' }
-  //   };
+  it('#set should delete nested changes when equal', () => {
+    dummyModel['org'] = {
+      usa: { ny: 'i need a vacation' }
+    };
 
-  //   const c = Changeset(dummyModel, userSchema), dummyValidations);
-  //   c.set('org.usa.br', 'whoop');
+    const c = Changeset(dummyModel, userSchema);
+    c.set('org.usa.br', 'whoop');
 
-  //   const actual = get(c, 'change.org.usa.ny');
-  //   const expectedResult = undefined;
-  //   expect(actual).toEqual(expectedResult);
-  // });
+    const actual = get(c, 'change.org.usa.ny');
+    const expectedResult = undefined;
+    expect(actual).toEqual(expectedResult);
+  });
 
-  // it('#set works when replacing an Object with an primitive', () => {
-  //   const model = { foo: { bar: { baz: 42 } } };
+  it('#set works when replacing an Object with an primitive', () => {
+    const model = { foo: { bar: { baz: 42 } } };
 
-  //   const c: any = Changeset(model);
-  //   expect(c.foo.bar.baz).toEqual(model.foo.bar.baz);
+    const c: any = Changeset(model, userSchema);
+    expect(c.foo.bar.baz).toEqual(model.foo.bar.baz);
 
-  //   c.set('foo', 'not an object anymore');
-  //   c.execute();
-  //   expect(c.get('foo')).toEqual(model.foo);
-  // });
+    c.set('foo', 'not an object anymore');
+    c.execute();
+    expect(c.get('foo')).toEqual(model.foo);
+  });
 
-  // /**
-  //  * #prepare
-  //  */
+  /**
+   * #execute
+   */
 
-  // it('#prepare provides callback to modify changes', () => {
-  //   const date = new Date();
-  //   const dummyChangeset = Changeset(dummyModel, userSchema);
-  //   dummyChangeset.set('first_name', 'foo');
-  //   dummyChangeset.set('date_of_birth', date);
-  //   dummyChangeset.prepare(changes => {
-  //     const modified: Record<string, any> = {};
+  it('#execute applies changes to content if valid', () => {
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('name', 'foo');
 
-  //     for (let key in changes) {
-  //       modified[(key as string).replace(/_/g, '-')] = changes[key];
-  //     }
+    expect(dummyModel.name).toBeUndefined();
+    expect(dummyChangeset.isValid).toBeTruthy();
+    expect(dummyChangeset.isDirty).toBe(true);
+    dummyChangeset.execute();
+    expect(dummyModel.name).toBe('foo');
+    expect(dummyChangeset.isDirty).toBe(false);
+  });
 
-  //     return modified;
-  //   });
-  //   const changeKeys = dummyChangeset.changes.map(change => get(change, 'key'));
+  it('#execute does not apply changes to content if invalid', async () => {
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('name', 'a');
 
-  //   expect(changeKeys).toEqual(['first-name', 'date-of-birth']);
-  //   dummyChangeset.execute();
-  //   expect(dummyModel['first-name']).toEqual('foo');
-  //   expect(dummyModel['date-of-birth']).toEqual(date);
-  // });
-
-  // it('#prepare throws if callback does not return object', () => {
-  //   const dummyChangeset = Changeset(dummyModel, userSchema);
-  //   dummyChangeset.set('first_name', 'foo');
-
-  //   expect(() => dummyChangeset.prepare(() => null)).toThrow();
-  // });
-
-  // it('#prepare works with initial model containing an object property', () => {
-  //   const dummyChangeset = Changeset({ obj: {} });
-
-  //   dummyChangeset.get('obj').unwrap();
-  //   dummyChangeset.prepare(function(changes) {
-  //     return changes;
-  //   });
-
-  //   expect(dummyChangeset.isPristine).toEqual(true);
-  // });
-
-  // /**
-  //  * #execute
-  //  */
-
-  // it('#execute applies changes to content if valid', () => {
-  //   const dummyChangeset = Changeset(dummyModel, userSchema);
-  //   dummyChangeset.set('name', 'foo');
-
-  //   expect(dummyModel.name).toBeUndefined();
-  //   expect(dummyChangeset.isValid).toBeTruthy();
-  //   expect(dummyChangeset.isDirty).toBe(true);
-  //   dummyChangeset.execute();
-  //   expect(dummyModel.name).toBe('foo');
-  //   expect(dummyChangeset.isDirty).toBe(false);
-  // });
-
-  // it('#execute does not apply changes to content if invalid', () => {
-  //   const dummyChangeset = Changeset(dummyModel, userSchema));
-  //   dummyChangeset.set('name', 'a');
-
-  //   expect(dummyModel.name).toBeUndefined();
-  //   expect(dummyChangeset.isInvalid).toBeTruthy();
-  //   dummyChangeset.execute();
-  //   expect(dummyModel.name).toBeUndefined();
-  // });
+    expect(dummyModel.name).toBeUndefined();
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+    }
+    expect(dummyChangeset.isInvalid).toBeTruthy();
+    dummyChangeset.execute();
+    expect(dummyModel.name).toBeUndefined();
+  });
 
   // it('#execute keeps prototype of set object', function() {
   //   class DogTag {}
@@ -1993,33 +1918,32 @@ describe('Unit | Utility | validation changeset', () => {
   //   });
   // });
 
-  // /**
-  //  * #save
-  //  */
+  /**
+   * #save
+   */
 
-  // it('#save proxies to content', done => {
-  //   let result;
-  //   let options;
-  //   dummyModel.save = (dummyOptions: Record<string, any>) => {
-  //     result = 'ok';
-  //     options = dummyOptions;
-  //     return Promise.resolve('saveResult');
-  //   };
-  //   const dummyChangeset = Changeset(dummyModel, userSchema);
-  //   dummyChangeset.set('name', 'foo');
+  it('#save proxies to content', async () => {
+    let result;
+    let options;
+    dummyModel.save = (dummyOptions: Record<string, any>) => {
+      result = 'ok';
+      options = dummyOptions;
+      return Promise.resolve('saveResult');
+    };
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('name', 'foo');
 
-  //   expect(result).toBeUndefined();
-  //   const promise = dummyChangeset.save({ foo: 'test options' });
-  //   expect(result).toEqual('ok');
-  //   expect(dummyChangeset.change).toEqual({});
-  //   expect(options).toEqual({ foo: 'test options' });
-  //   expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-  //   promise
-  //     .then(saveResult => {
-  //       expect(saveResult).toEqual('saveResult');
-  //     })
-  //     .finally(() => done());
-  // });
+    expect(result).toBeUndefined();
+    const promise = dummyModel.save({ foo: 'test options' });
+    expect(result).toEqual('ok');
+    expect(dummyChangeset.change).toEqual({ name: 'foo' });
+    expect(options).toEqual({ foo: 'test options' });
+    expect(!!promise && typeof promise.then === 'function').toBeTruthy();
+    const saveResult = await promise;
+    expect(saveResult).toEqual('saveResult');
+    dummyChangeset.execute();
+    expect(dummyChangeset.change).toEqual({});
+  });
 
   // it('#save handles non-promise proxy content', done => {
   //   let result;
