@@ -1673,12 +1673,11 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.set('name', 'Jim Bob');
     try {
       await dummyChangeset.validate();
-    } catch (e) {
-      throw Error('error');
-    } finally {
-      dummyChangeset.removeError('name');
+      dummyChangeset.removeErrors();
       expect(dummyChangeset.isValid).toEqual(true);
       expect(dummyChangeset.isInvalid).toEqual(false);
+    } catch (e) {
+      throw Error('error not supposed to be here');
     }
   });
 
