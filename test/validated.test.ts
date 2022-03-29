@@ -1596,79 +1596,91 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(dummyModel.org.usa.mn).toBe('undefined');
   // });
 
-  // it('#set works for deep set and access', async () => {
-  //   const resource = {
-  //     styles: {
-  //       colors: {
-  //         main: {
-  //           sync: true,
-  //           color: '#3D3D3D',
-  //           contrastColor: '#FFFFFF',
-  //           syncedColor: '#575757',
-  //           syncedContrastColor: '#FFFFFF'
-  //         },
-  //         accent: {
-  //           sync: true,
-  //           color: '#967E6E',
-  //           contrastColor: '#ffffff',
-  //           syncedColor: '#967E6E',
-  //           syncedContrastColor: '#ffffff'
-  //         },
-  //         ambient: {
-  //           sync: true,
-  //           color: '#FFFFFF',
-  //           contrastColor: '#3D3D3D',
-  //           syncedColor: '#FFFFFF',
-  //           syncedContrastColor: '#575757'
-  //         }
-  //       }
-  //     }
-  //   };
+  it('#set works for deep set and access', async () => {
+    const resource = {
+      styles: {
+        colors: {
+          main: {
+            sync: true,
+            color: '#3D3D3D',
+            contrastColor: '#FFFFFF',
+            syncedColor: '#575757',
+            syncedContrastColor: '#FFFFFF'
+          },
+          accent: {
+            sync: true,
+            color: '#967E6E',
+            contrastColor: '#ffffff',
+            syncedColor: '#967E6E',
+            syncedContrastColor: '#ffffff'
+          },
+          ambient: {
+            sync: true,
+            color: '#FFFFFF',
+            contrastColor: '#3D3D3D',
+            syncedColor: '#FFFFFF',
+            syncedContrastColor: '#575757'
+          }
+        }
+      }
+    };
 
-  //   const changeset = Changeset(resource);
+    const changeset = Changeset(resource, userSchema);
 
-  //   changeset.set('styles.colors.main.sync', false);
+    changeset.set('styles.colors.main.sync', false);
 
-  //   const result = changeset.get('styles.colors.main');
-  //   expect(result.sync).toEqual(false);
-  // });
+    const result = changeset.get('styles.colors.main');
+    expect(result.sync).toEqual(false);
+  });
 
-  // it('#set nested objects at various level of tree will return correct values', () => {
-  //   dummyModel['org'] = {
-  //     asia: { sg: '_initial' }, // for the sake of disambiguating nulls
-  //     usa: {
-  //       ca: null,
-  //       ny: null,
-  //       ma: { name: null }
-  //     }
-  //   };
+  it('#set nested objects at various level of tree will return correct values', () => {
+    dummyModel['org'] = {
+      asia: { sg: '_initial' }, // for the sake of disambiguating nulls
+      usa: {
+        ca: null,
+        ny: null,
+        ma: { name: null }
+      }
+    };
 
-  //   const dummyChangeset = Changeset(dummyModel, userSchema));
-  //   expect(dummyChangeset.get('org.asia.sg')).toBe('_initial');
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    expect(dummyChangeset.get('org.asia.sg')).toBe('_initial');
 
-  //   dummyChangeset.set('org.asia.sg', 'sg');
-  //   expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
+    dummyChangeset.set('org.asia.sg', 'sg');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
 
-  //   dummyChangeset.get('org.asia').set('sg', 'SG');
-  //   expect(dummyChangeset.get('org.asia.sg')).toBe('SG');
+    dummyChangeset.get('org.asia').set('sg', 'SG');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('SG');
 
-  //   dummyChangeset.get('org').set('asia.sg', 'sg');
-  //   expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
+    dummyChangeset.get('org').set('asia.sg', 'sg');
+    expect(dummyChangeset.get('org.asia.sg')).toBe('sg');
 
-  //   expect(dummyChangeset.get('org').get('asia.sg')).toBe('sg');
-  // });
+    expect(dummyChangeset.get('org').get('asia.sg')).toBe('sg');
+  });
 
-  // it('it clears errors when setting to original value', () => {
-  //   dummyModel.name = 'Jim Bob';
-  //   const dummyChangeset = Changeset(dummyModel, userSchema));
-  //   dummyChangeset.set('name', '');
-
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(dummyChangeset.isValid).toEqual(false);
-  //   dummyChangeset.set('name', 'Jim Bob');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.isInvalid).toEqual(false);
-  // });
+  it('it clears errors when setting to original value', async () => {
+    dummyModel.name = 'Jim Bob';
+    dummyModel.age = 22;
+    const dummyChangeset = Changeset(dummyModel, userSchema);
+    dummyChangeset.set('name', '');
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+    }
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(dummyChangeset.isValid).toEqual(false);
+    dummyChangeset.set('name', 'Jim Bob');
+    try {
+      await dummyChangeset.validate();
+    } catch (e) {
+      throw Error('error');
+    } finally {
+      dummyChangeset.removeError('name');
+      expect(dummyChangeset.isValid).toEqual(true);
+      expect(dummyChangeset.isInvalid).toEqual(false);
+    }
+  });
 
   // it('it clears errors when setting to original value when nested', async () => {
   //   set(dummyModel, 'org', {
