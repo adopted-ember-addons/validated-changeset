@@ -193,7 +193,6 @@ export class ValidatedChangeset {
    */
   get errors() {
     let obj = this[ERRORS];
-    let original = this[CONTENT];
 
     return getKeyErrorValues(obj);
   }

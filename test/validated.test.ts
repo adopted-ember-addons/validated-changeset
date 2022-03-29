@@ -1,7 +1,7 @@
 import { ValidationChangeset as Changeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
-import { array, object, string, number, date, InferType } from 'yup';
+import { array, object, string, number, date } from 'yup';
 
 let userSchema = object({
   name: string().required(),
@@ -2791,7 +2791,6 @@ describe('Unit | Utility | validation changeset', () => {
     }
 
     dummyChangeset.set('password', 'maestro violin');
-    const noError = await dummyChangeset.validateSync();
     dummyChangeset.removeError('password');
     let snapshot = dummyChangeset.snapshot();
     let expectedResult = {
