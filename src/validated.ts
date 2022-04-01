@@ -26,8 +26,7 @@ import {
   InternalMap,
   NewProperty,
   Snapshot,
-  ValidationErr,
-  ValidatorKlass
+  ValidationErr
 } from './types';
 
 const { keys } = Object;
@@ -37,7 +36,6 @@ const CHANGES = '_changes';
 const ORIGINAL = '_original';
 const ERRORS = '_errors';
 const ERRORS_CACHE = '_errorsCache';
-const VALIDATOR = '_validator';
 const OPTIONS = '_options';
 const AFTER_ROLLBACK_EVENT = 'afterRollback';
 
@@ -75,11 +73,10 @@ export function newFormat(
 // This is intended to provide an alternative changeset structure compatible with `yup`
 // This slims down the set of features, including removed APIs and `validate` returns just the `validate(obj)` method call and requires users to manually add errors.
 export class ValidatedChangeset {
-  constructor(obj: object, public Validator: ValidatorKlass, options: Config = {}) {
+  constructor(obj: object, options: Config = {}) {
     this[CONTENT] = obj;
     this[PREVIOUS_CONTENT] = undefined;
     this[CHANGES] = {};
-    this[VALIDATOR] = Validator;
     this[OPTIONS] = options;
 
     this[ERRORS] = {};
@@ -102,7 +99,6 @@ export class ValidatedChangeset {
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [ERRORS_CACHE]: Errors<any>;
-  [VALIDATOR]: ValidatorKlass;
   [OPTIONS]: Config;
 
   __changeset__ = CHANGESET;
@@ -387,24 +383,11 @@ export class ValidatedChangeset {
   /**
    * @method validate
    */
-  async validate(): Promise<any> {
+  async validate(cb: (changes: Record<string, any>) => unknown): Promise<any> {
     const changes = this[CHANGES];
     const content = this[CONTENT];
 
-    return this.Validator.validate({ ...normalizeObject(content), ...normalizeObject(changes) });
-  }
-
-  /**
-   * @method validateSync
-   */
-  async validateSync(): Promise<any> {
-    const changes = this[CHANGES];
-    const content = this[CONTENT];
-
-    return this.Validator.validateSync(
-      { ...normalizeObject(content), ...normalizeObject(changes) },
-      { abortEarly: false }
-    );
+    return cb({ ...normalizeObject(content), ...normalizeObject(changes) });
   }
 
   /**
@@ -749,22 +732,14 @@ export class ValidatedChangeset {
 /**
  * Creates new changesets.
  */
-export function changeset(
-  obj: object,
-  validatorKlass: ValidatorKlass,
-  options?: Config
-): ValidatedChangeset {
-  return new ValidatedChangeset(obj, validatorKlass, options);
+export function changeset(obj: object, options?: Config): ValidatedChangeset {
+  return new ValidatedChangeset(obj, options);
 }
 
 type T20 = InstanceType<typeof ValidatedChangeset>;
 
-export function Changeset(
-  obj: object,
-  validatorKlass: ValidatorKlass,
-  options?: Config
-): ValidatedChangeset {
-  const c: ValidatedChangeset = changeset(obj, validatorKlass, options);
+export function Changeset(obj: object, options?: Config): ValidatedChangeset {
+  const c: ValidatedChangeset = changeset(obj, options);
 
   return new Proxy(c, {
     get(targetBuffer, key /*, receiver*/) {

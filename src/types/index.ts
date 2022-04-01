@@ -56,11 +56,6 @@ export interface ValidatorClass {
   [s: string]: any;
 }
 
-export interface ValidatorKlass {
-  validate: (obj: any) => any;
-  [s: string]: any;
-}
-
 export type ValidatorMap =
   | { [s: string]: ValidatorMapFunc | ValidatorMapFunc[] | any }
   | null
