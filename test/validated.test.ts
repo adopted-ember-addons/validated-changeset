@@ -2468,9 +2468,13 @@ describe('Unit | Utility | validation changeset', () => {
       'Invalid email format'
     ]);
     expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
-    expect(dummyChangeset.changes).toEqual({ email: { current: 'jim@bob.com', original: undefined } });
+    expect(dummyChangeset.changes).toEqual({
+      email: { current: 'jim@bob.com', original: undefined }
+    });
     dummyChangeset.set('email', 'unique@email.com');
-    expect(dummyChangeset.changes).toEqual({ email: { current: 'unique@email.com', original: undefined } });
+    expect(dummyChangeset.changes).toEqual({
+      email: { current: 'unique@email.com', original: undefined }
+    });
   });
 
   it('#pushErrors pushes an error if no existing validations are present', async function() {
