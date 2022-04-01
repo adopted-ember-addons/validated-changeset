@@ -2409,211 +2409,6 @@ describe('Unit | Utility | validation changeset', () => {
     ]);
   });
 
-  // it('#validate/1 validates a single field immediately', async () => {
-  //   dummyModel.name = 'J';
-  //   dummyModel.password = '123';
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   await dummyChangeset.validate('name');
-  //   expect(get(dummyChangeset, 'error.name')).toEqual({ validation: 'too short', value: 'J' });
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(1);
-  // });
-
-  // it('#validate/1 validates with an falsey string value for the validator message', async () => {
-  //   dummyModel.age = 120;
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   await dummyChangeset.validate('age');
-  //   expect(get(dummyChangeset, 'error.age')).toEqual({ validation: '', value: 120 });
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(1);
-  // });
-
-  // it('#validate validates a multiple field immediately', async () => {
-  //   dummyModel.name = 'J';
-  //   dummyModel.password = false;
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   await dummyChangeset.validate('name', 'password');
-  //   expect(get(dummyChangeset, 'error.name')).toEqual({ validation: 'too short', value: 'J' });
-  //   expect(get(dummyChangeset, 'error.password')).toEqual({
-  //     validation: ['foo', 'bar'],
-  //     value: false
-  //   });
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(2);
-  // });
-
-  // it('#validate/1 validates a property with no validation', async () => {
-  //   dummyModel.org = {};
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   await dummyChangeset.validate('org');
-  //   expect(get(dummyChangeset, 'error.org')).toEqual(undefined);
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(0);
-  // });
-
-  // it('#validate works correctly with changeset values', async () => {
-  //   dummyModel = {
-  //     ...dummyModel,
-  //     ...{
-  //       name: undefined,
-  //       email: undefined,
-  //       password: false,
-  //       async: true,
-  //       passwordConfirmation: false,
-  //       options: {},
-  //       org: {
-  //         isCompliant: undefined,
-  //         usa: {
-  //           ny: undefined
-  //         }
-  //       },
-  //       size: {
-  //         value: undefined,
-  //         power10: 10
-  //       }
-  //     }
-  //   };
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(0);
-
-  //   dummyChangeset.set('name', 'Jim Bob');
-
-  //   await dummyChangeset.validate();
-
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(5);
-  //   expect(get(dummyChangeset, 'errors')[0].key).toBe('password');
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-
-  //   dummyChangeset.set('passwordConfirmation', true);
-
-  //   await dummyChangeset.validate();
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(5);
-  //   expect(get(dummyChangeset, 'errors')[0].key).toBe('org.usa.ny');
-  //   expect(get(dummyChangeset, 'errors')[1].key).toBe('org.isCompliant');
-  //   expect(get(dummyChangeset, 'errors')[2].key).toBe('password');
-  //   expect(get(dummyChangeset, 'errors')[3].key).toBe('passwordConfirmation');
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-
-  //   dummyChangeset.set('org.isCompliant', true);
-  //   dummyChangeset.set('password', 'foobar');
-  //   dummyChangeset.set('passwordConfirmation', 'foobar');
-  //   dummyChangeset.set('email', 'scott.mail@gmail.com');
-  //   dummyChangeset.set('org.usa.ny', 'NY');
-  //   dummyChangeset.set('size.value', 1001);
-
-  //   await dummyChangeset.validate();
-
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(0);
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect((dummyChangeset.size as Record<string, any>).value).toEqual(1001);
-  //   expect((dummyChangeset.size as Record<string, any>).power10).toEqual(10);
-  // });
-
-  // it('#validate works correctly with complex values', () => {
-  //   dummyModel = {};
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   dummyChangeset.set('options', { persist: true });
-  //   dummyChangeset.validate();
-  //   expect(dummyChangeset.changes[0]).toEqual({ key: 'options', value: { persist: true } });
-  // });
-
-  // it('#validate marks actual valid changes', async () => {
-  //   dummyModel = {
-  //     ...dummyModel,
-  //     ...{ name: 'Jim Bob', password: true, passwordConfirmation: true, async: true }
-  //   };
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   dummyChangeset.set('name', 'foo bar');
-  //   dummyChangeset.set('password', false);
-
-  //   await dummyChangeset.validate();
-  //   expect(dummyChangeset.changes).toEqual([
-  //     { key: 'name', value: 'foo bar' },
-  //     { key: 'password', value: false }
-  //   ]);
-  // });
-
-  // it('#validate does not mark changes when nothing has changed', async () => {
-  //   let options = {
-  //     persist: true,
-  //     // test isEqual to ensure we're using Ember.isEqual for comparison
-  //     isEqual(other: Record<string, any>) {
-  //       return this.persist === other.persist;
-  //     }
-  //   };
-  //   dummyModel = {
-  //     ...dummyModel,
-  //     ...{
-  //       name: 'Jim Bob',
-  //       email: 'jimmy@bob.com',
-  //       password: true,
-  //       passwordConfirmation: true,
-  //       async: true,
-  //       options,
-  //       org: {
-  //         isCompliant: true,
-  //         usa: {
-  //           ny: 'NY'
-  //         }
-  //       },
-  //       size: {
-  //         value: 1001,
-  //         power10: 10
-  //       }
-  //     }
-  //   };
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   dummyChangeset.set('options', options);
-
-  //   await dummyChangeset.validate();
-  //   expect(dummyChangeset.error).toEqual({});
-  //   expect(dummyChangeset.changes).toEqual([]);
-  // });
-
-  // it('#validate/nested validates nested fields immediately', async () => {
-  //   dummyModel['org'] = {
-  //     usa: {
-  //       ny: null
-  //     }
-  //   };
-
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-  //   await dummyChangeset.validate('org.usa.ny');
-  //   expect(get(dummyChangeset, 'error.org.usa.ny')).toEqual({
-  //     validation: ['must be present'],
-  //     value: null
-  //   });
-  //   /* expect(dummyChangeset.changes).toEqual([]); */
-  //   /* expect(dummyChangeset.errors.length).toBe(1); */
-  // });
-
-  // it('#validate marks actual valid changes', async () => {
-  //   dummyModel = {
-  //     ...dummyModel,
-  //     ...{ name: 'Jim Bob', password: true, passwordConfirmation: true }
-  //   };
-  //   let dummyChangeset = Changeset(dummyModel), dummyValidations);
-
-  //   dummyChangeset.set('name', 'foo bar');
-  //   dummyChangeset.set('password', false);
-  //   dummyChangeset.set('async', true);
-
-  //   await dummyChangeset.validate();
-  //   expect(dummyChangeset.changes).toEqual([
-  //     { key: 'name', value: 'foo bar' },
-  //     { key: 'password', value: false },
-  //     { key: 'async', value: true }
-  //   ]);
-  // });
-
   /**
    * #addError
    */
@@ -2636,110 +2431,75 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.isValid).toEqual(true);
   });
 
-  // it('#addError adds an error then validates', async () => {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.addError('email', {
-  //     value: 'jim@bob.com',
-  //     validation: 'Email already taken'
-  //   });
+  it('#addError adds an error to the changeset on a nested property', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email.localPart', 'Cannot contain +');
 
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   await dummyChangeset.validate();
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.localPart.validation')).toBe('Cannot contain +');
+    dummyChangeset.set('email.localPart', 'ok');
+  });
 
-  //   expect(get(dummyChangeset, 'error.email')).toEqual({
-  //     validation: 'Email already taken',
-  //     value: 'jim@bob.com'
-  //   });
-  //   expect(dummyChangeset.changes).toEqual([]);
-  //   expect(get(dummyChangeset, 'errors.length')).toBe(1);
-  // });
+  it('#addError adds an array of errors to the changeset', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', ['jim@bob.com', 'Email already taken']);
 
-  // it('#addError adds an error to the changeset using the shortcut', function() {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('email', 'jim@bob.com');
-  //   dummyChangeset.addError('email', 'Email already taken');
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toEqual([
+      'jim@bob.com',
+      'Email already taken'
+    ]);
+    dummyChangeset.set('email', 'unique@email.com');
+  });
 
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
-  //   expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
-  //   expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
-  //   dummyChangeset.set('email', 'unique@email.com');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
-  // });
+  /**
+   * #pushErrors
+   */
 
-  // it('#addError adds an error to the changeset on a nested property', () => {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.addError('email.localPart', 'Cannot contain +');
+  it('#pushErrors pushes an error into an array of existing validations', function() {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('email', 'jim@bob.com');
+    dummyChangeset.addError('email', 'Email already taken');
+    dummyChangeset.pushErrors('email', 'Invalid email format');
 
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.localPart.validation')).toBe('Cannot contain +');
-  //   dummyChangeset.set('email.localPart', 'ok');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  // });
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toEqual([
+      'Email already taken',
+      'Invalid email format'
+    ]);
+    expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
+    expect(dummyChangeset.changes).toEqual({ email: { current: 'jim@bob.com', original: undefined } });
+    dummyChangeset.set('email', 'unique@email.com');
+    expect(dummyChangeset.changes).toEqual({ email: { current: 'unique@email.com', original: undefined } });
+  });
 
-  // it('#addError adds an array of errors to the changeset', () => {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.addError('email', ['jim@bob.com', 'Email already taken']);
+  it('#pushErrors pushes an error if no existing validations are present', async function() {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('name', 'J');
+    dummyChangeset.pushErrors('name', 'cannot be J');
 
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.validation')).toEqual([
-  //     'jim@bob.com',
-  //     'Email already taken'
-  //   ]);
-  //   dummyChangeset.set('email', 'unique@email.com');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  // });
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    try {
+      await dummyChangeset.validate(changes => userSchema.validate(changes));
+    } catch (e) {
+      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+    }
+    expect(get(dummyChangeset, 'error.name.validation')).toEqual(['cannot be J']);
+    expect(get(dummyChangeset, 'error.name.value')).toBe('J');
+    expect(dummyChangeset.isInvalid).toEqual(true);
+  });
 
-  // /**
-  //  * #pushErrors
-  //  */
+  it('#pushErrors adds an error to the changeset on a nested property', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.pushErrors('email.localPart', 'Cannot contain +');
+    dummyChangeset.pushErrors('email.localPart', 'is too short');
 
-  // it('#pushErrors pushes an error into an array of existing validations', function() {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('email', 'jim@bob.com');
-  //   dummyChangeset.addError('email', 'Email already taken');
-  //   dummyChangeset.pushErrors('email', 'Invalid email format');
-
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.validation')).toEqual([
-  //     'Email already taken',
-  //     'Invalid email format'
-  //   ]);
-  //   expect(get(dummyChangeset, 'error.email.value')).toBe('jim@bob.com');
-  //   expect(dummyChangeset.changes).toEqual([{ key: 'email', value: 'jim@bob.com' }]);
-  //   dummyChangeset.set('email', 'unique@email.com');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
-  // });
-
-  // it('#pushErrors pushes an error if no existing validations are present', function() {
-  //   let dummyChangeset = Changeset(dummyModel));
-  //   dummyChangeset.set('name', 'J');
-  //   dummyChangeset.pushErrors('name', 'cannot be J');
-
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(dummyChangeset.isValid).toEqual(false);
-  //   expect(get(dummyChangeset, 'error.name.validation')).toEqual(['too short', 'cannot be J']);
-  //   expect(get(dummyChangeset, 'error.name.value')).toBe('J');
-  //   dummyChangeset.set('name', 'Good name');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  //   expect(dummyChangeset.isInvalid).toEqual(false);
-  // });
-
-  // it('#pushErrors adds an error to the changeset on a nested property', () => {
-  //   let dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.pushErrors('email.localPart', 'Cannot contain +');
-  //   dummyChangeset.pushErrors('email.localPart', 'is too short');
-
-  //   expect(dummyChangeset.isInvalid).toEqual(true);
-  //   expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual([
-  //     'Cannot contain +',
-  //     'is too short'
-  //   ]);
-  //   dummyChangeset.set('email.localPart', 'ok');
-  //   expect(dummyChangeset.isValid).toEqual(true);
-  // });
+    expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual([
+      'Cannot contain +',
+      'is too short'
+    ]);
+    dummyChangeset.set('email.localPart', 'ok');
+  });
 
   /**
    * #snapshot
