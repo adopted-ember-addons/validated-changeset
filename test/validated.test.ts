@@ -2753,7 +2753,7 @@ describe('Unit | Utility | validation changeset', () => {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('name', 'Pokemon Go');
     dummyChangeset.set('password', 'test');
-    const error = dummyChangeset.validate(changes => userSchema.validateSync(changes));
+    const error = dummyChangeset.validate(changes => userSchema.validateSync(changes, { abortEarly: false }));
     try {
       await error;
     } catch (e) {
