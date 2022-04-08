@@ -39,7 +39,7 @@ First, create a new `Changeset` through JavaScript:
 ```js
 import { Changeset } from 'validated-changeset';
 
-export default FormComponent {
+export default class FormComponent {
   constructor(...args) {
     let validatorFn = this.validate;
     this.changeset = Changeset(this.model, validatorFn);
@@ -70,6 +70,49 @@ Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: 
 - `changesetKeys` (optional) - will ensure your changeset and related `isDirty` state is contained to a specific enum of keys.  If a key that is not in `changesetKeys` is set on the changeset, it will not dirty the changeset.
 
 - `initValidate` (optional) - will run the validations and set the validation state when the changeset is created. This option does not support async validations.
+
+## Alternative Changeset
+
+We now ship a ValidatedChangeset that is a proposed new API we would like to ship. The goal of this refactor is to remove confusing APIs and externalize validations.
+
+- ✂️ `save`
+- ✂️ `cast`
+- ✂️ `merge`
+- `errors` are required to be added to the Changeset manually after `validate`
+- `validate` takes a callback with the sum of changes.  In user land you will call `changeset.validate((changes) => yupSchema.validate(changes))`
+
+
+```js
+import { ValidatedChangeset } from 'validated-changeset';
+import { array, object, string, number, date } from 'yup';
+
+const UserSchema = object({
+  name: string().required(),
+  age: number()
+    .required()
+    .positive()
+    .integer(),
+  email: string().email(),
+  website: string()
+    .url()
+    .nullable(),
+  createdOn: date().default(() => new Date())
+});
+
+export default class FormComponent {
+  constructor(...args) {
+    this.changeset = ValidatedChangeset(this.model);
+  }
+
+  onSubmit() {
+    try {
+      await this.changeset.validate(changes => UserSchema.validate(changes));
+    } catch (e) {
+      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+    }
+  }
+}
+```
 
 ## Examples
 
