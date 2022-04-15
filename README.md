@@ -83,7 +83,7 @@ We now ship a ValidatedChangeset that is a proposed new API we would like to shi
 
 
 ```js
-import { ValidatedChangeset } from 'validated-changeset';
+import { ValidationChangeset } from 'validated-changeset';
 import { array, object, string, number, date } from 'yup';
 
 const UserSchema = object({
@@ -101,7 +101,7 @@ const UserSchema = object({
 
 export default class FormComponent {
   constructor(...args) {
-    this.changeset = ValidatedChangeset(this.model);
+    this.changeset = ValidationChangeset(this.model);
   }
 
   onSubmit() {
