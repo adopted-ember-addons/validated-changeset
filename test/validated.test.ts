@@ -1,4 +1,4 @@
-import { ValidationChangeset as Changeset } from '../src';
+import { ValidationChangesetFactory as Changeset } from '../src';
 import get from '../src/utils/get-deep';
 import set from '../src/utils/set-deep';
 import { array, object, string, number, date } from 'yup';
