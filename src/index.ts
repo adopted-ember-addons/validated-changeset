@@ -41,10 +41,14 @@ import {
   ValidatorMap
 } from './types';
 
-import { Changeset as ValidationChangeset } from './validated';
+import {
+  ValidatedChangeset as ValidationChangeset,
+  Changeset as ValidationChangesetFactory
+} from './validated';
 
 export {
   ValidationChangeset,
+  ValidationChangesetFactory,
   CHANGESET,
   Change,
   Err,

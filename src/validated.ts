@@ -751,7 +751,7 @@ export function Changeset(obj: object, options?: Config): ValidatedChangeset {
       targetBuffer.set(key.toString(), value);
       return true;
     }
-  });
+  }) as T20;
 }
 
 // determine if two values are equal
