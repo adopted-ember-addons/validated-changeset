@@ -303,7 +303,10 @@ export class ValidatedChangeset {
 
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = this.mergeDeep(content, changes);
+      this[CONTENT] = this.mergeDeep(content, changes, {
+        safeGet: this.safeGet,
+        safeSet: this.safeSet
+      });
     }
 
     // trigger any registered callbacks by same keyword as method name
@@ -387,7 +390,7 @@ export class ValidatedChangeset {
     const changes = this[CHANGES];
     const content = this[CONTENT];
 
-    return cb({ ...normalizeObject(content), ...normalizeObject(changes) });
+    return cb(this.mergeDeep({ ...content }, { ...changes }));
   }
 
   /**

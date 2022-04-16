@@ -11,6 +11,10 @@ describe('Unit | Utility | getKeyValues', function() {
 
   it('it works with nested keys', () => {
     const result = getKeyValues({
+      last_login: new Date(), // not a change
+      team: {
+        name: 'scoot',
+      },
       user: {
         firstName: { [VALUE]: 'Michael' },
         lastName: { [VALUE]: 'Bolton' },

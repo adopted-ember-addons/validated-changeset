@@ -24,10 +24,10 @@ describe('Unit | Utility | normalize object', () => {
   });
 
   it('it returns multiple values from nested', () => {
-    const objA = { name: new Change('Ivan'), foo: new Change('bar') };
+    const objA = { name: new Change('Ivan'), foo: new Change('bar'), bar: 'zoo' };
     const value = normalizeObject(objA);
 
-    expect(value).toEqual({ name: 'Ivan', foo: 'bar' });
+    expect(value).toEqual({ name: 'Ivan', foo: 'bar', bar: 'zoo' });
   });
 
   it('it returns for deep nested', () => {

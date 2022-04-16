@@ -1730,8 +1730,10 @@ describe('Unit | Utility | validation changeset', () => {
   it('#execute does not apply changes to content if invalid', async () => {
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('name', 'a');
+    dummyChangeset.set('org.usa.minAge', 15);
 
     expect(dummyModel.name).toBeUndefined();
+    expect(dummyModel.org).toBeUndefined();
     try {
       await dummyChangeset.validate(changes => userSchema.validate(changes));
     } catch (e) {
@@ -1740,6 +1742,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.isInvalid).toBeTruthy();
     dummyChangeset.execute();
     expect(dummyModel.name).toBeUndefined();
+    expect(dummyModel.org).toBeUndefined();
   });
 
   // it('#execute keeps prototype of set object', function() {
@@ -1762,186 +1765,186 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(Object.getPrototypeOf(model.dog)).toEqual(originalProto);
   // });
 
-  // it('#execute does not remove original nested objects', function() {
-  //   class DogTag {}
+  it('#execute does not remove original nested objects', function() {
+    class DogTag {}
 
-  //   const dog: any = {};
-  //   dog.info = new DogTag();
-  //   dog.info.name = 'mishka';
-  //   dog.info.breed = 'husky';
+    const dog: any = {};
+    dog.info = new DogTag();
+    dog.info.name = 'mishka';
+    dog.info.breed = 'husky';
 
-  //   const c = Changeset(dog);
-  //   c.set('info.name', 'laika');
+    const c = Changeset(dog);
+    c.set('info.name', 'laika');
 
-  //   c.execute();
+    c.execute();
 
-  //   const condition = dog.info instanceof DogTag;
-  //   expect(condition).toBeTruthy();
-  //   expect(dog.info.name).toEqual('laika');
-  // });
+    const condition = dog.info instanceof DogTag;
+    expect(condition).toBeTruthy();
+    expect(dog.info.name).toEqual('laika');
+  });
 
-  // [
-  //   {
-  //     model: () => ({ org: { usa: { ny: '', ca: '' } } }),
-  //     setCalls: [
-  //       ['org.usa.ny', 'foo'],
-  //       ['org.usa.ca', 'bar'],
-  //       ['org', 'no usa for you']
-  //     ],
-  //     result: () => ({ org: 'no usa for you' })
-  //   },
-  //   {
-  //     model: () => ({ org: { usa: { ny: '', ca: '' } } }),
-  //     setCalls: [
-  //       ['org.usa.ny', 'foo'],
-  //       ['org', 'no usa for you'],
-  //       ['org.usa.ca', 'bar']
-  //     ],
-  //     result: () => ({ org: { usa: { ca: 'bar', ny: '' } } })
-  //   },
-  //   {
-  //     model: () => ({ org: { usa: { ny: '', ca: '' } } }),
-  //     setCalls: [
-  //       ['org', 'no usa for you'],
-  //       ['org.usa.ny', 'foo'],
-  //       ['org.usa.ca', 'bar']
-  //     ],
-  //     result: () => ({ org: { usa: { ny: 'foo', ca: 'bar' } } })
-  //   }
-  // ].forEach(({ model, setCalls, result }, i) => {
-  //   it(`#execute - table-driven test ${i + 1}`, () => {
-  //     const m = model();
-  //     const c = Changeset(m);
+  [
+    {
+      model: () => ({ org: { usa: { ny: '', ca: '' } } }),
+      setCalls: [
+        ['org.usa.ny', 'foo'],
+        ['org.usa.ca', 'bar'],
+        ['org', 'no usa for you']
+      ],
+      result: () => ({ org: 'no usa for you' })
+    },
+    {
+      model: () => ({ org: { usa: { ny: '', ca: '' } } }),
+      setCalls: [
+        ['org.usa.ny', 'foo'],
+        ['org', 'no usa for you'],
+        ['org.usa.ca', 'bar']
+      ],
+      result: () => ({ org: { usa: { ca: 'bar', ny: '' } } })
+    },
+    {
+      model: () => ({ org: { usa: { ny: '', ca: '' } } }),
+      setCalls: [
+        ['org', 'no usa for you'],
+        ['org.usa.ny', 'foo'],
+        ['org.usa.ca', 'bar']
+      ],
+      result: () => ({ org: { usa: { ny: 'foo', ca: 'bar' } } })
+    }
+  ].forEach(({ model, setCalls, result }, i) => {
+    it(`#execute - table-driven test ${i + 1}`, () => {
+      const m = model();
+      const c = Changeset(m);
 
-  //     setCalls.forEach(([k, v]) => c.set(k, v));
-  //     c.execute();
+      setCalls.forEach(([k, v]) => c.set(k, v));
+      c.execute();
 
-  //     const actual = m;
-  //     const expectedResult = result();
-  //     expect(actual).toEqual(expectedResult);
-  //   });
-  // });
+      const actual = m;
+      const expectedResult = result();
+      expect(actual).toEqual(expectedResult);
+    });
+  });
 
-  // it('#execute it works with nested keys', () => {
-  //   const expectedResult = {
-  //     org: {
-  //       asia: { sg: 'sg' },
-  //       usa: {
-  //         ca: 'ca',
-  //         ny: 'ny',
-  //         ma: { name: 'Massachusetts' }
-  //       }
-  //     }
-  //   };
-  //   dummyModel['org'] = {
-  //     asia: { sg: null },
-  //     usa: {
-  //       ca: null,
-  //       ny: null,
-  //       ma: { name: null }
-  //     }
-  //   };
+  it('#execute it works with nested keys', () => {
+    const expectedResult = {
+      org: {
+        asia: { sg: 'sg' },
+        usa: {
+          ca: 'ca',
+          ny: 'ny',
+          ma: { name: 'Massachusetts' }
+        }
+      }
+    };
+    dummyModel['org'] = {
+      asia: { sg: null },
+      usa: {
+        ca: null,
+        ny: null,
+        ma: { name: null }
+      }
+    };
 
-  //   const dummyChangeset = Changeset(dummyModel));
-  //   dummyChangeset.set('org.asia.sg', 'sg');
-  //   dummyChangeset.set('org.usa.ca', 'ca');
-  //   dummyChangeset.set('org.usa.ny', 'ny');
-  //   dummyChangeset.set('org.usa.ma', { name: 'Massachusetts' });
-  //   dummyChangeset.execute();
-  //   expect(dummyChangeset.change).toEqual({});
-  //   expect(get(dummyChangeset, '_content.org')).toEqual(expectedResult.org);
-  //   expect(dummyModel.org).toEqual(expectedResult.org);
-  // });
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('org.asia.sg', 'sg');
+    dummyChangeset.set('org.usa.ca', 'ca');
+    dummyChangeset.set('org.usa.ny', 'ny');
+    dummyChangeset.set('org.usa.ma', { name: 'Massachusetts' });
+    dummyChangeset.execute();
+    expect(dummyChangeset.change).toEqual({});
+    expect(get(dummyChangeset, '_content.org')).toEqual(expectedResult.org);
+    expect(dummyModel.org).toEqual(expectedResult.org);
+  });
 
-  // it('#execute calls registered callbacked', function() {
-  //   expect.assertions(1);
+  it('#execute calls registered callbacked', function() {
+    expect.assertions(1);
 
-  //   const dog: any = {};
+    const dog: any = {};
 
-  //   const c = Changeset(dog);
-  //   function callback() {
-  //     expect(true).toBeTruthy();
-  //   }
+    const c = Changeset(dog);
+    function callback() {
+      expect(true).toBeTruthy();
+    }
 
-  //   c.on('execute', callback);
-  //   c.on('execute-2', callback);
+    c.on('execute', callback);
+    c.on('execute-2', callback);
 
-  //   c.execute();
-  // });
+    c.execute();
+  });
 
-  // it('#execute works with an object with value key', () => {
-  //   dummyModel.size = {
-  //     value: 0
-  //   };
-  //   const dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('size.value', 1001);
-  //   dummyChangeset.set('size.power10', 10);
+  it('#execute works with an object with value key', () => {
+    dummyModel.size = {
+      value: 0
+    };
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
+    dummyChangeset.set('size.power10', 10);
 
-  //   expect(dummyModel.size.value).toEqual(0);
-  //   expect(dummyModel.size.power10).toBeUndefined();
+    expect(dummyModel.size.value).toEqual(0);
+    expect(dummyModel.size.power10).toBeUndefined();
 
-  //   dummyChangeset.execute();
+    dummyChangeset.execute();
 
-  //   expect(dummyModel.size.value).toBe(1001);
-  //   expect(dummyModel.size.power10).toBe(10);
-  // });
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBe(10);
+  });
 
-  // it('#execute works if leaf property wasnt set before', () => {
-  //   dummyModel.size = {};
-  //   const dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('size.value', 1001);
+  it('#execute works if leaf property wasnt set before', () => {
+    dummyModel.size = {};
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
 
-  //   expect(dummyModel.size).toEqual({});
+    expect(dummyModel.size).toEqual({});
 
-  //   dummyChangeset.execute();
+    dummyChangeset.execute();
 
-  //   expect(dummyModel.size.value).toBe(1001);
-  //   expect(dummyModel.size.power10).toBeUndefined();
-  // });
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBeUndefined();
+  });
 
-  // it('#execute works if root property wasnt set before', () => {
-  //   const dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('size.value', 1001);
+  it('#execute works if root property wasnt set before', () => {
+    const dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('size.value', 1001);
 
-  //   expect(dummyModel.size).toBeUndefined();
+    expect(dummyModel.size).toBeUndefined();
 
-  //   dummyChangeset.execute();
+    dummyChangeset.execute();
 
-  //   expect(dummyModel.size.value).toBe(1001);
-  //   expect(dummyModel.size.power10).toBeUndefined();
-  // });
+    expect(dummyModel.size.value).toBe(1001);
+    expect(dummyModel.size.power10).toBeUndefined();
+  });
 
-  // test('execute returns correct object after setting value on empty initial object', async function() {
-  //   let c = Changeset({});
+  test('execute returns correct object after setting value on empty initial object', async function() {
+    let c = Changeset({});
 
-  //   c.set('country', 'usa');
+    c.set('country', 'usa');
 
-  //   expect(c.execute().data).toEqual({
-  //     country: 'usa'
-  //   });
+    expect(c.execute().data).toEqual({
+      country: 'usa'
+    });
 
-  //   c.set('org.usa.ny', 'any value');
+    c.set('org.usa.ny', 'any value');
 
-  //   expect(c.execute().data).toEqual({
-  //     country: 'usa',
-  //     org: {
-  //       usa: {
-  //         ny: 'any value'
-  //       }
-  //     }
-  //   });
-  //   c.set('org.usa.il', '2nd value');
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value'
+        }
+      }
+    });
+    c.set('org.usa.il', '2nd value');
 
-  //   expect(c.execute().data).toEqual({
-  //     country: 'usa',
-  //     org: {
-  //       usa: {
-  //         ny: 'any value',
-  //         il: '2nd value'
-  //       }
-  //     }
-  //   });
-  // });
+    expect(c.execute().data).toEqual({
+      country: 'usa',
+      org: {
+        usa: {
+          ny: 'any value',
+          il: '2nd value'
+        }
+      }
+    });
+  });
 
   /**
    * #save
@@ -1969,96 +1972,6 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.execute();
     expect(dummyChangeset.change).toEqual({});
   });
-
-  // it('#save handles non-promise proxy content', done => {
-  //   let result;
-  //   let options;
-  //   dummyModel.save = (dummyOptions: Record<string, any>) => {
-  //     result = 'ok';
-  //     options = dummyOptions;
-  //     return Promise.resolve('saveResult');
-  //   };
-  //   const dummyChangeset = Changeset(dummyModel);
-  //   dummyChangeset.set('name', 'foo');
-
-  //   expect(result).toBe(undefined);
-  //   const promise = dummyChangeset.save({ foo: 'test options' });
-  //   expect(result).toBe('ok');
-  //   expect(options).toEqual({ foo: 'test options' });
-  //   expect(!!promise && typeof promise.then === 'function').toBeTruthy();
-  //   promise
-  //     .then(saveResult => {
-  //       expect(saveResult).toBe('saveResult');
-  //     })
-  //     .finally(() => done());
-  // });
-
-  // it('#save handles rejected proxy content', done => {
-  //   expect.assertions(1);
-
-  //   const dummyChangeset = Changeset(dummyModel);
-
-  //   dummyModel['save'] = () => {
-  //     return Promise.reject(new Error('some ember data error'));
-  //   };
-
-  //   dummyChangeset
-  //     .save()
-  //     .then(() => {
-  //       expect(false).toBeTruthy();
-  //     })
-  //     .catch(error => {
-  //       expect(error.message).toEqual('some ember data error');
-  //     })
-  //     .finally(() => done());
-  // });
-
-  // it('#save restores values on content after rejected Promise if user calls unexecute', done => {
-  //   expect.assertions(2);
-
-  //   dummyModel.name = 'previous';
-  //   const dummyChangeset = Changeset(dummyModel);
-
-  //   dummyModel['save'] = () => {
-  //     dummyModel.errors = [
-  //       {
-  //         message: 'oops I did it again'
-  //       }
-  //     ];
-  //     return Promise.reject(new Error('some ember data error'));
-  //   };
-
-  //   dummyChangeset.set('name', 'new');
-
-  //   dummyChangeset
-  //     .save()
-  //     .then(() => {
-  //       expect(false).toBeTruthy();
-  //     })
-  //     .catch(() => {
-  //       dummyChangeset.unexecute();
-  //     })
-  //     .finally(() => {
-  //       expect(dummyModel.name).toEqual('previous');
-  //       expect(dummyModel.errors).toEqual([
-  //         {
-  //           message: 'oops I did it again'
-  //         }
-  //       ]);
-  //       done();
-  //     });
-  // });
-
-  // it('#save proxies to content even if it does not implement #save', done => {
-  //   const person = { name: 'Jim' };
-  //   const dummyChangeset = Changeset(person);
-  //   dummyChangeset.set('name', 'foo');
-
-  //   return dummyChangeset.save().then(() => {
-  //     expect(person.name).toBe('foo');
-  //     done();
-  //   });
-  // });
 
   /**
    * #rollback
@@ -2097,7 +2010,7 @@ describe('Unit | Utility | validation changeset', () => {
   });
 
   // it('#rollback resets valid state', () => {
-  //   let dummyChangeset = Changeset(dummyModel));
+  //   let dummyChangeset = Changeset(dummyModel);
   //   dummyChangeset.set('name', 'a');
 
   //   expect(dummyChangeset.isInvalid).toBeTruthy();
