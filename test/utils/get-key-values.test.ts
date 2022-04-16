@@ -13,7 +13,7 @@ describe('Unit | Utility | getKeyValues', function() {
     const result = getKeyValues({
       last_login: new Date(), // not a change
       team: {
-        name: 'scoot',
+        name: 'scoot'
       },
       user: {
         firstName: { [VALUE]: 'Michael' },
