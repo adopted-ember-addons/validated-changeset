@@ -102,6 +102,7 @@ describe('Unit | Utility | merge deep', () => {
       }
 
       foo = { baz: 'ba' };
+      jam = new Change(['Jull', 'Olafur']);
     }
 
     class B extends A {
@@ -117,5 +118,14 @@ describe('Unit | Utility | merge deep', () => {
     expect(value.boo).toBe('doo');
     expect(value.other).toBe('Ivan');
     expect(value.foo).toEqual({ baz: 'bar' });
+    expect(value.jam).toEqual(new Change(['Jull', 'Olafur']));
+
+    expect(objA.jam).toEqual(new Change(['Jull', 'Olafur']));
+    expect(objA.foo).toEqual({ baz: 'bar' });
+    expect(objA._boo).toEqual('doo');
+    expect(objB.boo).toEqual(new Change('doo'));
+    expect(objA.other).toEqual('Ivan');
+    expect(objB.foo).toEqual({ baz: new Change('bar') });
+    expect(objA.other).toEqual('Ivan');
   });
 });

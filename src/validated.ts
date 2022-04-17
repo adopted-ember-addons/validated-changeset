@@ -15,6 +15,7 @@ import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
+import structuredClone from '@ungap/structured-clone';
 
 import {
   Changes,
@@ -390,7 +391,7 @@ export class ValidatedChangeset {
     const changes = this[CHANGES];
     const content = this[CONTENT];
 
-    return cb(this.mergeDeep({ ...content }, { ...changes }));
+    return cb(this.mergeDeep(structuredClone(content), changes));
   }
 
   /**

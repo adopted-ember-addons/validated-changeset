@@ -2294,7 +2294,7 @@ describe('Unit | Utility | validation changeset', () => {
   });
 
   it('#validate/0 validates nested fields', async () => {
-    expect.assertions(5);
+    expect.assertions(6);
 
     let userSchema = object({
       org: object({
@@ -2306,6 +2306,7 @@ describe('Unit | Utility | validation changeset', () => {
 
     dummyModel.org = { usa: { minAge: 7 } };
     let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.set('org.usa.minAge', 10);
 
     try {
       await dummyChangeset.validate(changes => userSchema.validate(changes));
@@ -2315,11 +2316,18 @@ describe('Unit | Utility | validation changeset', () => {
       expect(get(dummyChangeset, 'error.org.usa.minAge')).toEqual(error);
     }
 
-    expect(dummyChangeset.changes).toEqual({});
+    expect(dummyChangeset.changes).toEqual({
+      'org.usa.minAge': {
+        current: 10,
+        original: 7,
+      }
+    });
     expect(get(dummyChangeset, 'errors.length')).toBe(1);
     expect(get(dummyChangeset, 'errors')).toEqual([
-      { key: 'org.usa.minAge', validation: 'org.usa.minAge must be greater than 18', value: 7 }
+      { key: 'org.usa.minAge', validation: 'org.usa.minAge must be greater than 18', value: 10 }
     ]);
+
+    expect(dummyModel.org.usa.minAge).toEqual(7);
   });
 
   /**
