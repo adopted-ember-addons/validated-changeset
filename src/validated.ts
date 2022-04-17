@@ -391,6 +391,7 @@ export class ValidatedChangeset {
     const changes = this[CHANGES];
     const content = this[CONTENT];
 
+    // return an object that does not poison original model and provides user with full set of data + changes to validate
     return cb(this.mergeDeep(structuredClone(content), changes));
   }
 
