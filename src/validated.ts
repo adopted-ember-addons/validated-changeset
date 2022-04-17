@@ -15,6 +15,7 @@ import mergeDeep from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
+import structuredClone from '@ungap/structured-clone';
 
 import {
   Changes,
@@ -303,7 +304,10 @@ export class ValidatedChangeset {
 
       // we want mutation on original object
       // @tracked
-      this[CONTENT] = this.mergeDeep(content, changes);
+      this[CONTENT] = this.mergeDeep(content, changes, {
+        safeGet: this.safeGet,
+        safeSet: this.safeSet
+      });
     }
 
     // trigger any registered callbacks by same keyword as method name
@@ -387,7 +391,8 @@ export class ValidatedChangeset {
     const changes = this[CHANGES];
     const content = this[CONTENT];
 
-    return cb({ ...normalizeObject(content), ...normalizeObject(changes) });
+    // return an object that does not poison original model and provides user with full set of data + changes to validate
+    return cb(this.mergeDeep(structuredClone(content), changes));
   }
 
   /**

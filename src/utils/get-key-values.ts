@@ -5,6 +5,7 @@ import { PublicErrors } from '../types';
 
 /**
  * traverse through target and return leaf nodes with `value` property and key as 'person.name'
+ * Only detects key paths with Changes
  *
  * @method getKeyValues
  * @return {Array} [{ 'person.name': value }]

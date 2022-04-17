@@ -68,5 +68,11 @@
   },
   "volta": {
     "node": "14.19.1"
+  },
+  "dependencies": {
+    "@types/ungap__structured-clone": "^0.3.0",
+    "@ungap/structured-clone": "^0.3.4",
+    "i": "^0.3.7",
+    "npm": "^8.7.0"
   }
 }
