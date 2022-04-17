@@ -108,7 +108,7 @@ export default class FormComponent {
     try {
       await this.changeset.validate(changes => UserSchema.validate(changes));
     } catch (e) {
-      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+      dummyChangeset.addError(e.path, { value: changeset.get(e.path), validation: e.message });
     }
   }
 }

@@ -1646,7 +1646,7 @@ describe('Unit | Utility | validation changeset', () => {
     try {
       await dummyChangeset.validate(changes => userSchema.validate(changes));
     } catch (e) {
-      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+      dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(dummyChangeset.isInvalid).toEqual(true);
     expect(dummyChangeset.isValid).toEqual(false);
@@ -1737,7 +1737,7 @@ describe('Unit | Utility | validation changeset', () => {
     try {
       await dummyChangeset.validate(changes => userSchema.validate(changes));
     } catch (e) {
-      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+      dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(dummyChangeset.isInvalid).toBeTruthy();
     dummyChangeset.execute();
@@ -1994,7 +1994,7 @@ describe('Unit | Utility | validation changeset', () => {
     try {
       await dummyChangeset.validate(changes => userSchema.validate(changes));
     } catch (e) {
-      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+      dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
 
     expect(dummyChangeset.changes).toEqual(expectedChanges);
@@ -2405,9 +2405,11 @@ describe('Unit | Utility | validation changeset', () => {
 
     expect(dummyChangeset.isInvalid).toEqual(true);
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate(changes => {
+        return userSchema.validate(changes);
+      });
     } catch (e) {
-      dummyChangeset.addError(e.path, { value: e.value.age, validation: e.message });
+      dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(get(dummyChangeset, 'error.name.validation')).toEqual(['cannot be J']);
     expect(get(dummyChangeset, 'error.name.value')).toBe('J');
