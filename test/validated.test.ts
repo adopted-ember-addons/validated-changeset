@@ -2319,7 +2319,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.changes).toEqual({
       'org.usa.minAge': {
         current: 10,
-        original: 7,
+        original: 7
       }
     });
     expect(get(dummyChangeset, 'errors.length')).toBe(1);
