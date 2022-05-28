@@ -3,7 +3,7 @@ export interface ProxyHandler {
   content: unknown;
   proxy: any;
   children: Record<string, any>;
-  safeGet: (...args: unknown[]) => unknown;
+  safeGet: (obj: any, key: string) => any;
   unwrap: (...args: unknown[]) => unknown;
   [key: string]: any;
 }

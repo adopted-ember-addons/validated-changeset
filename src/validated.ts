@@ -57,7 +57,7 @@ function maybeUnwrapProxy(content: Content): any {
 export function newFormat(
   obj: Record<string, any>[],
   original: any,
-  getDeep: (...args: unknown[]) => unknown
+  getDeep: (obj: any, key: string) => any
 ): Record<string, any> {
   let newFormat: Record<string, any> = {};
   for (let item of obj) {

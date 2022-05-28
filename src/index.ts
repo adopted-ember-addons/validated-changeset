@@ -145,7 +145,7 @@ export class BufferedChangeset implements IChangeset {
   [ERRORS_CACHE]: Errors<any>;
   [VALIDATOR]: ValidatorAction;
   [OPTIONS]: Config;
-  [RUNNING_VALIDATIONS]: {};
+  [RUNNING_VALIDATIONS]: Record<string, any>;
 
   __changeset__ = CHANGESET;
 

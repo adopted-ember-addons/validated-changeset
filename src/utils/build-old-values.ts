@@ -1,7 +1,7 @@
 export function buildOldValues(
   content: any,
   changes: Record<string, any>[],
-  getDeep: (...args: unknown[]) => unknown
+  getDeep: (obj: any, key: string) => any
 ): object {
   const obj = Object.create(null);
 

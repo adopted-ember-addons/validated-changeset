@@ -54,7 +54,7 @@ module.exports = {
     // bin files
     {
       files: ['bin/**'],
-      // eslint-disable-next-line node/no-unpublished-require
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         'no-console': 'off',
         'no-process-exit': 'off',
