@@ -3,7 +3,7 @@ export function isArrayObject(obj: Record<string, any>) {
 
   let maybeIndicies = Object.keys(obj);
 
-  return maybeIndicies.every(key => Number.isInteger(parseInt(key, 10)));
+  return maybeIndicies.every((key) => Number.isInteger(parseInt(key, 10)));
 }
 
 export function arrayToObject(array: any[]): Record<string, any> {

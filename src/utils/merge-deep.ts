@@ -25,7 +25,7 @@ function isMergeableObject(value: any): boolean {
 
 function getEnumerableOwnPropertySymbols(target: any): any {
   return Object.getOwnPropertySymbols
-    ? Object.getOwnPropertySymbols(target).filter(symbol => {
+    ? Object.getOwnPropertySymbols(target).filter((symbol) => {
         return target.propertyIsEnumerable(symbol);
       })
     : [];
@@ -85,7 +85,7 @@ function buildPathToValue(
  * @method mergeTargetAndSource
  */
 function mergeTargetAndSource(target: any, source: any, options: Required<Options>): any {
-  options.getKeys(source).forEach(key => {
+  options.getKeys(source).forEach((key) => {
     // proto poisoning.  So can set by nested key path 'person.name'
     if (options.propertyIsUnsafe(target, key)) {
       // if safeSet, we will find keys leading up to value and set
@@ -152,12 +152,12 @@ export default function mergeDeep(
 
   options.safeGet =
     options.safeGet ||
-    function(obj: Record<string, any>, key: string): Record<string, any> {
+    function (obj: Record<string, any>, key: string): Record<string, any> {
       return obj[key];
     };
   options.safeSet =
     options.safeSet ||
-    function(obj: any, key: string, value: unknown): any {
+    function (obj: any, key: string, value: unknown): any {
       return (obj[key] = value);
     };
   let sourceIsArray = Array.isArray(source);

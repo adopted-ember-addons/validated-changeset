@@ -3,10 +3,10 @@ let getOwnPropertyDescriptors: (obj: { [x: string]: any }) => { [x: string]: Pro
 if (Object.getOwnPropertyDescriptors !== undefined) {
   getOwnPropertyDescriptors = Object.getOwnPropertyDescriptors;
 } else {
-  getOwnPropertyDescriptors = function(obj: object) {
+  getOwnPropertyDescriptors = function (obj: object) {
     let desc: Record<string, any> = {};
 
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       desc[key] = Object.getOwnPropertyDescriptor(obj, key);
     });
 

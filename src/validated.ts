@@ -17,7 +17,7 @@ import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
 import structuredClone from '@ungap/structured-clone';
 
-import {
+import type {
   Changes,
   Config,
   Content,
@@ -34,7 +34,7 @@ const { keys } = Object;
 const CONTENT = '_content';
 const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
-const ORIGINAL = '_original';
+// const ORIGINAL = '_original';
 const ERRORS = '_errors';
 const ERRORS_CACHE = '_errorsCache';
 const OPTIONS = '_options';
@@ -57,7 +57,7 @@ function maybeUnwrapProxy(content: Content): any {
 export function newFormat(
   obj: Record<string, any>[],
   original: any,
-  getDeep: Function
+  getDeep: (obj: any, key: string) => any
 ): Record<string, any> {
   let newFormat: Record<string, any> = {};
   for (let item of obj) {
@@ -96,7 +96,7 @@ export class ValidatedChangeset {
   [key: string]: unknown;
   [CONTENT]: object;
   [PREVIOUS_CONTENT]: object | undefined;
-  [ORIGINAL]: Changes;
+  // [ORIGINAL]: Changes;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [ERRORS_CACHE]: Errors<any>;
@@ -106,12 +106,12 @@ export class ValidatedChangeset {
 
   _eventedNotifiers = {};
 
-  on(eventName: string, callback: Function): INotifier {
+  on(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.addListener(callback);
   }
 
-  off(eventName: string, callback: Function): INotifier {
+  off(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.removeListener(callback);
   }
@@ -226,7 +226,7 @@ export class ValidatedChangeset {
     let validationKeys = Object.keys(this[CHANGES]);
     const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
     if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
-      validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
+      validationKeys = validationKeys.filter((k) => userChangesetKeys.includes(k));
     }
 
     if (validationKeys.length === 0) {
@@ -260,7 +260,7 @@ export class ValidatedChangeset {
     let config: Config = this[OPTIONS];
     let changesetKeys = config.changesetKeys;
     if (Array.isArray(changesetKeys) && changesetKeys.length > 0) {
-      const hasKey = changesetKeys.find(chKey => key.match(chKey));
+      const hasKey = changesetKeys.find((chKey) => key.match(chKey));
       if (!hasKey) {
         return;
       }
@@ -376,7 +376,7 @@ export class ValidatedChangeset {
       this[ERRORS_CACHE] = this[ERRORS];
 
       // if on CHANGES hash, rollback those as well
-      errorKeys.forEach(errKey => {
+      errorKeys.forEach((errKey) => {
         this[CHANGES] = this._deleteKey(CHANGES, errKey) as Changes;
       });
     }
@@ -429,7 +429,7 @@ export class ValidatedChangeset {
   /**
    * @method removeError
    */
-  removeError<T>(key: string) {
+  removeError(key: string) {
     // Remove `key` to errors map.
     let errors: Errors<any> = this[ERRORS];
     // @tracked

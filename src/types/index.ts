@@ -3,8 +3,8 @@ export interface ProxyHandler {
   content: unknown;
   proxy: any;
   children: Record<string, any>;
-  safeGet: Function;
-  unwrap: Function;
+  safeGet: (obj: any, key: string) => any;
+  unwrap: (...args: unknown[]) => unknown;
   [key: string]: any;
 }
 
@@ -19,15 +19,15 @@ export type ValidationErr = string | string[];
 export type ValidationResult = ValidationOk | ValidationErr;
 
 export interface INotifier {
-  listeners: Function[];
-  addListener(callback: Function): Function;
-  removeListener(callback: Function): void;
+  listeners: (...args: unknown[]) => unknown[];
+  addListener(callback: (...args: unknown[]) => unknown): (...args: unknown[]) => unknown;
+  removeListener(callback: (...args: unknown[]) => unknown): void;
   trigger(...args: any[]): void;
 }
 
 export interface IEvented {
-  on(eventName: string, callback: Function): INotifier;
-  off(eventName: string, callback: Function): INotifier;
+  on(eventName: string, callback: (key: string) => unknown): INotifier;
+  off(eventName: string, callback: (key: string) => unknown): INotifier;
   trigger(eventName: string, ...args: any[]): void;
   _eventedNotifiers: { [key: string]: any };
 }
@@ -70,7 +70,7 @@ export interface Changes {
 }
 
 export interface Content {
-  save?: Function | undefined;
+  save?: (...args: unknown[]) => unknown | undefined;
   [key: string]: any;
 }
 
@@ -137,7 +137,7 @@ export interface ChangesetDef {
     key: string,
     value: T
   ) => void | T | IErr<T> | Promise<T> | Promise<ValidationResult | T | IErr<T>> | ValidationResult;
-  maybeUnwrapProxy: Function;
+  maybeUnwrapProxy: (content: Content) => any;
   getDeep: any;
   setDeep: any;
   safeGet: (obj: any, key: string) => any;

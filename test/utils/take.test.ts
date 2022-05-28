@@ -1,6 +1,6 @@
 import take from '../../src/utils/take';
 
-describe('Unit | Utility | take', function() {
+describe('Unit | Utility | take', function () {
   it('it returns an object with only the specified keys', () => {
     const employee = {
       name: 'Milton Waddams',

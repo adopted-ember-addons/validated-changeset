@@ -1,4 +1,4 @@
-import { ProxyHandler, Content } from '../types';
+import type { ProxyHandler, Content } from '../types';
 import isObjectFn from './is-object';
 import setDeep from './set-deep';
 import Change, { getChangeValue, isChange } from '../-private/change';
@@ -86,8 +86,8 @@ class ObjectTreeNode implements ProxyHandler {
   constructor(
     changes: Record<string, any> = {},
     content: Content = {},
-    public safeGet: Function = defaultSafeGet,
-    public isObject: Function = isObjectFn
+    public safeGet: (obj: any, key: string) => any = defaultSafeGet,
+    public isObject: (...args: unknown[]) => unknown = isObjectFn
   ) {
     this.changes = changes;
     this.content = content;

@@ -147,7 +147,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('change.name')).toEqual('a');
   });
 
-  it('can get nested values in the error object', function() {
+  it('can get nested values in the error object', function () {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedResult = { validation: 'too short', value: 'a' };
     dummyChangeset.set('name', 'a');
@@ -155,7 +155,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.get('error.name')).toEqual(expectedResult);
   });
 
-  it('can can work with an array of nested validations', function() {
+  it('can can work with an array of nested validations', function () {
     const dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     const expectedResult = { validation: ['too short', 'not an email'], value: 'a' };
     dummyChangeset.set('email', 'a');
@@ -729,7 +729,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#get works with toString override', () => {
-    dummyModel.toString = function() {
+    dummyModel.toString = function () {
       return 'mine';
     };
     const dummyChangeset = Changeset(dummyModel);
@@ -740,7 +740,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#get prioritizes own methods/getters', () => {
-    dummyModel.trigger = function(arg: any) {
+    dummyModel.trigger = function (arg: any) {
       expect(arg).toEqual('mine');
     };
     const dummyChangeset = Changeset(dummyModel);
@@ -2013,7 +2013,7 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('first_name', 'foo');
     dummyChangeset.set('date_of_birth', date);
-    dummyChangeset.prepare(changes => {
+    dummyChangeset.prepare((changes) => {
       const modified: Record<string, any> = {};
 
       for (let key in changes) {
@@ -2022,7 +2022,7 @@ describe('Unit | Utility | changeset', () => {
 
       return modified;
     });
-    const changeKeys = dummyChangeset.changes.map(change => get(change, 'key'));
+    const changeKeys = dummyChangeset.changes.map((change) => get(change, 'key'));
 
     expect(changeKeys).toEqual(['first-name', 'date-of-birth']);
     dummyChangeset.execute();
@@ -2041,7 +2041,7 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset({ obj: {} });
 
     dummyChangeset.get('obj').unwrap();
-    dummyChangeset.prepare(function(changes) {
+    dummyChangeset.prepare(function (changes) {
       return changes;
     });
 
@@ -2074,7 +2074,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.name).toBeUndefined();
   });
 
-  it('#execute keeps prototype of set object', function() {
+  it('#execute keeps prototype of set object', function () {
     class DogTag {}
 
     const dog = new DogTag();
@@ -2094,7 +2094,7 @@ describe('Unit | Utility | changeset', () => {
     expect(Object.getPrototypeOf(model.dog)).toEqual(originalProto);
   });
 
-  it('#execute does not remove original nested objects', function() {
+  it('#execute does not remove original nested objects', function () {
     class DogTag {}
 
     const dog: any = {};
@@ -2185,7 +2185,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
 
-  it('#execute calls registered callbacked', function() {
+  it('#execute calls registered callbacked', function () {
     expect.assertions(1);
 
     const dog: any = {};
@@ -2243,7 +2243,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyModel.size.power10).toBeUndefined();
   });
 
-  test('execute returns correct object after setting value on empty initial object', async function() {
+  test('execute returns correct object after setting value on empty initial object', async function () {
     let c = Changeset({});
 
     c.set('country', 'usa');
@@ -2279,7 +2279,7 @@ describe('Unit | Utility | changeset', () => {
    * #save
    */
 
-  it('#save proxies to content', done => {
+  it('#save proxies to content', (done) => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2297,13 +2297,13 @@ describe('Unit | Utility | changeset', () => {
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
     promise
-      .then(saveResult => {
+      .then((saveResult) => {
         expect(saveResult).toEqual('saveResult');
       })
       .finally(() => done());
   });
 
-  it('#save handles non-promise proxy content', done => {
+  it('#save handles non-promise proxy content', (done) => {
     let result;
     let options;
     dummyModel.save = (dummyOptions: Record<string, any>) => {
@@ -2320,13 +2320,13 @@ describe('Unit | Utility | changeset', () => {
     expect(options).toEqual({ foo: 'test options' });
     expect(!!promise && typeof promise.then === 'function').toBeTruthy();
     promise
-      .then(saveResult => {
+      .then((saveResult) => {
         expect(saveResult).toBe('saveResult');
       })
       .finally(() => done());
   });
 
-  it('#save handles rejected proxy content', done => {
+  it('#save handles rejected proxy content', (done) => {
     expect.assertions(1);
 
     const dummyChangeset = Changeset(dummyModel);
@@ -2340,13 +2340,13 @@ describe('Unit | Utility | changeset', () => {
       .then(() => {
         expect(false).toBeTruthy();
       })
-      .catch(error => {
+      .catch((error) => {
         expect(error.message).toEqual('some ember data error');
       })
       .finally(() => done());
   });
 
-  it('#save restores values on content after rejected Promise if user calls unexecute', done => {
+  it('#save restores values on content after rejected Promise if user calls unexecute', (done) => {
     expect.assertions(2);
 
     dummyModel.name = 'previous';
@@ -2382,7 +2382,7 @@ describe('Unit | Utility | changeset', () => {
       });
   });
 
-  it('#save proxies to content even if it does not implement #save', done => {
+  it('#save proxies to content even if it does not implement #save', (done) => {
     const person = { name: 'Jim' };
     const dummyChangeset = Changeset(person);
     dummyChangeset.set('name', 'foo');
@@ -3038,7 +3038,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#validate/0 works with a class and multiple validators', async () => {
-    function validatePresence(): Function {
+    function validatePresence(): (...args: unknown[]) => unknown {
       return (val: unknown) => !!val;
     }
     class PersonalValidator {
@@ -3129,7 +3129,7 @@ describe('Unit | Utility | changeset', () => {
     expect(get(dummyChangeset, 'errors.length')).toBe(1);
   });
 
-  it('#addError adds an error to the changeset using the shortcut', function() {
+  it('#addError adds an error to the changeset using the shortcut', function () {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
@@ -3170,7 +3170,7 @@ describe('Unit | Utility | changeset', () => {
    * #pushErrors
    */
 
-  it('#pushErrors pushes an error into an array of existing validations', function() {
+  it('#pushErrors pushes an error into an array of existing validations', function () {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
@@ -3188,7 +3188,7 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.changes[0]).toEqual({ key: 'email', value: 'unique@email.com' });
   });
 
-  it('#pushErrors pushes an error if no existing validations are present', function() {
+  it('#pushErrors pushes an error if no existing validations are present', function () {
     let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     dummyChangeset.set('name', 'J');
     dummyChangeset.pushErrors('name', 'cannot be J');
@@ -3473,7 +3473,7 @@ describe('Unit | Utility | changeset', () => {
    * Behavior.
    */
 
-  it('can set nested keys after validate', async function(done) {
+  it('can set nested keys after validate', async function (done) {
     expect.assertions(0);
 
     dummyModel.org = {
@@ -3487,16 +3487,16 @@ describe('Unit | Utility | changeset', () => {
   });
 
   async function delay(duration: number) {
-    return new Promise(function(resolve: Function) {
+    return new Promise(function (resolve: (...args: unknown[]) => unknown) {
       setTimeout(resolve, duration);
     });
   }
 
   it('it works with out of order async validations', async () => {
-    let latestDelayedAsyncResolver: Function = () => {};
+    let latestDelayedAsyncResolver: (...args: unknown[]) => unknown = () => {};
 
     dummyValidations.delayedAsync = () => {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         latestDelayedAsyncResolver = resolve;
       });
     };

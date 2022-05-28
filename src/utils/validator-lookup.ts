@@ -1,7 +1,7 @@
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
 import isObject from './is-object';
-import {
+import type {
   ValidatorAction,
   ValidatorMapFunc,
   ValidatorClass,
@@ -49,7 +49,7 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     }
 
     return isPromise(validation)
-      ? (validation as Promise<ValidationResult>).then(result => {
+      ? (validation as Promise<ValidationResult>).then((result) => {
           return result;
         })
       : validation;

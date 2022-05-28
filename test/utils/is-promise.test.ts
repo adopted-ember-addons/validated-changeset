@@ -1,13 +1,13 @@
 import isPromise from '../../src/utils/is-promise';
 
-describe('Unit | Utility | is promise', function() {
+describe('Unit | Utility | is promise', function () {
   const testData = [
     {
       value: Promise.resolve('foo'),
       expected: true
     },
     {
-      value: new Promise(resolve => resolve('blah')),
+      value: new Promise((resolve) => resolve('blah')),
       expected: true
     },
     {

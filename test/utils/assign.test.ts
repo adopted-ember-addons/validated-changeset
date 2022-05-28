@@ -1,6 +1,6 @@
 import pureAssign from '../../src/utils/assign';
 
-describe('Unit | Utility | assign', function() {
+describe('Unit | Utility | assign', function () {
   it('it does not mutate destination or source objects', () => {
     const foo = { name: 'foo' };
     const bar = { name: 'bar' };

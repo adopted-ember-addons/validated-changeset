@@ -1,7 +1,7 @@
 import { getChangeValue, isChange } from '../-private/change';
 import isObject from './is-object';
 import Err from '../-private/err';
-import { PublicErrors } from '../types';
+import type { PublicErrors } from '../types';
 
 /**
  * traverse through target and return leaf nodes with `value` property and key as 'person.name'

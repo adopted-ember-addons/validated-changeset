@@ -107,6 +107,7 @@ export default class FormComponent {
   onSubmit() {
     try {
       await this.changeset.validate(changes => UserSchema.validate(changes));
+      this.changeset.removeError()
     } catch (e) {
       dummyChangeset.addError(e.path, { value: changeset.get(e.path), validation: e.message });
     }

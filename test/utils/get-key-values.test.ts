@@ -2,7 +2,7 @@ import { getKeyValues, getKeyErrorValues } from '../../src/utils/get-key-values'
 import Err from '../../src/-private/err';
 import { VALUE } from '../../src/-private/change';
 
-describe('Unit | Utility | getKeyValues', function() {
+describe('Unit | Utility | getKeyValues', function () {
   it('it works with single level values', () => {
     const result = getKeyValues({ test: { [VALUE]: 1 } });
 
@@ -34,7 +34,7 @@ describe('Unit | Utility | getKeyValues', function() {
   });
 });
 
-describe('Unit | Utility | getKeyErrorValues', function() {
+describe('Unit | Utility | getKeyErrorValues', function () {
   it('it works with single level values', () => {
     const result = getKeyErrorValues({
       test: new Err(1, 'foobar')
