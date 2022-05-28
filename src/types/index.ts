@@ -26,8 +26,8 @@ export interface INotifier {
 }
 
 export interface IEvented {
-  on(eventName: string, callback: (...args: unknown[]) => unknown): INotifier;
-  off(eventName: string, callback: (...args: unknown[]) => unknown): INotifier;
+  on(eventName: string, callback: (key: string) => unknown): INotifier;
+  off(eventName: string, callback: (key: string) => unknown): INotifier;
   trigger(eventName: string, ...args: any[]): void;
   _eventedNotifiers: { [key: string]: any };
 }
