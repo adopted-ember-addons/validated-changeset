@@ -1,4 +1,4 @@
-import Change, { getChangeValue, isChange } from './-private/change';
+import Change, { getChangeValue, isChange, type Changes } from './-private/change';
 import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
@@ -23,7 +23,6 @@ import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
 
 import type {
-  Changes,
   Config,
   Content,
   Errors,

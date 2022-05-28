@@ -20,3 +20,11 @@ export function getChangeValue(maybeChange: Change | unknown): any {
     return maybeChange[VALUE];
   }
 }
+
+// https://github.com/microsoft/TypeScript/pull/26797
+/* export interface IChange { */
+/*   [s: symbol]: any; */
+/* } */
+export interface Changes {
+  [s: string]: any; //IChange;
+}
