@@ -1,5 +1,5 @@
 import isPromise from './is-promise';
-import { ValidatorMapFunc, ValidationResult, ValidatorClass } from '../types';
+import type { ValidatorMapFunc, ValidationResult, ValidatorClass } from '../types';
 
 /**
  * Rejects `true` values from an array of validations. Returns `true` when there

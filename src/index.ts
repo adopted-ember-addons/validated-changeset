@@ -22,7 +22,7 @@ import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
 
-import {
+import type {
   Changes,
   Config,
   Content,

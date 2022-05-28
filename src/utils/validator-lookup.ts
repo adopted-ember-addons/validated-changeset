@@ -1,7 +1,7 @@
 import handleMultipleValidations from './handle-multiple-validations';
 import isPromise from './is-promise';
 import isObject from './is-object';
-import {
+import type {
   ValidatorAction,
   ValidatorMapFunc,
   ValidatorClass,

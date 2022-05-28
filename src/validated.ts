@@ -17,7 +17,7 @@ import getDeep, { getSubObject } from './utils/get-deep';
 import { objectToArray, arrayToObject } from './utils/array-object';
 import structuredClone from '@ungap/structured-clone';
 
-import {
+import type {
   Changes,
   Config,
   Content,
@@ -34,7 +34,7 @@ const { keys } = Object;
 const CONTENT = '_content';
 const PREVIOUS_CONTENT = '_previousContent';
 const CHANGES = '_changes';
-const ORIGINAL = '_original';
+// const ORIGINAL = '_original';
 const ERRORS = '_errors';
 const ERRORS_CACHE = '_errorsCache';
 const OPTIONS = '_options';
@@ -96,7 +96,7 @@ export class ValidatedChangeset {
   [key: string]: unknown;
   [CONTENT]: object;
   [PREVIOUS_CONTENT]: object | undefined;
-  [ORIGINAL]: Changes;
+  // [ORIGINAL]: Changes;
   [CHANGES]: Changes;
   [ERRORS]: Errors<any>;
   [ERRORS_CACHE]: Errors<any>;

@@ -1,4 +1,4 @@
-import { IErr, ValidationErr } from '../types';
+import type { IErr, ValidationErr } from '../types';
 
 export default class Err implements IErr<any> {
   value: any;

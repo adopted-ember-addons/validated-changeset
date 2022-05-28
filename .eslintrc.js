@@ -1,13 +1,12 @@
 module.exports = {
-  parser:  '@typescript-eslint/parser',  // Specifies the ESLint parser
-  extends:  [
-    'plugin:@typescript-eslint/recommended',  // Uses the recommended rules from the @typescript-eslint/eslint-plugin
-    'prettier/@typescript-eslint',  // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
-    'plugin:prettier/recommended',  // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+  parser: '@typescript-eslint/parser', // Specifies the ESLint parser
+  extends: [
+    'plugin:@typescript-eslint/recommended', // Uses the recommended rules from the @typescript-eslint/eslint-plugin
+    'plugin:prettier/recommended' // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
-  parserOptions:  {
-    ecmaVersion:  2018,  // Allows for the parsing of modern ECMAScript features
-    sourceType:  'module',  // Allows for the use of imports
+  parserOptions: {
+    ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+    sourceType: 'module' // Allows for the use of imports
   },
   rules: {
     // keep imports / functions, clean, etc,
@@ -20,37 +19,35 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/interface-name-prefix': 0,
     '@typescript-eslint/no-explicit-any': 0,
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'prefer-const': 0
   },
   env: {
     browser: true,
-    node: false,
+    node: false
   },
   overrides: [
     // node files
     {
-      files: [
-        '.eslintrc',
-        'bin/**',
-      ],
+      files: ['.eslintrc', 'bin/**'],
       parserOptions: {
         sourceType: 'script',
-        ecmaVersion: 2015,
+        ecmaVersion: 2015
       },
       env: {
         browser: false,
         node: true,
-        es6: true,
+        es6: true
       },
       plugins: ['node', 'import'],
-      extends: 'plugin:node/recommended',
+      extends: 'plugin:node/recommended'
     },
 
     // typescript node files
     {
       files: ['rollup.config.ts'],
       rules: {
-        '@typescript-eslint/no-var-requires' : 'off',
+        '@typescript-eslint/no-var-requires': 'off'
       }
     },
 
@@ -64,7 +61,7 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
         'node/no-unpublished-require': 'off',
         'node/shebang': 'off'
-      }),
-    },
+      })
+    }
   ]
 };
