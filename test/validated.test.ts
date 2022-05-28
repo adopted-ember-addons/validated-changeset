@@ -1640,7 +1640,7 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.set('name', '');
     try {
       await dummyChangeset.validate((changes) => userSchema.validate(changes));
-    } catch (e) {
+    } catch (e: any) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(dummyChangeset.isInvalid).toEqual(true);
@@ -1651,7 +1651,7 @@ describe('Unit | Utility | validation changeset', () => {
       dummyChangeset.removeErrors();
       expect(dummyChangeset.isValid).toEqual(true);
       expect(dummyChangeset.isInvalid).toEqual(false);
-    } catch (e) {
+    } catch (e: any) {
       throw Error('error not supposed to be here');
     }
   });
@@ -1731,7 +1731,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyModel.org).toBeUndefined();
     try {
       await dummyChangeset.validate((changes) => userSchema.validate(changes));
-    } catch (e) {
+    } catch (e: any) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(dummyChangeset.isInvalid).toBeTruthy();
@@ -1986,7 +1986,7 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.set('age', 2);
     try {
       await dummyChangeset.validate((changes) => userSchema.validate(changes));
-    } catch (e) {
+    } catch (e: any) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
 
@@ -2246,7 +2246,7 @@ describe('Unit | Utility | validation changeset', () => {
 
     try {
       await dummyChangeset.validate((changes) => userSchema.validate(changes));
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual('age is a required field');
       const error = dummyChangeset.addError('age', e.message);
       expect(get(dummyChangeset, 'error.age')).toEqual(error);
@@ -2297,7 +2297,7 @@ describe('Unit | Utility | validation changeset', () => {
 
     try {
       await dummyChangeset.validate((changes) => userSchema.validate(changes));
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual('org.usa.minAge must be greater than 18');
       const error = dummyChangeset.addError('org.usa.minAge', e.message);
       expect(get(dummyChangeset, 'error.org.usa.minAge')).toEqual(error);
@@ -2395,7 +2395,7 @@ describe('Unit | Utility | validation changeset', () => {
       await dummyChangeset.validate((changes) => {
         return userSchema.validate(changes);
       });
-    } catch (e) {
+    } catch (e: any) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
     expect(get(dummyChangeset, 'error.name.validation')).toEqual(['cannot be J']);
@@ -2432,7 +2432,7 @@ describe('Unit | Utility | validation changeset', () => {
     );
     try {
       await error;
-    } catch (e) {
+    } catch (e: any) {
       dummyChangeset.addError(e.inner[0].path, { value: e.inner[0].value, validation: e.message });
       let snapshot = dummyChangeset.snapshot();
       let expectedResult = {
@@ -2666,13 +2666,13 @@ describe('Unit | Utility | validation changeset', () => {
   // });
 
   // async function delay(duration: number) {
-  //   return new Promise(function(resolve: (...args: unknown[]) => unknown) {
+  //   return new Promise(function(resolve: (...args: any[]) => any) {
   //     setTimeout(resolve, duration);
   //   });
   // }
 
   // it('it works with out of order async validations', async () => {
-  //   let latestDelayedAsyncResolver: (...args: unknown[]) => unknown = () => {};
+  //   let latestDelayedAsyncResolver: (...args: any[]) => any = () => {};
 
   //   dummyValidations.delayedAsync = () => {
   //     return new Promise(resolve => {
