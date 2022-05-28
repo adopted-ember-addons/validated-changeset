@@ -24,7 +24,7 @@ import isObject from './is-object';
  */
 export default function normalizeObject<T extends { [key: string]: any }>(
   target: T,
-  isObj: Function = isObject
+  isObj: (...args: unknown[]) => unknown = isObject
 ): T {
   if (!target || !isObj(target)) {
     return target;

@@ -57,7 +57,7 @@ function maybeUnwrapProxy(content: Content): any {
 export function newFormat(
   obj: Record<string, any>[],
   original: any,
-  getDeep: Function
+  getDeep: (...args: unknown[]) => unknown
 ): Record<string, any> {
   let newFormat: Record<string, any> = {};
   for (let item of obj) {
@@ -106,12 +106,12 @@ export class ValidatedChangeset {
 
   _eventedNotifiers = {};
 
-  on(eventName: string, callback: Function): INotifier {
+  on(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.addListener(callback);
   }
 
-  off(eventName: string, callback: Function): INotifier {
+  off(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.removeListener(callback);
   }
@@ -429,7 +429,7 @@ export class ValidatedChangeset {
   /**
    * @method removeError
    */
-  removeError<T>(key: string) {
+  removeError(key: string) {
     // Remove `key` to errors map.
     let errors: Errors<any> = this[ERRORS];
     // @tracked

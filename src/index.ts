@@ -151,12 +151,12 @@ export class BufferedChangeset implements IChangeset {
 
   _eventedNotifiers = {};
 
-  on(eventName: string, callback: Function): INotifier {
+  on(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.addListener(callback);
   }
 
-  off(eventName: string, callback: Function): INotifier {
+  off(eventName: string, callback: (...args: unknown[]) => unknown): INotifier {
     const notifier = notifierForEvent(this, eventName);
     return notifier.removeListener(callback);
   }

@@ -3038,7 +3038,7 @@ describe('Unit | Utility | changeset', () => {
   });
 
   it('#validate/0 works with a class and multiple validators', async () => {
-    function validatePresence(): Function {
+    function validatePresence(): (...args: unknown[]) => unknown {
       return (val: unknown) => !!val;
     }
     class PersonalValidator {
@@ -3487,13 +3487,13 @@ describe('Unit | Utility | changeset', () => {
   });
 
   async function delay(duration: number) {
-    return new Promise(function (resolve: Function) {
+    return new Promise(function (resolve: (...args: unknown[]) => unknown) {
       setTimeout(resolve, duration);
     });
   }
 
   it('it works with out of order async validations', async () => {
-    let latestDelayedAsyncResolver: Function = () => {};
+    let latestDelayedAsyncResolver: (...args: unknown[]) => unknown = () => {};
 
     dummyValidations.delayedAsync = () => {
       return new Promise((resolve) => {

@@ -1,6 +1,10 @@
 import { getChangeValue, isChange } from '../-private/change';
 
-export function hasKey(record: Record<string, any>, path: string, safeGet: Function): boolean {
+export function hasKey(
+  record: Record<string, any>,
+  path: string,
+  safeGet: (...args: unknown[]) => unknown
+): boolean {
   const keys = path.split('.');
 
   let obj = record;
@@ -21,7 +25,7 @@ export function hasKey(record: Record<string, any>, path: string, safeGet: Funct
 export function pathInChanges(
   record: Record<string, any>,
   path: string,
-  safeGet: Function
+  safeGet: (...args: unknown[]) => unknown
 ): boolean {
   if (isChange(record)) {
     return false;
