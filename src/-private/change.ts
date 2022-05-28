@@ -1,4 +1,3 @@
-/* import { IChange } from '../types'; */
 import isObject from '../utils/is-object';
 
 export const VALUE = Symbol('__value__');
@@ -19,4 +18,8 @@ export function getChangeValue(maybeChange: Change | unknown): any {
   if (isChange(maybeChange)) {
     return maybeChange[VALUE];
   }
+}
+
+export interface Changes {
+  [s: string]: any;
 }
