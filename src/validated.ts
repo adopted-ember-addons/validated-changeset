@@ -226,7 +226,7 @@ export class ValidatedChangeset {
     let validationKeys = Object.keys(this[CHANGES]);
     const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
     if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
-      validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
+      validationKeys = validationKeys.filter((k) => userChangesetKeys.includes(k));
     }
 
     if (validationKeys.length === 0) {
@@ -260,7 +260,7 @@ export class ValidatedChangeset {
     let config: Config = this[OPTIONS];
     let changesetKeys = config.changesetKeys;
     if (Array.isArray(changesetKeys) && changesetKeys.length > 0) {
-      const hasKey = changesetKeys.find(chKey => key.match(chKey));
+      const hasKey = changesetKeys.find((chKey) => key.match(chKey));
       if (!hasKey) {
         return;
       }
@@ -376,7 +376,7 @@ export class ValidatedChangeset {
       this[ERRORS_CACHE] = this[ERRORS];
 
       // if on CHANGES hash, rollback those as well
-      errorKeys.forEach(errKey => {
+      errorKeys.forEach((errKey) => {
         this[CHANGES] = this._deleteKey(CHANGES, errKey) as Changes;
       });
     }

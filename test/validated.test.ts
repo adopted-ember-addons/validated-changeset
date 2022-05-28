@@ -5,10 +5,7 @@ import { array, object, string, number, date } from 'yup';
 
 let userSchema = object({
   name: string().required(),
-  age: number()
-    .required()
-    .positive()
-    .integer(),
+  age: number().required().positive().integer(),
   email: string().email(),
   org: object({
     usa: object({
@@ -16,9 +13,7 @@ let userSchema = object({
     })
   }),
   teams: array(string()),
-  website: string()
-    .url()
-    .nullable(),
+  website: string().url().nullable(),
   createdOn: date().default(() => new Date())
 });
 
@@ -481,7 +476,7 @@ describe('Unit | Utility | validation changeset', () => {
   });
 
   it('#get works with toString override', () => {
-    dummyModel.toString = function() {
+    dummyModel.toString = function () {
       return 'mine';
     };
     const dummyChangeset = Changeset(dummyModel);
@@ -492,7 +487,7 @@ describe('Unit | Utility | validation changeset', () => {
   });
 
   it('#get prioritizes own methods/getters', () => {
-    dummyModel.trigger = function(arg: any) {
+    dummyModel.trigger = function (arg: any) {
       expect(arg).toEqual('mine');
     };
     const dummyChangeset = Changeset(dummyModel);
@@ -1644,7 +1639,7 @@ describe('Unit | Utility | validation changeset', () => {
     const dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('name', '');
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
     } catch (e) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
@@ -1652,7 +1647,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.isValid).toEqual(false);
     dummyChangeset.set('name', 'Jim Bob');
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
       dummyChangeset.removeErrors();
       expect(dummyChangeset.isValid).toEqual(true);
       expect(dummyChangeset.isInvalid).toEqual(false);
@@ -1735,7 +1730,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyModel.name).toBeUndefined();
     expect(dummyModel.org).toBeUndefined();
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
     } catch (e) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
@@ -1765,7 +1760,7 @@ describe('Unit | Utility | validation changeset', () => {
   //   expect(Object.getPrototypeOf(model.dog)).toEqual(originalProto);
   // });
 
-  it('#execute does not remove original nested objects', function() {
+  it('#execute does not remove original nested objects', function () {
     class DogTag {}
 
     const dog: any = {};
@@ -1856,7 +1851,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyModel.org).toEqual(expectedResult.org);
   });
 
-  it('#execute calls registered callbacked', function() {
+  it('#execute calls registered callbacked', function () {
     expect.assertions(1);
 
     const dog: any = {};
@@ -1914,7 +1909,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyModel.size.power10).toBeUndefined();
   });
 
-  test('execute returns correct object after setting value on empty initial object', async function() {
+  test('execute returns correct object after setting value on empty initial object', async function () {
     let c = Changeset({});
 
     c.set('country', 'usa');
@@ -1979,9 +1974,7 @@ describe('Unit | Utility | validation changeset', () => {
 
   it('#rollback restores old values', async () => {
     let userSchema = object({
-      age: number()
-        .required()
-        .min(21)
+      age: number().required().min(21)
     });
     let dummyChangeset = Changeset(dummyModel);
     let expectedChanges = {
@@ -1992,7 +1985,7 @@ describe('Unit | Utility | validation changeset', () => {
     };
     dummyChangeset.set('age', 2);
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
     } catch (e) {
       dummyChangeset.addError(e.path, { value: dummyChangeset.get(e.path), validation: e.message });
     }
@@ -2240,10 +2233,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect.assertions(5);
 
     let userSchema = object({
-      age: number()
-        .required()
-        .positive()
-        .integer(),
+      age: number().required().positive().integer(),
       email: string().email(),
       org: object({
         usa: object({
@@ -2255,7 +2245,7 @@ describe('Unit | Utility | validation changeset', () => {
     let dummyChangeset = Changeset(dummyModel);
 
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
     } catch (e) {
       expect(e.message).toEqual('age is a required field');
       const error = dummyChangeset.addError('age', e.message);
@@ -2270,10 +2260,7 @@ describe('Unit | Utility | validation changeset', () => {
 
   it('#validate/0 happy', async () => {
     let userSchema = object({
-      age: number()
-        .required()
-        .positive()
-        .integer(),
+      age: number().required().positive().integer(),
       email: string().email(),
       org: object({
         usa: object({
@@ -2286,7 +2273,7 @@ describe('Unit | Utility | validation changeset', () => {
     dummyModel.org = { usa: { minAge: 27 } };
     let dummyChangeset = Changeset(dummyModel);
 
-    await dummyChangeset.validate(changes => userSchema.validate(changes));
+    await dummyChangeset.validate((changes) => userSchema.validate(changes));
     expect(dummyChangeset.changes).toEqual({});
     expect(dummyChangeset.isValid).toEqual(true);
     expect(dummyChangeset.isInvalid).toEqual(false);
@@ -2309,7 +2296,7 @@ describe('Unit | Utility | validation changeset', () => {
     dummyChangeset.set('org.usa.minAge', 10);
 
     try {
-      await dummyChangeset.validate(changes => userSchema.validate(changes));
+      await dummyChangeset.validate((changes) => userSchema.validate(changes));
     } catch (e) {
       expect(e.message).toEqual('org.usa.minAge must be greater than 18');
       const error = dummyChangeset.addError('org.usa.minAge', e.message);
@@ -2347,7 +2334,7 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
     dummyChangeset.set('email', 'unique@email.com');
-    await dummyChangeset.validate(changes => userSchema.validate(changes));
+    await dummyChangeset.validate((changes) => userSchema.validate(changes));
     dummyChangeset.removeError('email');
     expect(dummyChangeset.isValid).toEqual(true);
   });
@@ -2377,7 +2364,7 @@ describe('Unit | Utility | validation changeset', () => {
    * #pushErrors
    */
 
-  it('#pushErrors pushes an error into an array of existing validations', function() {
+  it('#pushErrors pushes an error into an array of existing validations', function () {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('email', 'jim@bob.com');
     dummyChangeset.addError('email', 'Email already taken');
@@ -2398,14 +2385,14 @@ describe('Unit | Utility | validation changeset', () => {
     });
   });
 
-  it('#pushErrors pushes an error if no existing validations are present', async function() {
+  it('#pushErrors pushes an error if no existing validations are present', async function () {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('name', 'J');
     dummyChangeset.pushErrors('name', 'cannot be J');
 
     expect(dummyChangeset.isInvalid).toEqual(true);
     try {
-      await dummyChangeset.validate(changes => {
+      await dummyChangeset.validate((changes) => {
         return userSchema.validate(changes);
       });
     } catch (e) {
@@ -2440,7 +2427,7 @@ describe('Unit | Utility | validation changeset', () => {
     let dummyChangeset = Changeset(dummyModel);
     dummyChangeset.set('name', 'Pokemon Go');
     dummyChangeset.set('password', 'test');
-    const error = dummyChangeset.validate(changes =>
+    const error = dummyChangeset.validate((changes) =>
       userSchema.validateSync(changes, { abortEarly: false })
     );
     try {

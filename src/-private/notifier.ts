@@ -22,6 +22,6 @@ export default class Notifier<T extends any[]> {
   }
 
   trigger(...args: T) {
-    this.listeners.forEach(callback => callback(...args));
+    this.listeners.forEach((callback) => callback(...args));
   }
 }

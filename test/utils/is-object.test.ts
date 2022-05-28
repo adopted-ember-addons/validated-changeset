@@ -1,6 +1,6 @@
 import isObject from '../../src/utils/is-object';
 
-describe('Unit | Utility | is object', function() {
+describe('Unit | Utility | is object', function () {
   const testData = [
     {
       label: 'POJOs',

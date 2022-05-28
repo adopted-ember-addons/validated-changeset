@@ -18,7 +18,7 @@ function flatten(
       obj[dotSeparatedKeys] = value;
     } else if (Array.isArray(value)) {
       const isAllFuncs: boolean = value.every(
-        item => typeof item === 'function' || typeof item.validate === 'function'
+        (item) => typeof item === 'function' || typeof item.validate === 'function'
       );
       if (isAllFuncs) {
         const dotSeparatedKeys = [...keysUpToFunction, key].join('.');

@@ -1,6 +1,6 @@
 import keyInObject from '../../src/utils/key-in-object';
 
-describe('Unit | Utility | key in object', function() {
+describe('Unit | Utility | key in object', function () {
   it('it works with empty key', () => {
     let result = keyInObject({}, '');
     expect(result).toBe(false);

@@ -49,7 +49,7 @@ export default function lookupValidator(validationMap: ValidatorMap): ValidatorA
     }
 
     return isPromise(validation)
-      ? (validation as Promise<ValidationResult>).then(result => {
+      ? (validation as Promise<ValidationResult>).then((result) => {
           return result;
         })
       : validation;

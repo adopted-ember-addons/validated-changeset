@@ -15,7 +15,7 @@ async function handleValidationsAsync(
   try {
     const result = await Promise.all(validations);
 
-    const maybeFailed = result.filter(val => typeof val !== 'boolean' && val);
+    const maybeFailed = result.filter((val) => typeof val !== 'boolean' && val);
     return maybeFailed.length === 0 || maybeFailed;
   } catch (e) {
     return e;
@@ -31,7 +31,7 @@ async function handleValidationsAsync(
  * @return {boolean|Any}
  */
 function handleValidationsSync(validations: Array<ValidationResult>): boolean | any {
-  const maybeFailed = validations.filter(val => typeof val !== 'boolean' && val);
+  const maybeFailed = validations.filter((val) => typeof val !== 'boolean' && val);
   return maybeFailed.length === 0 || maybeFailed;
 }
 /**
@@ -52,17 +52,19 @@ export default function handleMultipleValidations(
   { key, newValue, oldValue, changes, content }: { [s: string]: any }
 ): boolean | any {
   let validations: Array<ValidationResult | Promise<ValidationResult>> = Array.from(
-    validators.map((validator: ValidatorMapFunc | ValidatorClass):
-      | ValidationResult
-      | Promise<ValidationResult> => {
-      const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass =>
-        !!(maybeClass as Record<string, any>).validate;
-      if (validator && isValidatorClass(validator)) {
-        validator = validator.validate.bind(validator);
-      }
+    validators.map(
+      (
+        validator: ValidatorMapFunc | ValidatorClass
+      ): ValidationResult | Promise<ValidationResult> => {
+        const isValidatorClass = (maybeClass: unknown): maybeClass is ValidatorClass =>
+          !!(maybeClass as Record<string, any>).validate;
+        if (validator && isValidatorClass(validator)) {
+          validator = validator.validate.bind(validator);
+        }
 
-      return validator(key, newValue, oldValue, changes, content);
-    })
+        return validator(key, newValue, oldValue, changes, content);
+      }
+    )
   );
 
   if (validations.some(isPromise)) {

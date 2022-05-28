@@ -16,7 +16,7 @@ function split(path: string): string[] {
 function findSiblings(target: any, keys: string[]) {
   const [leafKey] = keys.slice(-1);
   const remaining = Object.keys(target)
-    .filter(k => k !== leafKey)
+    .filter((k) => k !== leafKey)
     .reduce((acc, key) => {
       acc[key] = target[key];
       return acc;
@@ -49,12 +49,12 @@ export default function setDeep(
 
   options.safeSet =
     options.safeSet ||
-    function(obj: any, key: string, value: unknown): any {
+    function (obj: any, key: string, value: unknown): any {
       return (obj[key] = value);
     };
   options.safeGet =
     options.safeGet ||
-    function(obj: any, key: string): any {
+    function (obj: any, key: string): any {
       return obj ? obj[key] : obj;
     };
 

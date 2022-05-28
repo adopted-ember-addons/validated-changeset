@@ -1,6 +1,6 @@
 import { flattenValidations } from '../../src/utils/flatten-validations';
 
-describe('Unit | Utility | flattenValidations', function() {
+describe('Unit | Utility | flattenValidations', function () {
   it('it works with single level values', () => {
     const testFunc = () => {};
     const input = { testFunc };

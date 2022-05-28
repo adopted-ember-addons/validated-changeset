@@ -277,7 +277,7 @@ export class BufferedChangeset implements IChangeset {
     let validationKeys = Object.keys(this[CHANGES]);
     const userChangesetKeys: string[] | undefined = this[OPTIONS].changesetKeys;
     if (Array.isArray(userChangesetKeys) && userChangesetKeys.length) {
-      validationKeys = validationKeys.filter(k => userChangesetKeys.includes(k));
+      validationKeys = validationKeys.filter((k) => userChangesetKeys.includes(k));
     }
 
     if (validationKeys.length === 0) {
@@ -311,7 +311,7 @@ export class BufferedChangeset implements IChangeset {
     let config: Config = this[OPTIONS];
     let changesetKeys = config.changesetKeys;
     if (Array.isArray(changesetKeys) && changesetKeys.length > 0) {
-      const hasKey = changesetKeys.find(chKey => key.match(chKey));
+      const hasKey = changesetKeys.find((chKey) => key.match(chKey));
       if (!hasKey) {
         return;
       }
@@ -556,7 +556,7 @@ export class BufferedChangeset implements IChangeset {
       this[ERRORS_CACHE] = this[ERRORS];
 
       // if on CHANGES hash, rollback those as well
-      errorKeys.forEach(errKey => {
+      errorKeys.forEach((errKey) => {
         this[CHANGES] = this._deleteKey(CHANGES, errKey) as Changes;
       });
     }
@@ -601,7 +601,7 @@ export class BufferedChangeset implements IChangeset {
         ? validationKeys
         : keys(flattenValidations(this.validationMap as object));
 
-    let maybePromise = validationKeys.map(key => {
+    let maybePromise = validationKeys.map((key) => {
       const value: any = this[key];
       const resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
       return this._validateKey(key, resolvedValue);
@@ -810,7 +810,7 @@ export class BufferedChangeset implements IChangeset {
 
             return this._handleValidation(resolvedValidation, { key, value });
           })
-          .then(result => {
+          .then((result) => {
             this.trigger(AFTER_VALIDATION_EVENT, key);
             return result;
           });
