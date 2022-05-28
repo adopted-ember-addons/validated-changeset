@@ -2,7 +2,7 @@ import Change, { getChangeValue, isChange, type Changes } from './-private/chang
 import { getKeyValues, getKeyErrorValues } from './utils/get-key-values';
 import lookupValidator from './utils/validator-lookup';
 import { notifierForEvent } from './-private/evented';
-import Err from './-private/err';
+import Err, { type Errors, type IErr } from './-private/err';
 import { hasKey, pathInChanges } from './utils/has-key';
 import normalizeObject from './utils/normalize-object';
 import { hasChanges } from './utils/has-changes';
@@ -25,8 +25,6 @@ import { objectToArray, arrayToObject } from './utils/array-object';
 import type {
   Config,
   Content,
-  Errors,
-  IErr,
   IChangeset,
   INotifier,
   InternalMap,

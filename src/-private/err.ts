@@ -1,4 +1,4 @@
-import type { IErr, ValidationErr } from '../types';
+import type { ValidationErr } from '../types';
 
 export default class Err implements IErr<any> {
   value: any;
@@ -9,3 +9,18 @@ export default class Err implements IErr<any> {
     this.validation = validation;
   }
 }
+
+export interface IErr<T> {
+  value: T;
+  validation: ValidationErr | ValidationErr[];
+}
+
+export type Errors<T> = {
+  [s: string]: IErr<T>;
+};
+
+export type PublicErrors = {
+  key: string;
+  value: any;
+  validation: ValidationErr | ValidationErr[];
+}[];
