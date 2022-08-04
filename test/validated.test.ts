@@ -605,6 +605,48 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyModel.name.short).toBe('foo');
   });
 
+  it('#set works for nested class instances', () => {
+    class Person {
+      public name: Name;
+      public age: number;
+      public original: object;
+
+      constructor(name: Name, age: number, org: object) {
+        this.name = name;
+        this.age = age;
+        this.original = org;
+      }
+    }
+
+    class Name {
+      public current: object;
+
+      constructor(current: object) {
+        this.current = current;
+      }
+    }
+
+    const expectedChanges = new Person(new Name({ short: 'bar' }), 30, {});
+    dummyModel.name = {};
+    dummyModel.org = {};
+    dummyModel.age = 30;
+    const dummyChangeset = Changeset(dummyModel);
+    const expectedName = new Name({ short: 'foo' });
+    dummyChangeset.set('name', expectedName);
+
+    expect(dummyChangeset.get('name.current.short')).toBe('foo');
+    expect(dummyChangeset.get('name')).toEqual(expectedName);
+    dummyChangeset.set('name.current.short', 'bar');
+
+    const changes = dummyChangeset.changes;
+    expect(changes.name.current).toEqual(expectedChanges.name);
+    expect(dummyChangeset.name).toEqual(expectedChanges.name);
+    expect(dummyChangeset.age).toEqual(expectedChanges.age);
+    expect(dummyChangeset.org).toEqual({});
+
+    expect(dummyModel.name).toEqual({});
+  });
+
   it('#set overrides', () => {
     const expectedChanges = { age: { current: '90', original: '10' } };
     let dummyChangeset = Changeset({ age: '10' });

@@ -20,9 +20,9 @@ function findSiblings(target: any, keys: string[]) {
     .reduce((acc, key) => {
       acc[key] = target[key];
       return acc;
-    }, Object.create(null));
+    }, Object.create(target));
 
-  return { ...remaining };
+  return remaining;
 }
 
 function isValidKey(key: unknown) {
