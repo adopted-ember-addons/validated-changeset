@@ -2617,6 +2617,28 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isValid).toBeTruthy();
   });
 
+  it('#rollbackInvalid will not remove deep changes that are valid after being invalid', () => {
+    let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
+    dummyChangeset.set('name', 'abcd');
+    dummyChangeset.set('org.usa.ny', '');
+
+    dummyChangeset.validate('name');
+    dummyChangeset.validate('org.usa.ny');
+
+    dummyChangeset.set('org.usa.ny', 'ny');
+    dummyChangeset.validate('org.usa.ny');
+
+    const expectedChanges = [
+      { key: 'name', value: 'abcd' },
+      { key: 'org.usa.ny', value: 'ny' }
+    ];
+
+    dummyChangeset.rollbackInvalid();
+
+    expect(dummyChangeset.changes).toEqual(expectedChanges);
+    expect(dummyChangeset.isValid).toBeTruthy();
+  });
+
   it('#rollbackInvalid works for keys not on changeset', () => {
     let dummyChangeset = Changeset(dummyModel, lookupValidator(dummyValidations));
     let expectedChanges = [
