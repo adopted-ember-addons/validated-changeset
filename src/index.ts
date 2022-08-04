@@ -721,22 +721,15 @@ export class BufferedChangeset implements IChangeset {
     return this;
   }
 
-  private getChangesFromSnapshot(changes: Changes) {
-    return keys(changes).reduce((newObj, key) => {
-      newObj[key] = this.getChangeForProp(changes[key]);
-      return newObj;
-    }, {} as Changes);
-  }
-
-  private getChangeForProp(value: any) {
+  private getChangesFromSnapshot(value: any) {
     if (!isObject(value)) {
       return new Change(value);
     }
 
     return keys(value).reduce((newObj, key) => {
-      newObj[key] = this.getChangeForProp(value[key]);
+      newObj[key] = this.getChangesFromSnapshot(value[key]);
       return newObj;
-    }, {} as Changes);
+    }, Object.create(value) as Changes);
   }
 
   /**
