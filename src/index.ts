@@ -540,7 +540,7 @@ export class BufferedChangeset implements IChangeset {
    * @return {Changeset}
    */
   rollbackInvalid(key: string | void): this {
-    let errorKeys = keys(this[ERRORS]);
+    let errorKeys = this.errors.map(({ key }) => key);
 
     if (key) {
       this._notifyVirtualProperties([key]);
