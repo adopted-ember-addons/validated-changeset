@@ -3562,3 +3562,21 @@ describe('Unit | Utility | changeset', () => {
     }
   });
 });
+describe('arrays of objects', () => {
+  test('changes in array are gettable', () => {
+    let initialData = { contacts: [] };
+
+    const changeset = Changeset(initialData);
+
+    changeset.set("contacts", [{
+      name :'william'
+    }]);
+
+    expect(changeset.get("contacts.0")).toStrictEqual({
+      name :'william'
+    });
+    expect(changeset.get("contacts.0.name")).toStrictEqual(
+      'william'
+    );
+  });
+});
