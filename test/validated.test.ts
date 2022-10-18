@@ -58,6 +58,18 @@ describe('Unit | Utility | validation changeset', () => {
     expect(dummyChangeset.change).toEqual(expectedResult);
   });
 
+  it('#change in array of objects are gettable', () => {
+    const changeset = Changeset({ contacts: [] });
+    const contactObject = {
+      name: 'william'
+    };
+
+    changeset.set('contacts', [contactObject]);
+
+    expect(changeset.get('contacts.0')).toStrictEqual(contactObject);
+    expect(changeset.get('contacts.0.name')).toStrictEqual(contactObject.name);
+  });
+
   it('#change works with arrays', () => {
     const dummyChangeset = Changeset(dummyModel);
     const newArray = [...exampleArray, 'new'];

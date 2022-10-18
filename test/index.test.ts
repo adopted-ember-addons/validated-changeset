@@ -3562,21 +3562,16 @@ describe('Unit | Utility | changeset', () => {
     }
   });
 });
-describe('arrays of objects', () => {
-  test('changes in array are gettable', () => {
-    let initialData = { contacts: [] };
+describe('array of objects', () => {
+  test('changes in nested object are gettable', () => {
+    const changeset = Changeset({ contacts: [] });
+    const contactObject = {
+      name: 'william'
+    };
 
-    const changeset = Changeset(initialData);
+    changeset.set('contacts', [contactObject]);
 
-    changeset.set("contacts", [{
-      name :'william'
-    }]);
-
-    expect(changeset.get("contacts.0")).toStrictEqual({
-      name :'william'
-    });
-    expect(changeset.get("contacts.0.name")).toStrictEqual(
-      'william'
-    );
+    expect(changeset.get('contacts.0')).toStrictEqual(contactObject);
+    expect(changeset.get('contacts.0.name')).toStrictEqual(contactObject.name);
   });
 });
