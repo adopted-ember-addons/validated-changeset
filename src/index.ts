@@ -20,7 +20,7 @@ import take from './utils/take';
 import mergeDeep, { propertyIsUnsafe } from './utils/merge-deep';
 import setDeep from './utils/set-deep';
 import getDeep, { getSubObject } from './utils/get-deep';
-import { objectToArray, arrayToObject } from './utils/array-object';
+import { objectToArray, arrayToObject, isArrayObject } from './utils/array-object';
 
 import type {
   Changes,
@@ -52,6 +52,9 @@ export {
   CHANGESET,
   Change,
   Err,
+  isArrayObject,
+  arrayToObject,
+  objectToArray,
   buildOldValues,
   isChangeset,
   isObject,
