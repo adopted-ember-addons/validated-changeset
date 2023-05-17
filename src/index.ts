@@ -645,6 +645,35 @@ export class BufferedChangeset implements IChangeset {
   }
 
   /**
+   * Manually remove an error from the changeset.
+   *
+   * @method removeError
+   */
+  removeError(key: string): this {
+    if (key) {
+      this._notifyVirtualProperties([key]);
+      // @tracked
+      this[ERRORS] = this._deleteKey(ERRORS, key) as Errors<any>;
+      this[ERRORS_CACHE] = this[ERRORS];
+    } else {
+      this._notifyVirtualProperties();
+      this[ERRORS] = {};
+      this[ERRORS_CACHE] = this[ERRORS];
+    }
+
+    return this;
+  }
+
+  /**
+   * @method removeError
+   */
+  removeErrors() {
+    // @tracked
+    this[ERRORS] = {};
+    this[ERRORS_CACHE] = this[ERRORS];
+  }
+
+  /**
    * Manually push multiple errors to the changeset as an array.
    * key maybe in form 'name.short' so need to go deep
    *
