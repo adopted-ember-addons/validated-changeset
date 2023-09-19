@@ -43,6 +43,7 @@
     "@rollup/plugin-typescript": "^2.0.1",
     "@types/jest": "^24.0.25",
     "@types/node": "^13.13.9",
+    "@types/ungap__structured-clone": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "chalk": "^4.1.0",
@@ -71,9 +72,6 @@
     "node": "14.19.1"
   },
   "dependencies": {
-    "@types/ungap__structured-clone": "^0.3.0",
-    "@ungap/structured-clone": "^0.3.4",
-    "i": "^0.3.7",
-    "npm": "^8.7.0"
+    "@ungap/structured-clone": "^0.3.4"
   }
 }
