@@ -19,13 +19,13 @@
     "start": "tsc -w & rollup -c rollup.config.ts -w",
     "stats": "node scripts/size-calc",
     "prebuild": "rimraf dist",
-    "test-external:ember-changeset": "./bin/test-external-changeset.js ember-changeset https://github.com/poteto/ember-changeset.git",
-    "test-external:ember-changeset-validations": "./bin/test-external-changeset.js ember-changeset-validations https://github.com/poteto/ember-changeset-validations.git",
+    "test-external:ember-changeset": "./bin/test-external-changeset.js ember-changeset https://github.com/adopted-ember-addons/ember-changeset.git",
+    "test-external:ember-changeset-validations": "./bin/test-external-changeset.js ember-changeset-validations https://github.com/adopted-ember-addons/ember-changeset-validations.git",
     "contributors": "npx contributor-faces -e \"(*-bot|*\\[bot\\]|*-tomster|homu|bors)\""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/validated-changeset/validated-changeset.git"
+    "url": "git+https://github.com/adopted-ember-addons/validated-changeset.git"
   },
   "keywords": [
     "changeset",
@@ -36,9 +36,9 @@
   "author": "Scott Newcomer",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/validated-changeset/validated-changeset/issues"
+    "url": "https://github.com/adopted-ember-addons/validated-changeset/issues"
   },
-  "homepage": "https://github.com/validated-changeset/validated-changeset#readme",
+  "homepage": "https://github.com/adopted-ember-addons/validated-changeset#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^2.0.1",
     "@types/jest": "^24.0.25",
