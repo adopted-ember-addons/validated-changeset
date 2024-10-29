@@ -1,5 +1,5 @@
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="Download count all time" src="https://img.shields.io/npm/dt/validated-changeset.svg"></a>
-<a href="https://github.com/validated-changeset/validated-changeset/actions/workflows/ci.yml"><img alt="TravisCI Build Status" src="https://github.com/validated-changeset/validated-changeset/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/adopted-ember-addons/validated-changeset/actions/workflows/ci.yml"><img alt="TravisCI Build Status" src="https://github.com/adopted-ember-addons/validated-changeset/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://badge.fury.io/js/validated-changeset"><img alt="npm version" src="https://badge.fury.io/js/validated-changeset.svg"></a>
 
 ```
@@ -8,7 +8,7 @@ npm install validated-changeset --save
 
 #### tl;dr
 
-This library is the base class for functionality in [ember-changeset](https://github.com/poteto/ember-changeset) but could be used with any front end framework. Example uses in template assume handlebars.
+This library is the base class for functionality in [ember-changeset](https://github.com/adopted-ember-addons/ember-changeset) but could be used with any front end framework. Example uses in template assume handlebars.
 
 ```js
 import { Changeset } from 'validated-changeset';
@@ -61,9 +61,9 @@ Changeset(model, lookupValidator(validationMap), validationMap, { skipValidate: 
 
 - `model` (required)
 
-- `validationFunc` (optional) - see [ember-changeset-validations](https://github.com/poteto/ember-changeset-validations#usage) for usage.
+- `validationFunc` (optional) - see [ember-changeset-validations](https://github.com/adopted-ember-addons/ember-changeset-validations#usage) for usage.
 
-- `validationMap` (optional) - see [ember-changeset-validations](https://github.com/poteto/ember-changeset-validations#usage) for usage.
+- `validationMap` (optional) - see [ember-changeset-validations](https://github.com/adopted-ember-addons/ember-changeset-validations#usage) for usage.
 
     > note: `validationMap` might not be inclusive of all keys that can be set on an object.
 
@@ -117,7 +117,7 @@ export default class FormComponent {
 
 ## Examples
 
-- [`ember-changeset`](https://github.com/poteto/ember-changeset)
+- [`ember-changeset`](https://github.com/adopted-ember-addons/ember-changeset)
 - [`svelte example`](https://codesandbox.io/s/validated-svelte-xc5lp?fontsize=14&hidenavigation=1&theme=dark)
 
 ## API
@@ -799,7 +799,7 @@ changeset.validate().then(() => {
 #### `afterRollback`
 
 This event is triggered after a rollback of the changeset.
-This can be used for [some advanced use cases](https://github.com/offirgolan/validated-changeset-cp-validations/issues/25#issuecomment-375855834)
+This can be used for [some advanced use cases](https://github.com/offirgolan/ember-changeset-cp-validations/issues/25#issuecomment-375855834)
 where it is necessary to separately track all changes that are made to the changeset.
 
 ```js
@@ -877,7 +877,7 @@ if (isChangeset(model)) {
 
 ## Contributors
 
-See all the wonderful [contributors](https://github.com/poteto/ember-changeset#contributors) who have made this library possible.
+See all the wonderful [contributors](https://github.com/adopted-ember-addons/ember-changeset#contributors) who have made this library possible.
 
 [//]: contributor-faces
 
