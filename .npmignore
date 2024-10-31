@@ -1,7 +1,11 @@
-src
-tsconfig.json
-rollup.config.ts
+.github/
+scripts/
+src/
+test/
 jest.config.js
-.travis.yml
+.eslintignore
+.eslintrc.js
+.prettierrc.js
+rollup.config.ts
 size.txt
-
+tsconfig.json
