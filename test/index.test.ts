@@ -3189,6 +3189,94 @@ describe('Unit | Utility | changeset', () => {
   });
 
   /**
+   * #removeError
+   */
+
+  it('#removeError removes an error from the changeset', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+
+    dummyChangeset.removeError('email');
+    expect(dummyChangeset.isValid).toEqual(true);
+
+    expect(get(dummyChangeset, 'error.email.validation')).toBe(undefined);
+  });
+
+  it('#removeError using an invalid key does not throw an error', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+
+    dummyChangeset.removeError('email');
+    dummyChangeset.removeError('foo');
+    expect(dummyChangeset.isValid).toEqual(true);
+
+    expect(get(dummyChangeset, 'error.email.validation')).toBe(undefined);
+  });
+
+  it('#removeError removing one error leaves the other', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+    dummyChangeset.addError('age', {
+      value: '0',
+      validation: 'Age is too low'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+    expect(get(dummyChangeset, 'error.age.validation')).toBe('Age is too low');
+
+    dummyChangeset.removeError('email');
+    expect(dummyChangeset.isValid).toEqual(false);
+
+    expect(get(dummyChangeset, 'error.email.validation')).toBe(undefined);
+    expect(get(dummyChangeset, 'error.age.validation')).toBe('Age is too low');
+  });
+
+  /**
+   * #removeErrors
+   */
+
+  it('#removeErrors removes all errors', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    dummyChangeset.addError('email', {
+      value: 'jim@bob.com',
+      validation: 'Email already taken'
+    });
+
+    expect(dummyChangeset.isInvalid).toEqual(true);
+    expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+
+    dummyChangeset.removeErrors();
+    expect(dummyChangeset.isValid).toEqual(true);
+
+    expect(get(dummyChangeset, 'error.email.validation')).toBe(undefined);
+    expect(get(dummyChangeset, 'errors')).toStrictEqual([]);
+  });
+
+  it('#removeErrors succeeds even when there are no errors', () => {
+    let dummyChangeset = Changeset(dummyModel);
+    expect(dummyChangeset.isInvalid).toEqual(false);
+    dummyChangeset.removeErrors();
+    expect(dummyChangeset.isValid).toEqual(true);
+    expect(get(dummyChangeset, 'errors')).toStrictEqual([]);
+  });
+
+  /**
    * #pushErrors
    */
 

@@ -145,6 +145,8 @@ export default class FormComponent {
   + [`validate`](#validate)
   + [`addError`](#adderror)
   + [`pushErrors`](#pusherrors)
+  + [`removeError`](#removeerror)
+  + [`removeErrors`](#removeerrors)
   + [`snapshot`](#snapshot)
   + [`restore`](#restore)
   + [`cast`](#cast)
@@ -654,6 +656,25 @@ Manually push errors to the changeset.
 changeset.pushErrors('age', 'Too short', 'Not a valid number', 'Must be greater than 18');
 changeset.pushErrors('dogYears.age', 'Too short', 'Not a valid number', 'Must be greater than 2.5');
 ```
+#### `removeError`
+
+Manually remove an error from the changeset.
+
+```js
+changeset.removeError('email');
+```
+Removes an error without having to rollback the property.
+
+**[⬆️ back to top](#api)**
+
+#### `removeErrors`
+
+Manually remove an error from the changeset.
+
+```js
+changeset.removeErrors()
+```
+Removes all the errors without having to rollback properties.
 
 **[⬆️ back to top](#api)**
 
