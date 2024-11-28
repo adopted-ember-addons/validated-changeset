@@ -2455,13 +2455,13 @@ describe('Unit | Utility | validation changeset', () => {
     expect(snapshot).toEqual(expectedResult);
   });
 
-  // /**
-  //  * #restore
-  //  */
+  /**
+   * #restore
+   */
 
   // it('#restore restores a snapshot of the changeset', () => {
-  //   let dummyChangesetA = Changeset(dummyModel));
-  //   let dummyChangesetB = Changeset(dummyModel));
+  //   let dummyChangesetA = Changeset(dummyModel);
+  //   let dummyChangesetB = Changeset(dummyModel);
   //   dummyChangesetA.set('name', 'Pokemon Go');
   //   dummyChangesetA.set('password', false);
   //   let snapshot = dummyChangesetA.snapshot();
@@ -2496,6 +2496,32 @@ describe('Unit | Utility | validation changeset', () => {
   //     { key: 'address.country', value: 'North Korea' }
   //   ]);
   // });
+
+  it('#restore restores a snapshot of the changeset when nested value is a class instance', () => {
+    class Country {
+      constructor(public id: string, public name: string) {}
+    }
+    let us = new Country('US', 'United States');
+    let prk = new Country('PRK', 'North Korea');
+    let aus = new Country('AUS', 'Australia');
+
+    let user = {
+      name: 'Adam',
+      address: { country: us }
+    };
+    let changeset = Changeset(user);
+    changeset.set('name', 'Jim Bob');
+    changeset.set('address.country', prk);
+    let snapshot1 = changeset.snapshot();
+
+    changeset.set('name', 'Poteto');
+    changeset.set('address.country', aus);
+
+    changeset.restore(snapshot1);
+
+    expect(changeset.get('name')).toBe('Jim Bob');
+    expect(changeset.get('address.country')).toStrictEqual(prk);
+  });
 
   // /**
   //  * #cast
