@@ -1,5 +1,26 @@
 # Changelog
 
+## Release (2024-10-31)
+
+validated-changeset 1.3.5 (patch)
+
+#### :bug: Bug Fix
+* `validated-changeset`
+  * [#190](https://github.com/adopted-ember-addons/validated-changeset/pull/190) Remove unnecessary dependencies ([@timmorey](https://github.com/timmorey))
+
+#### :memo: Documentation
+* `validated-changeset`
+  * [#195](https://github.com/adopted-ember-addons/validated-changeset/pull/195) Update the `repository` field of the package.json to point to the new location ([@SergeAstapov](https://github.com/SergeAstapov))
+
+#### :house: Internal
+* `validated-changeset`
+  * [#197](https://github.com/adopted-ember-addons/validated-changeset/pull/197) Setup release-plan and changelog ([@SergeAstapov](https://github.com/SergeAstapov))
+  * [#196](https://github.com/adopted-ember-addons/validated-changeset/pull/196) Update .npmignore to exclude more dev files ([@SergeAstapov](https://github.com/SergeAstapov))
+
+#### Committers: 2
+- Sergey Astapov ([@SergeAstapov](https://github.com/SergeAstapov))
+- Timothy Morey ([@timmorey](https://github.com/timmorey))
+
 ## v1.3.4 (2022-10-22)
 
 #### :rocket: Enhancement
