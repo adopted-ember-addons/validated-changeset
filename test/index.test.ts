@@ -483,6 +483,40 @@ describe('Unit | Utility | changeset', () => {
     expect(dummyChangeset.isDirty).toBe(false);
   });
 
+  it('#set works with native getters and setters', function() {
+    class DogTag {
+      _name = '';
+      _years = 1;
+
+      get name() {
+        return this._name;
+      }
+      set name(value) {
+        this._name = value;
+      }
+      get age() {
+        return 7 * this._years;
+      }
+      set age(value) {
+        this._years = value;
+      }
+    }
+
+    const dog = new DogTag();
+
+    const c = Changeset(dog);
+
+    c.set('name', 'good boy');
+    expect(c.get('name')).toEqual('good boy');
+
+    expect(c.get('age')).toEqual(7);
+    expect(c.age).toEqual(7);
+    c.set('age', 2);
+    expect(c.get('age')).toEqual(2);
+    c.execute();
+    expect(c.get('age')).toEqual(14);
+  });
+
   /**
    * #get
    */
