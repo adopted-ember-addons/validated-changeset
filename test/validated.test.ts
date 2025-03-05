@@ -455,6 +455,22 @@ describe('Unit | Utility | validation changeset', () => {
       const expectedResult = get(model, 'foo.bar.dog');
       expect(actual).toEqual(expectedResult);
     }
+    {
+      // Check Object.keys is proxied to the original model when no change has been made
+      const c = Changeset(model);
+      const actual = Object.keys(get(c, 'foo'));
+      const expectedResult = Object.keys(get(model, 'foo'));
+      expect(actual).toEqual(expectedResult);
+    }
+    {
+      // Check Object.keys is proxied to the change when a change has been made
+      const c = Changeset(model);
+      const newFoo = { baz: { dog: new Dog('woof') } };
+      set(c, 'foo', newFoo);
+      const actual = Object.keys(get(c, 'foo'));
+      const expectedResult = Object.keys(newFoo);
+      expect(actual).toEqual(expectedResult);
+    }
   });
 
   it('#get proxies to underlying array properties', () => {

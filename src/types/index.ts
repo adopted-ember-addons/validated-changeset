@@ -1,6 +1,6 @@
 export interface ProxyHandler {
   changes: Record<string, any>;
-  content: unknown;
+  content: Content;
   proxy: any;
   children: Record<string, any>;
   safeGet: (obj: any, key: string) => any;
