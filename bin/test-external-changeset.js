@@ -12,14 +12,15 @@ const chalk = require('chalk');
 const cliArgs = require('command-line-args');
 const root = path.resolve(__dirname, '../');
 
-let cliOptionsDef = [{ name: 'projectName', defaultOption: true }];
+let cliOptionsDef = [
+  { name: 'projectName', defaultOption: true },
+  { name: 'url', type: String },
+  { name: 'pathToAddon', type: String }
+];
 let cliOptions = cliArgs(cliOptionsDef, { stopAtFirstUnknown: true });
 const externalProjectName = cliOptions.projectName;
-
-let argv = cliOptions._unknown || [];
-cliOptionsDef = [{ name: 'gitUrl', defaultOption: true }];
-cliOptions = cliArgs(cliOptionsDef, { stopAtFirstUnknown: true, argv });
-const gitUrl = cliOptions.gitUrl;
+const gitUrl = cliOptions.url;
+const pathToAddon = cliOptions.pathToAddon || '.';
 
 const cachePath = '../__changeset-test-cache';
 const tempDir = path.join(root, cachePath);
@@ -42,6 +43,21 @@ function execWithLog(command, force) {
 function execCommand(command, force) {
   command = `cd ${projectTempDir} && ${command}`;
   return execWithLog(command, force);
+}
+
+function generateTarball() {
+  execWithLog(`cd ${root}; pnpm pack --pack-destination ${tarballDir};`);
+
+  debug(`pnpm pack successful at: ${tarballDir}`);
+  const pkgPath = path.join(root, 'package.json');
+  const pkg = require(pkgPath);
+
+  return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
+}
+
+function insertTarballsToPackageJson() {
+  const thisPkgTarballPath = generateTarball();
+  execCommand(`cd ${pathToAddon} && pnpm install ${thisPkgTarballPath} --save`);
 }
 
 if (!fs.existsSync(tempDir)) {
@@ -115,22 +131,6 @@ if (!fs.existsSync(tarballDir)) {
   debug(`Tarball Cache Exists for SHA ${currentSha} at: ${tarballDir}`);
 }
 
-function generateTarball() {
-  execWithLog(`cd ${tarballDir}; pnpm pack ${root};`);
-
-  debug(`pnpm pack successful at: ${tarballDir}`);
-  const pkgPath = path.join(root, 'package.json');
-  const pkg = require(pkgPath);
-
-  return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
-}
-
-function insertTarballsToPackageJson() {
-  const thisPkgTarballPath = generateTarball();
-
-  execCommand(`pnpm install ${thisPkgTarballPath} --save`);
-}
-
 try {
   debug('Preparing Package To Run Tests Against Latest validated-changeset Commit');
   insertTarballsToPackageJson(packageJsonLocation);
@@ -147,7 +147,6 @@ try {
 
 try {
   debug('Running tests against validated-changeset commit');
-  execCommand(`pnpm build`);
   execCommand(`pnpm test`);
 } catch (e) {
   console.error(e);
