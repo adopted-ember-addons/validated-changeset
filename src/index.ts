@@ -665,7 +665,7 @@ export class BufferedChangeset implements IChangeset {
   }
 
   /**
-   * @method removeError
+   * @method removeErrors
    */
   removeErrors() {
     // @tracked

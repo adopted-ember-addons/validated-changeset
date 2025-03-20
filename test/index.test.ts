@@ -3258,13 +3258,23 @@ describe('Unit | Utility | changeset', () => {
       validation: 'Email already taken'
     });
 
+    dummyChangeset.addError('age', {
+      value: '0',
+      validation: 'Age is too low'
+    });
+    dummyChangeset.pushErrors('email.localPart', 'Cannot contain +');
+
     expect(dummyChangeset.isInvalid).toEqual(true);
     expect(get(dummyChangeset, 'error.email.validation')).toBe('Email already taken');
+    expect(get(dummyChangeset, 'error.age.validation')).toBe('Age is too low');
+    expect(get(dummyChangeset, 'error.email.localPart.validation')).toEqual(['Cannot contain +']);
 
     dummyChangeset.removeErrors();
     expect(dummyChangeset.isValid).toEqual(true);
 
     expect(get(dummyChangeset, 'error.email.validation')).toBe(undefined);
+    expect(get(dummyChangeset, 'error.age.validation')).toBe(undefined);
+    expect(get(dummyChangeset, 'error.email.localPart.validation')).toBe(undefined);
     expect(get(dummyChangeset, 'errors')).toStrictEqual([]);
   });
 
