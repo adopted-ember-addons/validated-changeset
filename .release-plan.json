@@ -1,17 +1,13 @@
 {
   "solution": {
     "validated-changeset": {
-      "impact": "patch",
-      "oldVersion": "1.3.4",
-      "newVersion": "1.3.5",
+      "impact": "minor",
+      "oldVersion": "1.3.5",
+      "newVersion": "1.4.0",
       "constraints": [
         {
-          "impact": "patch",
-          "reason": "Appears in changelog section :bug: Bug Fix"
-        },
-        {
-          "impact": "patch",
-          "reason": "Appears in changelog section :memo: Documentation"
+          "impact": "minor",
+          "reason": "Appears in changelog section :rocket: Enhancement"
         },
         {
           "impact": "patch",
@@ -21,5 +17,5 @@
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2024-10-31)\n\nvalidated-changeset 1.3.5 (patch)\n\n#### :bug: Bug Fix\n* `validated-changeset`\n  * [#190](https://github.com/adopted-ember-addons/validated-changeset/pull/190) Remove unnecessary dependencies ([@timmorey](https://github.com/timmorey))\n\n#### :memo: Documentation\n* `validated-changeset`\n  * [#195](https://github.com/adopted-ember-addons/validated-changeset/pull/195) Update the `repository` field of the package.json to point to the new location ([@SergeAstapov](https://github.com/SergeAstapov))\n\n#### :house: Internal\n* `validated-changeset`\n  * [#197](https://github.com/adopted-ember-addons/validated-changeset/pull/197) Setup release-plan and changelog ([@SergeAstapov](https://github.com/SergeAstapov))\n  * [#196](https://github.com/adopted-ember-addons/validated-changeset/pull/196) Update .npmignore to exclude more dev files ([@SergeAstapov](https://github.com/SergeAstapov))\n\n#### Committers: 2\n- Sergey Astapov ([@SergeAstapov](https://github.com/SergeAstapov))\n- Timothy Morey ([@timmorey](https://github.com/timmorey))\n"
+  "description": "## Release (2025-03-20)\n\nvalidated-changeset 1.4.0 (minor)\n\n#### :rocket: Enhancement\n* `validated-changeset`\n  * [#189](https://github.com/adopted-ember-addons/validated-changeset/pull/189) Add #removeError and #removeErrors to BufferedChangeset ([@jkeen](https://github.com/jkeen))\n\n#### :house: Internal\n* `validated-changeset`\n  * [#203](https://github.com/adopted-ember-addons/validated-changeset/pull/203) Correct another pnpm version mismatch I missed ([@jkeen](https://github.com/jkeen))\n  * [#202](https://github.com/adopted-ember-addons/validated-changeset/pull/202) Correct pnpm version mismatch ([@jkeen](https://github.com/jkeen))\n  * [#201](https://github.com/adopted-ember-addons/validated-changeset/pull/201) Replace npm ci with pnpm install --frozen-lockfile to fix release step ([@jkeen](https://github.com/jkeen))\n  * [#200](https://github.com/adopted-ember-addons/validated-changeset/pull/200) Update to pnpm, fix test errors ([@jkeen](https://github.com/jkeen))\n\n#### Committers: 1\n- Jeff Keen ([@jkeen](https://github.com/jkeen))\n"
 }

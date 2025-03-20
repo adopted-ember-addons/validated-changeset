@@ -1,5 +1,23 @@
 # Changelog
 
+## Release (2025-03-20)
+
+validated-changeset 1.4.0 (minor)
+
+#### :rocket: Enhancement
+* `validated-changeset`
+  * [#189](https://github.com/adopted-ember-addons/validated-changeset/pull/189) Add #removeError and #removeErrors to BufferedChangeset ([@jkeen](https://github.com/jkeen))
+
+#### :house: Internal
+* `validated-changeset`
+  * [#203](https://github.com/adopted-ember-addons/validated-changeset/pull/203) Correct another pnpm version mismatch I missed ([@jkeen](https://github.com/jkeen))
+  * [#202](https://github.com/adopted-ember-addons/validated-changeset/pull/202) Correct pnpm version mismatch ([@jkeen](https://github.com/jkeen))
+  * [#201](https://github.com/adopted-ember-addons/validated-changeset/pull/201) Replace npm ci with pnpm install --frozen-lockfile to fix release step ([@jkeen](https://github.com/jkeen))
+  * [#200](https://github.com/adopted-ember-addons/validated-changeset/pull/200) Update to pnpm, fix test errors ([@jkeen](https://github.com/jkeen))
+
+#### Committers: 1
+- Jeff Keen ([@jkeen](https://github.com/jkeen))
+
 ## Release (2024-10-31)
 
 validated-changeset 1.3.5 (patch)
