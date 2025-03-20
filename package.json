@@ -32,7 +32,7 @@
     "start": "tsc -w & rollup -c rollup.config.ts -w",
     "stats": "node scripts/size-calc",
     "test": "jest",
-    "test-external:ember-changeset": "./bin/test-external-changeset.js ember-changeset https://github.com/adopted-ember-addons/ember-changeset.git",
+    "test-external:ember-changeset": "./bin/test-external-changeset.js ember-changeset https://github.com/adopted-ember-addons/ember-changeset.git test-app",
     "test-external:ember-changeset-validations": "./bin/test-external-changeset.js ember-changeset-validations https://github.com/adopted-ember-addons/ember-changeset-validations.git",
     "test.watch": "jest --watch",
     "test:all": "npm run test && npm run test-external:ember-changeset && npm run test-external:ember-changeset-validations",

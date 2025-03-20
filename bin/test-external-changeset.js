@@ -116,9 +116,9 @@ if (!fs.existsSync(tarballDir)) {
 }
 
 function generateTarball() {
-  execWithLog(`cd ${tarballDir}; npm pack ${root};`);
+  execWithLog(`cd ${tarballDir}; pnpm pack ${root};`);
 
-  debug(`npm pack successful at: ${tarballDir}`);
+  debug(`pnpm pack successful at: ${tarballDir}`);
   const pkgPath = path.join(root, 'package.json');
   const pkg = require(pkgPath);
 
@@ -128,7 +128,7 @@ function generateTarball() {
 function insertTarballsToPackageJson() {
   const thisPkgTarballPath = generateTarball();
 
-  execCommand(`npm install ${thisPkgTarballPath} --save`);
+  execCommand(`pnpm install ${thisPkgTarballPath} --save`);
 }
 
 try {
@@ -138,9 +138,9 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('npm install');
+  execCommand('pnpm install');
 } catch (e) {
-  console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
+  console.log(`Unable to pnpm install tarballs for ${externalProjectName}. Original error below:`);
 
   throw e;
 }
@@ -148,7 +148,7 @@ try {
 try {
   debug('Running tests against validated-changeset commit');
   execCommand(`pnpm build`);
-  execCommand(`pnpm test`, true);
+  execCommand(`pnpm test`);
 } catch (e) {
   console.error(e);
   commitTestPassed = false;

@@ -7,36 +7,35 @@ on:
   pull_request: {}
 
 jobs:
-
   test:
-    name: "Tests"
+    name: 'Tests'
     env:
       CI: true
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Install node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 16.x
+      - uses: actions/checkout@v4
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.x
 
-    - name: Cache node modules
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-node-modules
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-    - name: npm install
-      run: npm install
-    - name: lint js
-      run: node_modules/.bin/eslint . --ext=js,ts
-    - name: test
-      run: npm run test
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: npm install
+        run: npm install
+      - name: lint js
+        run: node_modules/.bin/eslint . --ext=js,ts
+      - name: test
+        run: npm run test
 
   compat:
     name: Compatibility
@@ -49,12 +48,14 @@ jobs:
           - ember-changeset
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 16.x
-    - name: Install deps
-      run: npm install
-    - name: "Test: ${{ matrix.lib }}"
-      run: npm run test-external:${{ matrix.lib }}
-
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Install deps
+        run: npm install
+      - name: 'Test: ${{ matrix.lib }}'
+        run: npm run test-external:${{ matrix.lib }}
