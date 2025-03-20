@@ -7,36 +7,38 @@ on:
   pull_request: {}
 
 jobs:
-
   test:
-    name: "Tests"
+    name: 'Tests'
     env:
       CI: true
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install node
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: 14.x
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
 
-    - name: Cache node modules
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-node-modules
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-    - name: npm install
-      run: npm install
-    - name: lint js
-      run: node_modules/.bin/eslint . --ext=js,ts
-    - name: test
-      run: npm run test
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: pnpm install
+        run: pnpm install
+      - name: lint js
+        run: pnpm run lint
+      - name: test
+        run: pnpm run test
 
   compat:
     name: Compatibility
@@ -49,12 +51,14 @@ jobs:
           - ember-changeset
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: 14.x
-    - name: Install deps
-      run: npm install
-    - name: "Test: ${{ matrix.lib }}"
-      run: npm run test-external:${{ matrix.lib }}
-
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Install deps
+        run: pnpm install
+      - name: 'Test: ${{ matrix.lib }}'
+        run: pnpm run test-external:${{ matrix.lib }}

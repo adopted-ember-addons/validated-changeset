@@ -2387,7 +2387,7 @@ describe('Unit | Utility | changeset', () => {
     const dummyChangeset = Changeset(person);
     dummyChangeset.set('name', 'foo');
 
-    return dummyChangeset.save().then(() => {
+    dummyChangeset.save().then(() => {
       expect(person.name).toBe('foo');
       done();
     });
@@ -3583,7 +3583,7 @@ describe('Unit | Utility | changeset', () => {
    * Behavior.
    */
 
-  it('can set nested keys after validate', async function (done) {
+  it('can set nested keys after validate', function (done) {
     expect.assertions(0);
 
     dummyModel.org = {
