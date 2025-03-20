@@ -14,14 +14,14 @@ jobs:
       CI: true
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install node
-      uses: actions/setup-node@v2-beta
+      uses: actions/setup-node@v4
       with:
-        node-version: 14.x
+        node-version: 16.x
 
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-node-modules
       with:
@@ -49,10 +49,10 @@ jobs:
           - ember-changeset
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 14.x
+        node-version: 16.x
     - name: Install deps
       run: npm install
     - name: "Test: ${{ matrix.lib }}"

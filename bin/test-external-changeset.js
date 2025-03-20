@@ -81,12 +81,12 @@ let commitTestPassed = true;
 try {
   debug('Running Smoke Test');
   try {
-    execCommand('npm install');
+    execCommand('pnpm install');
   } catch (e) {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
   }
-  execCommand('./node_modules/.bin/ember test', true);
+  execCommand('pnpm test', true);
 } catch (e) {
   console.log(e);
   smokeTestPassed = false;
@@ -147,8 +147,8 @@ try {
 
 try {
   debug('Running tests against validated-changeset commit');
-  execCommand(`./node_modules/.bin/ember build`);
-  execCommand(`./node_modules/.bin/ember test --path="./dist"`, true);
+  execCommand(`pnpm build`);
+  execCommand(`pnpm test`, true);
 } catch (e) {
   console.error(e);
   commitTestPassed = false;
