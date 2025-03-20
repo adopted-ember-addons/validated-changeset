@@ -22,6 +22,10 @@ const externalProjectName = cliOptions.projectName;
 const gitUrl = cliOptions.url;
 const pathToAddon = cliOptions.pathToAddon || '.';
 
+debug(`externalProjectName = ${externalProjectName}`);
+debug(`gitUrl = ${gitUrl}`);
+debug(`pathToAddon = ${pathToAddon}`);
+
 const cachePath = '../__changeset-test-cache';
 const tempDir = path.join(root, cachePath);
 const projectTempDir = path.join(tempDir, externalProjectName);

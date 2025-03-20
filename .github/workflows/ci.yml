@@ -61,4 +61,4 @@ jobs:
       - name: Install deps
         run: pnpm install
       - name: 'Test: ${{ matrix.lib }}'
-        run: npm run test-external:${{ matrix.lib }}
+        run: pnpm run test-external:${{ matrix.lib }}
