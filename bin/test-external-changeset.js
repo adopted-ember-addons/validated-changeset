@@ -12,14 +12,19 @@ const chalk = require('chalk');
 const cliArgs = require('command-line-args');
 const root = path.resolve(__dirname, '../');
 
-let cliOptionsDef = [{ name: 'projectName', defaultOption: true }];
+let cliOptionsDef = [
+  { name: 'projectName', defaultOption: true },
+  { name: 'url', type: String },
+  { name: 'pathToAddon', type: String }
+];
 let cliOptions = cliArgs(cliOptionsDef, { stopAtFirstUnknown: true });
 const externalProjectName = cliOptions.projectName;
+const gitUrl = cliOptions.url;
+const pathToAddon = cliOptions.pathToAddon || '.';
 
-let argv = cliOptions._unknown || [];
-cliOptionsDef = [{ name: 'gitUrl', defaultOption: true }];
-cliOptions = cliArgs(cliOptionsDef, { stopAtFirstUnknown: true, argv });
-const gitUrl = cliOptions.gitUrl;
+debug(`externalProjectName = ${externalProjectName}`);
+debug(`gitUrl = ${gitUrl}`);
+debug(`pathToAddon = ${pathToAddon}`);
 
 const cachePath = '../__changeset-test-cache';
 const tempDir = path.join(root, cachePath);
@@ -42,6 +47,21 @@ function execWithLog(command, force) {
 function execCommand(command, force) {
   command = `cd ${projectTempDir} && ${command}`;
   return execWithLog(command, force);
+}
+
+function generateTarball() {
+  execWithLog(`cd ${root}; pnpm pack --pack-destination ${tarballDir};`);
+
+  debug(`pnpm pack successful at: ${tarballDir}`);
+  const pkgPath = path.join(root, 'package.json');
+  const pkg = require(pkgPath);
+
+  return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
+}
+
+function insertTarballsToPackageJson() {
+  const thisPkgTarballPath = generateTarball();
+  execCommand(`cd ${pathToAddon} && pnpm install ${thisPkgTarballPath} --save`);
 }
 
 if (!fs.existsSync(tempDir)) {
@@ -81,12 +101,12 @@ let commitTestPassed = true;
 try {
   debug('Running Smoke Test');
   try {
-    execCommand('npm install');
+    execCommand('pnpm install');
   } catch (e) {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
   }
-  execCommand('./node_modules/.bin/ember test', true);
+  execCommand('pnpm test', true);
 } catch (e) {
   console.log(e);
   smokeTestPassed = false;
@@ -115,22 +135,6 @@ if (!fs.existsSync(tarballDir)) {
   debug(`Tarball Cache Exists for SHA ${currentSha} at: ${tarballDir}`);
 }
 
-function generateTarball() {
-  execWithLog(`cd ${tarballDir}; npm pack ${root};`);
-
-  debug(`npm pack successful at: ${tarballDir}`);
-  const pkgPath = path.join(root, 'package.json');
-  const pkg = require(pkgPath);
-
-  return path.join(tarballDir, `${pkg.name}-${pkg.version}.tgz`);
-}
-
-function insertTarballsToPackageJson() {
-  const thisPkgTarballPath = generateTarball();
-
-  execCommand(`npm install ${thisPkgTarballPath} --save`);
-}
-
 try {
   debug('Preparing Package To Run Tests Against Latest validated-changeset Commit');
   insertTarballsToPackageJson(packageJsonLocation);
@@ -138,17 +142,16 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('npm install');
+  execCommand('pnpm install');
 } catch (e) {
-  console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
+  console.log(`Unable to pnpm install tarballs for ${externalProjectName}. Original error below:`);
 
   throw e;
 }
 
 try {
   debug('Running tests against validated-changeset commit');
-  execCommand(`./node_modules/.bin/ember build`);
-  execCommand(`./node_modules/.bin/ember test --path="./dist"`, true);
+  execCommand(`pnpm test`);
 } catch (e) {
   console.error(e);
   commitTestPassed = false;
