@@ -1,5 +1,17 @@
 # Changelog
 
+## Release (2025-03-25)
+
+* validated-changeset 1.4.1 (patch)
+
+#### :house: Internal
+* `validated-changeset`
+  * [#205](https://github.com/adopted-ember-addons/validated-changeset/pull/205) Bump release-plan ([@SergeAstapov](https://github.com/SergeAstapov))
+  * [#199](https://github.com/adopted-ember-addons/validated-changeset/pull/199) Update .npmignore to exclude more files ([@SergeAstapov](https://github.com/SergeAstapov))
+
+#### Committers: 1
+- Sergey Astapov ([@SergeAstapov](https://github.com/SergeAstapov))
+
 ## Release (2025-03-20)
 
 validated-changeset 1.4.0 (minor)

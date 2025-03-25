@@ -1,6 +1,6 @@
 {
   "name": "validated-changeset",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Changesets for your local state",
   "keywords": [
     "changeset",
