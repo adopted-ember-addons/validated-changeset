@@ -3660,3 +3660,16 @@ describe('Unit | Utility | changeset', () => {
     }
   });
 });
+describe('array of objects', () => {
+  test('changes in nested object are gettable', () => {
+    const changeset = Changeset({ contacts: [] });
+    const contactObject = {
+      name: 'william'
+    };
+
+    changeset.set('contacts', [contactObject]);
+
+    expect(changeset.get('contacts.0')).toStrictEqual(contactObject);
+    expect(changeset.get('contacts.0.name')).toStrictEqual(contactObject.name);
+  });
+});
