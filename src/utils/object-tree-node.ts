@@ -53,15 +53,27 @@ const objectProxyHandler = {
   },
 
   ownKeys(node: ProxyHandler): any {
-    return Reflect.ownKeys(node.changes);
+    // If changes have been made reflect the change, otherwise reflect the original content
+    if (Object.keys(node.changes).length > 0) {
+      return Reflect.ownKeys(node.changes);
+    }
+    return Reflect.ownKeys(node.content);
   },
 
   getOwnPropertyDescriptor(node: ProxyHandler, prop: string): any {
-    return Reflect.getOwnPropertyDescriptor(node.changes, prop);
+    // If changes have been made reflect the change, otherwise reflect the original content
+    if (Object.keys(node.changes).length > 0) {
+      return Reflect.getOwnPropertyDescriptor(node.changes, prop);
+    }
+    return Reflect.getOwnPropertyDescriptor(node.content, prop);
   },
 
   has(node: ProxyHandler, prop: string): any {
-    return Reflect.has(node.changes, prop);
+    // If changes have been made reflect the change, otherwise reflect the original content
+    if (Object.keys(node.changes).length > 0) {
+      return Reflect.has(node.changes, prop);
+    }
+    return Reflect.has(node.content, prop);
   },
 
   set(node: ProxyHandler, key: string, value: unknown): any {
