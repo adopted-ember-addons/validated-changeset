@@ -1,6 +1,6 @@
 {
-  "name": "validated-changeset",
-  "version": "1.4.1",
+  "name": "@rs/validated-changeset",
+  "version": "1.4.2",
   "description": "Changesets for your local state",
   "keywords": [
     "changeset",
@@ -62,6 +62,7 @@
     "fs-extra": "^9.0.1",
     "gzip-size": "^5.1.1",
     "jest": "^24.9.0",
+    "jest-environment-jsdom": "^24.9.0",
     "prettier": "^2.6.2",
     "pretty-bytes": "^5.3.0",
     "release-plan": "^0.16.0",

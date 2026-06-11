@@ -16,7 +16,11 @@ function isNonNullObject(value: any): boolean {
 function isSpecial(value: any): boolean {
   let stringValue = Object.prototype.toString.call(value);
 
-  return stringValue === '[object RegExp]' || stringValue === '[object Date]';
+  return (
+    stringValue === '[object RegExp]' ||
+    stringValue === '[object Date]' ||
+    stringValue === '[object File]'
+  );
 }
 
 function isMergeableObject(value: any): boolean {

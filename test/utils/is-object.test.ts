@@ -26,6 +26,11 @@ describe('Unit | Utility | is object', function () {
       label: 'RegExps',
       value: /foo/,
       expected: false
+    },
+    {
+      label: 'Files',
+      value: new File([], 'fileName'),
+      expected: false
     }
   ];
 
