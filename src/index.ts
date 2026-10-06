@@ -9,6 +9,7 @@ import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
 import { flattenValidations } from './utils/flatten-validations';
 import isChangeset, { CHANGESET } from './utils/is-changeset';
+import proxyHandler from './utils/proxy-handler';
 import isObject from './utils/is-object';
 import isPromise from './utils/is-promise';
 import keyInObject from './utils/key-in-object';
@@ -1165,17 +1166,7 @@ export class ValidatedChangeset {
   ) {
     const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
 
-    return new Proxy(c, {
-      get(targetBuffer, key /*, receiver*/) {
-        const res = targetBuffer.get(key.toString());
-        return res;
-      },
-
-      set(targetBuffer, key, value /*, receiver*/) {
-        targetBuffer.set(key.toString(), value);
-        return true;
-      }
-    }) as T20;
+    return new Proxy(c, proxyHandler) as T20;
   }
 }
 
@@ -1187,17 +1178,7 @@ export function Changeset(
 ): BufferedChangeset {
   const c: BufferedChangeset = changeset(obj, validateFn, validationMap, options);
 
-  return new Proxy(c, {
-    get(targetBuffer, key /*, receiver*/) {
-      const res = targetBuffer.get(key.toString());
-      return res;
-    },
-
-    set(targetBuffer, key, value /*, receiver*/) {
-      targetBuffer.set(key.toString(), value);
-      return true;
-    }
-  });
+  return new Proxy(c, proxyHandler);
 }
 
 // determine if two values are equal

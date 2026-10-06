@@ -7,6 +7,7 @@ import normalizeObject from './utils/normalize-object';
 import { hasChanges } from './utils/has-changes';
 import pureAssign from './utils/assign';
 import { CHANGESET } from './utils/is-changeset';
+import proxyHandler from './utils/proxy-handler';
 import isObject from './utils/is-object';
 import keyInObject from './utils/key-in-object';
 import { buildOldValues } from './utils/build-old-values';
@@ -746,17 +747,7 @@ type T20 = InstanceType<typeof ValidatedChangeset>;
 export function Changeset(obj: object, options?: Config): ValidatedChangeset {
   const c: ValidatedChangeset = changeset(obj, options);
 
-  return new Proxy(c, {
-    get(targetBuffer, key /*, receiver*/) {
-      const res = targetBuffer.get(key.toString());
-      return res;
-    },
-
-    set(targetBuffer, key, value /*, receiver*/) {
-      targetBuffer.set(key.toString(), value);
-      return true;
-    }
-  }) as T20;
+  return new Proxy(c, proxyHandler) as T20;
 }
 
 // determine if two values are equal
