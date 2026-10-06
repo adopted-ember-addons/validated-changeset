@@ -321,8 +321,7 @@ export class BufferedChangeset implements IChangeset {
       }
     }
 
-    let content: Content = this[CONTENT];
-    let oldValue = this.safeGet(content, key);
+    let oldValue = this._getContent(key, this.safeGet);
 
     let skipValidate: boolean | undefined = config.skipValidate;
     if (skipValidate) {
@@ -444,9 +443,9 @@ export class BufferedChangeset implements IChangeset {
     let savePromise: any | Promise<BufferedChangeset | any> = Promise.resolve(this);
     this.execute();
 
-    if (typeof content.save === 'function') {
+    if (this.contentHasKey(content, 'save') && typeof content.save === 'function') {
       savePromise = content.save(options);
-    } else if (typeof this.safeGet(content, 'save') === 'function') {
+    } else if (typeof this._getContent('save', this.safeGet) === 'function') {
       // we might be getting this off a proxy object.  For example, when a
       // belongsTo relationship (a proxy on the parent model)
       // another way would be content(belongsTo).content.save
@@ -819,8 +818,7 @@ export class BufferedChangeset implements IChangeset {
     key: string,
     value: T
   ): Promise<ValidationResult | T | IErr<T>> | T | IErr<T> | ValidationResult {
-    let content: Content = this[CONTENT];
-    let oldValue: any = this.getDeep(content, key);
+    let oldValue: any = this._getContent(key);
     let validation: ValidationResult | Promise<ValidationResult> = this._validate(
       key,
       value,
@@ -1006,8 +1004,7 @@ export class BufferedChangeset implements IChangeset {
     let validationKeys = keys(flattenValidations(this.validationMap as object));
 
     return validationKeys.reduce((acc: Errors<any>, key: string) => {
-      let content: Content = this[CONTENT];
-      let value: any = this.getDeep(content, key);
+      let value: any = this._getContent(key);
       let resolvedValue = value instanceof ObjectTreeNode ? value.unwrap() : value;
 
       let result: ValidationResult = this._validate(key, resolvedValue, null) as ValidationResult;
@@ -1027,12 +1024,36 @@ export class BufferedChangeset implements IChangeset {
     return result === true || (Array.isArray(result) && result.length === 1 && result[0] === true);
   }
 
+  /**
+   * Whether the content can answer `key`. Some content throws when asked for
+   * a key it does not have, such as WarpDrive schema records. Content with its
+   * own `unknownProperty`, such as an Ember ObjectProxy, answers keys that `in`
+   * cannot see.
+   */
+  contentHasKey(content: Content, key: string): boolean {
+    return (
+      content !== null &&
+      (typeof content === 'object' || typeof content === 'function') &&
+      (key in content || 'unknownProperty' in content)
+    );
+  }
+
+  /**
+   * Read `key` off the content, or `undefined` if the content does not have
+   * its base key.
+   */
+  _getContent(key: string, read: (obj: any, key: string) => any = this.getDeep): any {
+    const content: Content = this[CONTENT];
+    const [baseKey] = key.split('.');
+
+    return this.contentHasKey(content, baseKey) ? read.call(this, content, key) : undefined;
+  }
+
   get(key: string): any {
     // 'person'
     // 'person.username'
     let [baseKey, ...remaining] = key.split('.');
     let changes: Changes = this[CHANGES];
-    let content: Content = this[CONTENT];
     if (Object.prototype.hasOwnProperty.call(changes, baseKey)) {
       const changesValue = this.getDeep(changes, key);
       const isObject = this.isObject(changesValue);
@@ -1060,7 +1081,7 @@ export class BufferedChangeset implements IChangeset {
           typeof result === 'undefined' &&
           pathInChanges(changes, key, this.safeGet) &&
           !hasKey(changes, key, this.safeGet) &&
-          this.getDeep(content, key)
+          this._getContent(key)
         ) {
           return;
         }
@@ -1070,7 +1091,7 @@ export class BufferedChangeset implements IChangeset {
             return getChangeValue(result);
           }
 
-          const baseContent = this.safeGet(content, baseKey) || {};
+          const baseContent = this._getContent(baseKey, this.safeGet) || {};
           const subContent = this.getDeep(baseContent, remaining.join('.'));
           const subChanges = getSubObject(changes, key);
           // give back an object that can further retrieve changes and/or content
@@ -1092,7 +1113,7 @@ export class BufferedChangeset implements IChangeset {
       return this.getDeep(this, key);
     }
 
-    const subContent = this.maybeUnwrapProxy(this.getDeep(content, key));
+    const subContent = this.maybeUnwrapProxy(this._getContent(key));
     if (this.isObject(subContent)) {
       let subChanges = this.getDeep(changes, key);
       if (!subChanges) {
