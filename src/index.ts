@@ -1071,9 +1071,12 @@ export class BufferedChangeset implements IChangeset {
       // 'user.name'
       const normalizedBaseChanges = normalizeObject(baseChanges);
       if (this.isObject(normalizedBaseChanges)) {
-        const result = this.maybeUnwrapProxy(
-          this.getDeep(normalizedBaseChanges, remaining.join('.'))
-        );
+        // With no nested path left there is nothing to read inside the
+        // change. Reading '' would ask a strict record for a field named ''.
+        const result =
+          remaining.length > 0
+            ? this.maybeUnwrapProxy(this.getDeep(normalizedBaseChanges, remaining.join('.')))
+            : undefined;
 
         // need to do this inside of Change object
         // basically anything inside of a Change object that is undefined means it was removed
